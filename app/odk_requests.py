@@ -47,25 +47,25 @@ import codecs
 import urllib
 
 
-def odata_submissions(base_url, headers, projectId, formId):
+def odata_submissions(base_url, auth, projectId, formId):
     """
     Fetch the submissions using the odata api. 
     use submissions.json()['value'] to get a list of dicts, wherein 
     each dict is a single submission with the form question names as keys.
     """    
     url = f'{base_url}/v1/projects/{projectId}/forms/{formId}.svc/Submissions'
-    submissions = requests.get(url, headers = headers)
+    submissions = requests.get(url, auth = auth)
     return submissions
 
 
-def export_submissions(base_url, headers, projectId, formId):
+def export_submissions(base_url, auth, projectId, formId):
     """
     Fetch the submissions in a zip format
     Returns object, where the zip is in the .content
     """ 
     url = f'{base_url}/v1/projects/{projectId}/forms/{formId}/submissions.csv.zip?'
     # download the file contents in binary format
-    return requests.get(url, headers = headers)
+    return requests.get(url, auth = auth)
 
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------

@@ -11,6 +11,7 @@ import json
 secret_tokens = json.load(open('secret_tokens.json', 'r'))
 email = secret_tokens['email']
 password = secret_tokens['password']
+aut = (email, password)
 
 base_url = 'https://omdtz-data.org'
 projectId = 2 
@@ -25,6 +26,7 @@ headers = {
   'Content-Type': 'application/json'
 }
 
+
 session_info = requests.post(url = f'{base_url}/v1/sessions', data=values, headers=headers)
 session_token = session_info.json()['token']
 
@@ -38,7 +40,8 @@ r =requests.get(url, headers=headers)
 @app.route('/index')
 @app.route('/home')
 def index():
-	submissions = odata_submissions(base_url, headers, projectId, formId)
+	submissions = odata_submissions(base_url, aut, projectId, formId)
+	print(submissions.json())
 	return render_template('index.html', submissions=submissions.json(), title='Map')
 
 
@@ -46,7 +49,7 @@ def index():
 def export_data():
 	
 	#Export all the data from ODK form
-	r = export_submissions(base_url, headers, projectId, formId)
+	r = export_submissions(base_url, aut, projectId, formId)
 	file_name = formId
 	if not os.path.exists('files'):
 		outdir = os.makedirs('files')

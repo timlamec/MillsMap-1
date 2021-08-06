@@ -114,14 +114,11 @@ markers.addTo(map);
 
 
 {% for submission in submissions['value'] %}
-
-    var coordinates = {{ submission['Location']['mill_gps']['coordinates'] }}
-    //var mill_owner = {{ submission['interviewee']['mill_owner'] }}
-    //console.log(mill_owner);
+    var coordinates =JSON.parse('{{ submission["Location"]["mill_gps"]["coordinates"] }}')
     var color = 'red';
     var lng = coordinates[1]
     var lat = coordinates[0]
-    var marker = L.circleMarker([lng, lat],{stroke: false});
+    var marker = L.circleMarker([lng, lat],{stroke: false, fillOpacity: 0.8});
     marker.setStyle({fillColor: 'green'});
     markers.addLayer(marker);
 
@@ -130,24 +127,10 @@ markers.addTo(map);
     marker.bindTooltip(toolTip);
 {% endfor %}
 
+{% for submission in submissions %}
+    console.log('{{ submission }}')
+{% endfor %}
 
-// {% for coordinate in data %}
-//     var marker = L.marker([{{ get_value(row, 'latitude') }}, {{ get_value(row, 'longitude') }}], {id:
-//     {{ get_value(row, 'id') }} });
-//     toolTip = "<dl>" +
-//         "<dt>ID: {{ get_value(row, 'id') }}</dt>" +
-//         "<dt>Name: {{ get_value(row, 'name') }} </dt>" +
-//         "</dl>"
-//     marker.bindTooltip(toolTip);
-//     marker.on("click", function (e) {
-//         // extract the id of the site from marker
-//         var id = e.target.options.id
-//         // construct a relative end point with filtered movies (flt1_0)
-//         //location.href = "https://github.com/localdevices/libre360#libre360"
-//         location.href = '/dashboard/mesh/details/?id=' + id + '&modal=True'
-//     });
-//     markers.addLayer(marker);
-// {% endfor %}
 
 /**
 *
