@@ -1,0 +1,9 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+
+# The files folder
+files
+*.zip
+
+# Secrets
+secret_tokens.json
