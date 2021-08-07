@@ -51,9 +51,9 @@
                         </tbody>
                     </table>
                     <hr>
-                        {% for submission in submissions['value'] %}
+                        {% for i in range(0, submissions_len) %}
                         <p>{{
-                             submission
+                             submissions_machine['value'][i]
                             }}
                         </p> 
                         {% endfor %}
@@ -66,7 +66,6 @@
         </div>
     </div>
 <script>
-
 
   // center of the map
 var center = [0.0, 20];
@@ -113,24 +112,45 @@ var markers = L.featureGroup();
 markers.addTo(map);
 
 
-{% for submission in submissions['value'] %}
-    var coordinates =JSON.parse('{{ submission["Location"]["mill_gps"]["coordinates"] }}')
-    var color = 'red';
+
+{% for i in range(0, submissions_len) %}
+    var submission ={{submissions['value'][i]|tojson}}
+    coordinates = submission['Location']['mill_gps']['coordinates']
+    {% if  submissions_machine['value'][i]['operational_mill'] == 'yes'%}
+        var color = 'green';
+    {% else %}
+        var color = 'red';
+    {% endif %}
     var lng = coordinates[1]
     var lat = coordinates[0]
     var marker = L.circleMarker([lng, lat],{stroke: false, fillOpacity: 0.8});
-    marker.setStyle({fillColor: 'green'});
+    marker.setStyle({fillColor: color});
     markers.addLayer(marker);
 
-    toolTip = "<dl>" +
-        "<dt>Number of milling machines: {{ submission['mills']['number_milling_machines'] }}</dt>" + "</dl>"
+    toolTip = 
+        "<dt>Number of milling machines: {{ submissions['value'][i]['mills']['number_milling_machines'] }}</dt>" +
+        "<dt>Mill type: {{ submissions_machine['value'][i]['mill_type']}}</dt>" + 
+        "<dt> Mill is operational: {{ submissions_machine['value'][i]['operational_mill'] }} </dt>"
     marker.bindTooltip(toolTip);
 {% endfor %}
 
-{% for submission in submissions %}
-    console.log('{{ submission }}')
-{% endfor %}
+// {% for submission in submissions %}
+//     console.log('{{ submission }}')
+// {% endfor %}
 
+// // listen for when all features have been retrieved from the server
+// // create a new empty Leaflet bounds object
+// var bounds = L.latLngBounds([]);
+// // loop through the features returned by the server
+// fl.eachFeature(function (layer) {
+//   // get the bounds of an individual feature
+//   var layerBounds = layer.getBounds();
+//   // extend the bounds of the collection to fit the bounds of the new feature
+//   bounds.extend(layerBounds);
+// });
+
+// // once we've looped through all the features, zoom the map to the extent of the collection
+// map.fitBounds(bounds);
 
 /**
 *

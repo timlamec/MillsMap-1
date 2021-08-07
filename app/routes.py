@@ -1,6 +1,6 @@
 from flask import render_template, send_file, send_from_directory
 from app import app
-from app.odk_requests import odata_submissions, export_submissions
+from app.odk_requests import odata_submissions, export_submissions, odata_submissions_machine
 from flask_wtf import FlaskForm
 from wtforms import SubmitField
 import requests, os
@@ -41,8 +41,9 @@ r =requests.get(url, headers=headers)
 @app.route('/home')
 def index():
 	submissions = odata_submissions(base_url, aut, projectId, formId)
-	print(submissions.json())
-	return render_template('index.html', submissions=submissions.json(), title='Map')
+	submissions_machine = odata_submissions_machine(base_url, aut, projectId, formId)
+	submissions_len = len(submissions.json()['value'])
+	return render_template('index.html', submissions_len = submissions_len, submissions=submissions.json(), submissions_machine = submissions_machine.json(), title='Map')
 
 
 @app.route('/download_data/')
