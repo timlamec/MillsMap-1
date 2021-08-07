@@ -4,6 +4,7 @@ __pycache__/
 # The files folder
 files
 *.zip
+figures
 
 # Secrets
 secret_tokens.json

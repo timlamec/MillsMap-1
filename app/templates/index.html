@@ -16,13 +16,16 @@
                     <hr>
                 <div class="row">
                     <h1>Infographics</h1>
+                    <div>
+                        <img src="static/figures/piechart.jpg" alt="piechart">
+                    </div>
                 </div>
             </div>
 
             <div class="col-6">
                 <div id="mapid" class="mb-3">map</div>
                 <form enctype="multipart/form-data" method="get" action="/download_data">
-                    <button class = 'download-data-button btn-info btn' type="submit">Download the data</button>
+                    <button class = 'download-data-button btn-info btn' type="submit">Download all the data</button>
                 </form>
                 <div>
                     <hr>
@@ -51,18 +54,27 @@
                         </tbody>
                     </table>
                     <hr>
-                        {% for i in range(0, submissions_len) %}
+<!--                         {% for i in range(0, submissions_len) %}
                         <p>{{
                              submissions_machine['value'][i]
                             }}
                         </p> 
-                        {% endfor %}
+                        {% endfor %} -->
 
                 </div>
             </div>
             <div class="col-3">
                 <h1>Filters</h1>
-
+                <div>
+                    {{ subm_machine_pd }}
+                </div>
+                <form method="get" action="#">
+<!--                     <input class = ''type="checkbox">Operation</input>
+                    <input class = ''type="checkbox">Not operational</input> -->
+<!--                     {% for option in (submissions_machine['value']['Commodity_milled']) %}
+                    <input class = ''type="checkbox">{{ option }}</input>
+                    {% endfor %} -->
+                </form>
             </div>
         </div>
     </div>
@@ -121,25 +133,37 @@ markers.addTo(map);
     catch(err) {
         console.log("No GPS coordinates found for the submission", submission)
     }
-    
-    {% if  submissions_machine['value'][i]['operational_mill'] == 'yes'%}
-        var color = 'green';
-    {% else %}
-        var color = 'red';
-    {% endif %}
+    color = 'blue'
+    // {% if  submissions_machine['value'][i]['operational_mill'] == 'yes'%}
+    //     var color = 'green';
+    // {% else %}
+    //     var color = 'red';
+    // {% endif %}
     var lng = coordinates[1]
     var lat = coordinates[0]
     var marker = L.circleMarker([lng, lat],{stroke: false, fillOpacity: 0.8});
     marker.setStyle({fillColor: color});
     markers.addLayer(marker);
 
+    var submission_id = {{ submissions['value'][i]['__id']|tojson }}
+    var machines = {{ submissions_machine['value']|tojson }}
+    
+    console.log(machines)
+    {% for machine in machines %}
+        console.log(machine)
+    {% endfor %}
+    // const machine_list = []
+    // {% for machine in submissions_machine %}
+    //     console.log(machine)
+    // {% endfor %}
+
     toolTip = 
         "<dt>Number of milling machines: {{ submissions['value'][i]['mills']['number_milling_machines'] }}</dt>" +
+        "<dt>Submissions ID: {{ submissions_machine['value'][i]['__Submissions-id']}}</dt>" + 
         "<dt>Mill type: {{ submissions_machine['value'][i]['mill_type']}}</dt>" + 
         "<dt> Mill is operational: {{ submissions_machine['value'][i]['operational_mill'] }} </dt>"
     marker.bindTooltip(toolTip);
 {% endfor %}
-console.log('jee')
 
 map.fitBounds(markers.getBounds());
 /**
