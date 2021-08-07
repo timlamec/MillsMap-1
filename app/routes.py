@@ -7,7 +7,6 @@ import requests, os
 from werkzeug.wrappers import Response
 import json
 import matplotlib.pyplot as plt
-import pandas as pd
 
 secret_tokens = json.load(open('secret_tokens.json', 'r'))
 email = secret_tokens['email']
