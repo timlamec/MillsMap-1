@@ -111,11 +111,16 @@ var scale = L.control.scale().addTo(map);
 var markers = L.featureGroup();
 markers.addTo(map);
 
-
-
-{% for i in range(0, submissions_len) %}
-    var submission ={{submissions['value'][i]|tojson}}
-    coordinates = submission['Location']['mill_gps']['coordinates']
+{% for i in range(0, (submissions_len)) %}
+    
+    var submission ={{submissions.value[i]|tojson}}
+    try {
+        var coordinates = submission['Location']['mill_gps']['coordinates']
+    }
+    catch(err) {
+        console.log("No GPS coordinates found for the submission", submission)
+    }
+    
     {% if  submissions_machine['value'][i]['operational_mill'] == 'yes'%}
         var color = 'green';
     {% else %}
@@ -133,25 +138,9 @@ markers.addTo(map);
         "<dt> Mill is operational: {{ submissions_machine['value'][i]['operational_mill'] }} </dt>"
     marker.bindTooltip(toolTip);
 {% endfor %}
+console.log('jee')
 
-// {% for submission in submissions %}
-//     console.log('{{ submission }}')
-// {% endfor %}
-
-// // listen for when all features have been retrieved from the server
-// // create a new empty Leaflet bounds object
-// var bounds = L.latLngBounds([]);
-// // loop through the features returned by the server
-// fl.eachFeature(function (layer) {
-//   // get the bounds of an individual feature
-//   var layerBounds = layer.getBounds();
-//   // extend the bounds of the collection to fit the bounds of the new feature
-//   bounds.extend(layerBounds);
-// });
-
-// // once we've looped through all the features, zoom the map to the extent of the collection
-// map.fitBounds(bounds);
-
+map.fitBounds(markers.getBounds());
 /**
 *
 * @param{HTMLTableElement} table to sort
