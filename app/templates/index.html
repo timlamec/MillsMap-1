@@ -160,8 +160,8 @@ markers.addTo(map);
     toolTip = 
         "<dt>Number of milling machines: {{ submissions['value'][i]['mills']['number_milling_machines'] }}</dt>" +
         "<dt>Submissions ID: {{ submissions_machine['value'][i]['__Submissions-id']}}</dt>" + 
-        "<dt>Mill type: {{ submissions_machine['value'][i]['mill_type']}}</dt>" + 
-        "<dt> Mill is operational: {{ submissions_machine['value'][i]['operational_mill'] }} </dt>"
+        // "<dt>Mill type: {{ submissions_machine['value'][i]['mill_type']}}</dt>" + 
+        // "<dt> Mill is operational: {{ submissions_machine['value'][i]['operational_mill'] }} </dt>"
     marker.bindTooltip(toolTip);
 {% endfor %}
 

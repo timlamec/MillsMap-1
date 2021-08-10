@@ -15,7 +15,7 @@ aut = (email, password)
 
 base_url = 'https://omdtz-data.org'
 projectId = 2 
-formId = "Tanzania Mills Mapping Census Form_V2"
+formId = "Tanzania_Mills_Mapping_Census_V_01"
 
 values =json.dumps({
     "email": email,

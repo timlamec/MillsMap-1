@@ -8,3 +8,6 @@ figures
 
 # Secrets
 secret_tokens.json
+
+# Environments
+venv
