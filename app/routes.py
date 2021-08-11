@@ -68,13 +68,13 @@ def charts(submissions_machine):
 	operational_count = count_items(submissions_machine, key = 'operational_mill', value = 'yes')
 	not_operational_count = count_items(submissions_machine, key = 'operational_mill', value = 'no')
 	labels = 'Operational', 'Not operational'
-	colors = ['green', 'red']
+	colors = ['#6495ED', '#EEDC82']
 	sizes = [operational_count, not_operational_count]
-	explode = (0, 0.1)  # only "explode" the 2nd slice (i.e. 'Hogs')
+	explode = (0, 0.03)  # only "explode" the 2nd slice (i.e. 'Hogs')
 
 	fig, ax1 = plt.subplots()
-	ax1.pie(sizes, explode=explode, labels=labels, colors=colors, autopct='%1.1f%%',
-	        shadow=True, startangle=90)
+	ax1.pie(sizes, labels=labels, explode = explode, colors=colors, autopct='%1.1f%%',
+	        shadow=False, startangle=90)
 	ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
 	if not os.path.exists('app/static/figures'):
 		outdir = os.makedirs('app/static/figures')
@@ -131,3 +131,4 @@ def create_figure():
     ys = [random.randint(1, 50) for x in xs]
     axis.plot(xs, ys)
     return fig
+

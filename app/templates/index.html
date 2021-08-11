@@ -53,32 +53,17 @@
                         {% endfor %}
                         </tbody>
                     </table>
-                    <hr>
-<!--                         {% for i in range(0, submissions_len) %}
-                        <p>{{
-                             submissions_machine['value'][i]
-                            }}
-                        </p> 
-                        {% endfor %} -->
 
                 </div>
             </div>
-            <div class="col-3">
+            <div class="col-3 form-inline mb-3" >
                 <h1>Filters</h1>
-                <div>
-                    {{ subm_machine_pd }}
-                </div>
-                <form method="get" action="#">
-<!--                     <input class = ''type="checkbox">Operation</input>
-                    <input class = ''type="checkbox">Not operational</input> -->
-<!--                     {% for option in (submissions_machine['value']['Commodity_milled']) %}
-                    <input class = ''type="checkbox">{{ option }}</input>
-                    {% endfor %} -->
-                </form>
+                
             </div>
         </div>
     </div>
 <script>
+
 
   // center of the map
 var center = [0.0, 20];
@@ -124,6 +109,17 @@ var scale = L.control.scale().addTo(map);
 var markers = L.featureGroup();
 markers.addTo(map);
 
+// Get unique values for a submission
+var submission_values = {{ submissions|tojson }}
+var submission_values = submission_values['value']
+var value_arr = [];
+for(i in submission_values){
+    var value = submission_values[i]['interviewee']['ownership']
+    value_arr.push(value)
+}
+let unique_values = [new Set(value_arr)];
+
+
 {% for i in range(0, (submissions_len)) %}
     
     var submission ={{submissions.value[i]|tojson}}
@@ -148,10 +144,10 @@ markers.addTo(map);
     var submission_id = {{ submissions['value'][i]['__id']|tojson }}
     var machines = {{ submissions_machine['value']|tojson }}
     
-    console.log(machines)
-    {% for machine in machines %}
-        console.log(machine)
-    {% endfor %}
+    //{% for machine in machines %}
+        //console.log(machine)
+    //{% endfor %}
+
     // const machine_list = []
     // {% for machine in submissions_machine %}
     //     console.log(machine)
@@ -159,7 +155,7 @@ markers.addTo(map);
 
     toolTip = 
         "<dt>Number of milling machines: {{ submissions['value'][i]['mills']['number_milling_machines'] }}</dt>" +
-        "<dt>Submissions ID: {{ submissions_machine['value'][i]['__Submissions-id']}}</dt>" + 
+        "<dt>Submissions ID: {{ submissions_machine['value'][i]['__Submissions-id']}}</dt>" 
         // "<dt>Mill type: {{ submissions_machine['value'][i]['mill_type']}}</dt>" + 
         // "<dt> Mill is operational: {{ submissions_machine['value'][i]['operational_mill'] }} </dt>"
     marker.bindTooltip(toolTip);
