@@ -42,37 +42,9 @@
                 </form>
                 <div>
                     <hr>
-                    <table class="table table-sortable">
-                        <thead>
-                            <tr>
-                                <th>Name of the mill</th>
-                                <th>Submission date</th>
-                                <th>Opening hours</th>
-                                <th>Owner of the mill</th>
-                                <th>Machine count</th>
-                                <th>Mill owner</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for submission in submissions['value'] %}
-                            <tr>
-                                <td>{{ submission['mills']['name_mill'] }}</td> 
-                                <td>{{ submission['today'] }}</td> 
-                                <td>{{ submission['Location']['opening_hours'] }}</td> 
-                                <td>{{ submission['interviewee']['owner_name'] }}</td> 
-                                <td>{{ submission['machines']['machine_count'] }}</td> 
-                                <td>{{ submission['interviewee']['mill_owner'] }}</td> 
-                            </tr>
-                        {% endfor %}
-                        </tbody>
-                    </table>
+
                     <hr>
-                        {% for i in range(0, submissions_len) %}
-                        <p>{{
-                             submissions_machine['value'][i]
-                            }}
-                        </p> 
-                        {% endfor %}
+
 
                 </div>
             </div>
@@ -93,7 +65,7 @@
                     <button class="btn btn-primary btn-block" id="filterSubmit">Filter Data</button>
                 </form> <br>
                 <p>
-                    {{ submissions['value'][0]}}
+
                     </p>
 
                 </p>

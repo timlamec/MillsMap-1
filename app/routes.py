@@ -140,8 +140,6 @@ def charts(submissions_machine, submissions):
 	             str(round((i.get_width()), 2)),
 	             fontsize = 10, fontweight ='bold',
 	             color ='grey')
-	#D = {u'Label1':26, u'Label2': 17, u'Label3':30}
-	#plt.xticks(range(len(D)), list(D.keys()))
 	fig2.savefig('app/static/figures/barplot_commodity_milled.jpg', bbox_inches='tight')   # save the figure to file
 	plt.close(fig)  
 
@@ -163,10 +161,9 @@ def charts(submissions_machine, submissions):
 	             str(round((i.get_width()), 2)),
 	             fontsize = 10, fontweight ='bold',
 	             color ='grey')
-	#D = {u'Label1':26, u'Label2': 17, u'Label3':30}
-	#plt.xticks(range(len(D)), list(D.keys()))
 	fig2.savefig('app/static/figures/barplot_flour_fortified.jpg', bbox_inches='tight')   # save the figure to file
 	plt.close(fig)  
+
 
 
 
