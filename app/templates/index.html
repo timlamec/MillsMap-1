@@ -10,14 +10,27 @@
                 </div>
                 <hr>
                 <div class="row">
-                    <h1>Background Information</h1>
-                         <p>Con nonummy sem integer interdum volutpat dis eget eligendi aliquip dolorum magnam. Lorem ipsum dolor si amet taciti sunt torquent ipsam proin montes quia netus quo minima sint. At aenean etiam suspendisse ultricies auctor per nihil nisi. Ullam fermentum urna varius et saepe labore dignissim consectetuer fusce elementum. </p>
+                    <h1>Nationwide Mills Census in Tanzania</h1>
+                         <p>OpenMap Development Tanzania (OMDTZ), supported by WFP Tanzania, is conducting a national-wide mills census from August through November 2021. The project aims at mapping approximately 13,000 mills and additional mills found in the field by collecting Geographical Positioning System (GPS) coordinates, operation, production capacity, type of mills, commodity milled, flour fortification, and other relevant information. Community mapping methodology employed for the mapping and data set will be available openly through here and  Openstreetmaps 
+                        </p>
                     </div>
                     <hr>
                 <div class="row">
-                    <h1>Infographics</h1>
                     <div>
-                        <img src="static/figures/piechart.jpg" alt="piechart">
+                        <h3>Functional mills</h3>
+                        <img src="static/figures/piechart.jpg" alt="piechart of functionality">
+                    </div>
+                    <div>
+                        <h3>Mill types</h3>
+                        <img src="static/figures/barplot.jpg" alt="mill type barplot">
+                    </div>
+                    <div>
+                        <h3>Commodity milled</h3>
+                        <img src="static/figures/barplot_commodity_milled.jpg" alt="commodity milled type barplot">
+                    </div>
+                    <div>
+                        <h3>Flour is fortified</h3>
+                        <img src="static/figures/barplot_flour_fortified.jpg" alt="commodity milled type barplot">
                     </div>
                 </div>
             </div>
@@ -53,22 +66,69 @@
                         {% endfor %}
                         </tbody>
                     </table>
+                    <hr>
+                        {% for i in range(0, submissions_len) %}
+                        <p>{{
+                             submissions_machine['value'][i]
+                            }}
+                        </p> 
+                        {% endfor %}
 
                 </div>
             </div>
             <div class="col-3 form-inline mb-3" >
                 <h1>Filters</h1>
-                
+                <form method="get" action="#" id="filterForm" class="form">
+                    <label for="gender" class="form-label btn btn-info btn-block" data-toggle="collapse" data-target="#genderCheck" >Gender of the owner</label> <br>
+                    <div id="genderCheck" class="collapse">
+                        <div class="mb-3 form-check">
+                            <input class="form-check-input" type="checkbox" name=femaleField id="femaleField"></input>
+                            <label class="form-check-label" name=femaleField for="female">Female</label>
+                        </div>
+                        <div class="mb-3">
+                            <input class="form-check-input" type="checkbox" name=maleField id="maleField"></input>
+                            <label class="form-check-label" name=maleField for="male">Male</label>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary btn-block" id="filterSubmit">Filter Data</button>
+                </form> <br>
+                <p>
+                    {{ submissions['value'][0]}}
+                    </p>
+
+                </p>
             </div>
         </div>
     </div>
 <script>
+var form = document.getElementById('filterForm')
 
+//var form_elements = document.getElementById("filterForm").elements
+
+document.getElementById('filterSubmit').addEventListener("click", function(){
+    event.preventDefault();
+
+    console.log(form.elements['maleField'].checked);
+    //console.log(document.forms[1])
+    //var formData = new FormData(form[0])
+    //console.log('test' + formData.get('femaleField'))
+
+
+    // var form_elements = document.getElementById("filterForm").elements 
+    // alert(data)
+    // console.log(data)
+
+    // var form_data = new FormData(data[0])
+    // alert(data.get('male'))
+
+}); 
 
   // center of the map
 var center = [0.0, 20];
 // Create the map
-var map = new L.map('mapid').setView(center, 3);
+var map = new L.map('mapid', {
+    fullscreenControl: true
+    }).setView(center, 3);
 // Set up the OSM layer
 L.tileLayer(
   'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -160,7 +220,19 @@ let unique_values = [new Set(value_arr)];
         // "<dt> Mill is operational: {{ submissions_machine['value'][i]['operational_mill'] }} </dt>"
     marker.bindTooltip(toolTip);
 {% endfor %}
-
+map.isFullscreen() // Is the map fullscreen?
+map.toggleFullscreen() // Either go fullscreen, or cancel the existing fullscreen.
+ 
+// `fullscreenchange` Event that's fired when entering or exiting fullscreen.
+map.on('fullscreenchange', function () {
+    if (map.isFullscreen()) {
+        console.log('entered fullscreen');
+    } else {
+        console.log('exited fullscreen');
+    }
+});
+ 
+L.Control.Fullscreen
 map.fitBounds(markers.getBounds());
 /**
 *
