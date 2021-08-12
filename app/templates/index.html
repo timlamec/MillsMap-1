@@ -166,7 +166,9 @@ osmLayer.addTo(map);
 // add a scale at at your map.
 var scale = L.control.scale().addTo(map);
 
-var markers = L.featureGroup();
+var markers = new L.MarkerClusterGroup();
+
+//var markers = L.featureGroup();
 markers.addTo(map);
 
 // Get unique values for a submission
@@ -223,14 +225,6 @@ let unique_values = [new Set(value_arr)];
 map.isFullscreen() // Is the map fullscreen?
 map.toggleFullscreen() // Either go fullscreen, or cancel the existing fullscreen.
  
-// `fullscreenchange` Event that's fired when entering or exiting fullscreen.
-map.on('fullscreenchange', function () {
-    if (map.isFullscreen()) {
-        console.log('entered fullscreen');
-    } else {
-        console.log('exited fullscreen');
-    }
-});
  
 L.Control.Fullscreen
 map.fitBounds(markers.getBounds());
