@@ -2,53 +2,95 @@
 {% block content %}
 <html>
 <body>
-    <div class="container-fluid m-5">
+    <div class="container-fluid">
         <div class="row">
-            <div class="col-3"> 
+            <div class="col-3" id="sidebar"> 
                 <div class="row">
-                    <h1>Logo</h1>
-                </div>
-                <hr>
-                <div class="row">
-                    <h1>Nationwide Mills Census in Tanzania</h1>
-                         <p>OpenMap Development Tanzania (OMDTZ), supported by WFP Tanzania, is conducting a national-wide mills census from August through November 2021. The project aims at mapping approximately 13,000 mills and additional mills found in the field by collecting Geographical Positioning System (GPS) coordinates, operation, production capacity, type of mills, commodity milled, flour fortification, and other relevant information. Community mapping methodology employed for the mapping and data set will be available openly through here and  Openstreetmaps 
-                        </p>
-                    </div>
-                    <hr>
-                <div class="row">
-                    <div>
-                        <h3>Functional mills</h3>
-                        <img src="static/figures/piechart.jpg" alt="piechart of functionality">
-                    </div>
-                    <div>
-                        <h3>Mill types</h3>
-                        <img src="static/figures/barplot.jpg" alt="mill type barplot">
-                    </div>
-                    <div>
-                        <h3>Commodity milled</h3>
-                        <img src="static/figures/barplot_commodity_milled.jpg" alt="commodity milled type barplot">
-                    </div>
-                    <div>
-                        <h3>Flour is fortified</h3>
-                        <img src="static/figures/barplot_flour_fortified.jpg" alt="commodity milled type barplot">
+                    <div class="col-11 " >
+                        <div class="wrapper p-4">
+                        
+                            <nav >
+                                <div class="row">
+                                    <div class="col-8">
+                                        <img class="omdtz-logo" src="static/static_figures/OMDTZ-logo.png" alt="OMDTZ-logo">
+                                    </div>
+                                    <div class="col-4">
+                                        <img class="wfp-logo" src="static/static_figures/WFP.jpeg" alt="WFP-logo">
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="row">
+                                    <h1>Nationwide Mills Census in Tanzania</h1>
+                                         <p>OpenMap Development Tanzania (OMDTZ), supported by WFP Tanzania, is conducting a national-wide mills census from August through November 2021. The project aims at mapping approximately 13,000 mills and additional mills found in the field by collecting Geographical Positioning System (GPS) coordinates, operation, production capacity, type of mills, commodity milled, flour fortification, and other relevant information. Community mapping methodology employed for the mapping and data set will be available openly through here and  Openstreetmaps 
+                                        </p>
+                                    </div>
+                                    <hr>
+                            </nav>
+                        </div>
+                    </div>                   
+                    <div class="col-1">
+                        <button type="button" id="sidebarCollapse" class="btn btn-info">
+                            <span id="left-arrow">&#10096;&#10096;</span>
+                        </button>
                     </div>
                 </div>
             </div>
+            <div class="col-1 hide" id="right-arrow">
+                <button type="button" id="sidebarOpen" class="btn btn-info">
+                    <span>&#10095;&#10095;</span>
+                </button>
+            </div>
 
-            <div class="col-6">
-                <div id="mapid" class="mb-3">map</div>
+            <div class="col-6 mt-5" id="mapbar">
+                <div id="mapid" class="mb-3">
+                    <span class="ouro">
+                        <span class="left"><span class="anim"></span></span>
+                        <span class="right"><span class="anim"></span></span>
+                    </span>
+                </div>
+
+            </div>
+<!--                
                 <form enctype="multipart/form-data" method="get" action="/download_data">
                     <button class = 'download-data-button btn-info btn' type="submit">Download all the data</button>
                 </form>
-                <div>
+                <div> -->
+                 <!--    <hr>
+                    <table class="table table-sortable">
+                        <thead>
+                            <tr>
+                                <th>Name of the mill</th>
+                                <th>Submission date</th>
+                                <th>Opening hours</th>
+                                <th>Owner of the mill</th>
+                                <th>Machine count</th>
+                                <th>Mill owner</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for submission in submissions['value'] %}
+                            <tr>
+                                <td>{{ submission['mills']['name_mill'] }}</td> 
+                                <td>{{ submission['today'] }}</td> 
+                                <td>{{ submission['Location']['opening_hours'] }}</td> 
+                                <td>{{ submission['interviewee']['owner_name'] }}</td> 
+                                <td>{{ submission['machines']['machine_count'] }}</td> 
+                                <td>{{ submission['interviewee']['mill_owner'] }}</td> 
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
                     <hr>
+                        {% for i in range(0, submissions_len) %}
+                        <p>{{
+                             submissions_machine['value'][i]
+                            }}
+                        </p> 
+                        {% endfor %}
+                         </div>
+ -->
 
-                    <hr>
-
-
-                </div>
-            </div>
-            <div class="col-3 form-inline mb-3" >
+            <div class="col-3 form-inline mb-3" id="filterbar">
                 <h1>Filters</h1>
                 <form method="get" action="#" id="filterForm" class="form">
                     <label for="gender" class="form-label btn btn-info btn-block" data-toggle="collapse" data-target="#genderCheck" >Gender of the owner</label> <br>
@@ -65,14 +107,66 @@
                     <button class="btn btn-primary btn-block" id="filterSubmit">Filter Data</button>
                 </form> <br>
                 <p>
-
+                    {{ submissions['value'][0]}}
                     </p>
 
                 </p>
             </div>
         </div>
+
     </div>
+    <hr>
+    <div class="container">
+        <div class="row">
+            <h1>Statistics</h1>
+            <div class="col-6">
+                <div class="card m-5 shadow p-3 mb-5 bg-white rounded">
+                    <h3  class="card-title text-center">Functional mills</h3>
+                    <img src="static/figures/piechart.jpg" alt="piechart of functionality">
+                </div>
+                <div class="card m-5 shadow p-3 mb-5 bg-white rounded">
+                    <h3  class="card-title text-center">Mill types</h3>
+                    <img src="static/figures/barplot.jpg" alt="mill type barplot">
+                </div>
+            </div>
+            
+            <div class="col-6">
+                <div class="card m-5 shadow p-3 mb-5 bg-white rounded">
+                    <h3  class="card-title text-center">Commodity milled</h3>
+                    <img src="static/figures/barplot_commodity_milled.jpg" alt="commodity milled type barplot">
+                </div>
+                <div class="card m-5 shadow p-3 mb-5 bg-white rounded">
+                    <h3  class="card-title text-center">Flour is fortified</h3>
+                    <img src="static/figures/barplot_flour_fortified.jpg" alt="commodity milled type barplot">
+                </div>
+            </div>
+
+        </div>
+    </div>
+       
 <script>
+
+
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function () {
+        $('#sidebar').toggleClass('hide');
+        $('#mapbar').toggleClass('col-8');
+        $('#left-arrow').toggleClass('hide');
+        $('#right-arrow').toggleClass('hide');
+    });
+
+});
+
+$(document).ready(function () {
+    $('#sidebarOpen').on('click', function () {
+        $('#sidebar').toggleClass('hide');
+        $('#mapbar').toggleClass('col-8');
+        $('#left-arrow').toggleClass('hide');
+        $('#right-arrow').toggleClass('hide');
+    });
+
+});
+
 var form = document.getElementById('filterForm')
 
 //var form_elements = document.getElementById("filterForm").elements
@@ -197,6 +291,14 @@ let unique_values = [new Set(value_arr)];
 map.isFullscreen() // Is the map fullscreen?
 map.toggleFullscreen() // Either go fullscreen, or cancel the existing fullscreen.
  
+// // `fullscreenchange` Event that's fired when entering or exiting fullscreen.
+// map.on('fullscreenchange', function () {
+//     if (map.isFullscreen()) {
+//         console.log('entered fullscreen');
+//     } else {
+//         console.log('exited fullscreen');
+//     }
+// });
  
 L.Control.Fullscreen
 map.fitBounds(markers.getBounds());
