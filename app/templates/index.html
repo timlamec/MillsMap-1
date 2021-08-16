@@ -50,45 +50,6 @@
                 </div>
 
             </div>
-<!--                
-                <form enctype="multipart/form-data" method="get" action="/download_data">
-                    <button class = 'download-data-button btn-info btn' type="submit">Download all the data</button>
-                </form>
-                <div> -->
-                 <!--    <hr>
-                    <table class="table table-sortable">
-                        <thead>
-                            <tr>
-                                <th>Name of the mill</th>
-                                <th>Submission date</th>
-                                <th>Opening hours</th>
-                                <th>Owner of the mill</th>
-                                <th>Machine count</th>
-                                <th>Mill owner</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for submission in submissions['value'] %}
-                            <tr>
-                                <td>{{ submission['mills']['name_mill'] }}</td> 
-                                <td>{{ submission['today'] }}</td> 
-                                <td>{{ submission['Location']['opening_hours'] }}</td> 
-                                <td>{{ submission['interviewee']['owner_name'] }}</td> 
-                                <td>{{ submission['machines']['machine_count'] }}</td> 
-                                <td>{{ submission['interviewee']['mill_owner'] }}</td> 
-                            </tr>
-                        {% endfor %}
-                        </tbody>
-                    </table>
-                    <hr>
-                        {% for i in range(0, submissions_len) %}
-                        <p>{{
-                             submissions_machine['value'][i]
-                            }}
-                        </p> 
-                        {% endfor %}
-                         </div>
- -->
 
             <div class="col-3 form-inline mb-3" id="filterbar">
                 <h1>Filters</h1>
@@ -99,7 +60,7 @@
                     <div id="{{ filterform_key }}" class="collapse">
                         {% for filterform_value in filter_selection_dict[filterform_key] %}
                             <div class="mb-3">
-                                <input class="form-check-input" type="checkbox" checked = 'True' name={{ filterform_value }} ></input>
+                                <input class="form-check-input" type="checkbox" checked = 'True' name="{{ filterform_key }}, {{filterform_value }}" ></input>
                                 <label class="form-check-label" name={{ filterform_value }}>{{ filterform_value }}</label>
                             </div>
                         {% endfor    %}
@@ -232,17 +193,6 @@ var markers = new L.MarkerClusterGroup();
 
 //var markers = L.featureGroup();
 markers.addTo(map);
-
-// Get unique values for a submission
-var submission_values = {{ submissions|tojson }}
-var submission_values = submission_values['value']
-var value_arr = [];
-for(i in submission_values){
-    var value = submission_values[i]['interviewee']['ownership']
-    value_arr.push(value)
-}
-let unique_values = [new Set(value_arr)];
-
 
 var submissions_filtered = {{ submissions_filtered|tojson }};
 submissions_filtered_json = JSON.parse(submissions_filtered)
