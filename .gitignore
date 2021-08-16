@@ -11,3 +11,6 @@ secret_tokens.json
 
 # Environments
 venv
+
+CSV test tables
+*.csv

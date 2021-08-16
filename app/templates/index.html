@@ -92,25 +92,32 @@
 
             <div class="col-3 form-inline mb-3" id="filterbar">
                 <h1>Filters</h1>
-                <form method="get" action="#" id="filterForm" class="form">
+                <form enctype="multipart/form-data" method="post" action="/filterform" id="filterForm" class="form">
                     <label for="gender" class="form-label btn btn-info btn-block" data-toggle="collapse" data-target="#genderCheck" >Gender of the owner</label> <br>
                     <div id="genderCheck" class="collapse">
                         <div class="mb-3 form-check">
-                            <input class="form-check-input" type="checkbox" name=femaleField id="femaleField"></input>
-                            <label class="form-check-label" name=femaleField for="female">Female</label>
+                            <input class="form-check-input" type="checkbox"  name="femaleField"></input>
+                            <label class="form-check-label">Female</label>
                         </div>
                         <div class="mb-3">
-                            <input class="form-check-input" type="checkbox" name=maleField id="maleField"></input>
-                            <label class="form-check-label" name=maleField for="male">Male</label>
+                            <input class="form-check-input" type="checkbox" name=maleField ></input>
+                            <label class="form-check-label">Male</label>
                         </div>
                     </div>
-                    <button class="btn btn-primary btn-block" id="filterSubmit">Filter Data</button>
-                </form> <br>
-                <p>
-                    {{ submissions['value'][0]}}
-                    </p>
+                    {% for filter in filter_selection_dict %}
 
-                </p>
+                    <label for="gender" class="form-label btn btn-info btn-block" data-toggle="collapse" data-target="#collapse-{{filter}}" >{{ filter }}</label> <br>
+                    <div id="collapse-{{filter}}" class="collapse">
+                        {% for sub_filter in filter_selection_dict[filter] %}
+                        <div class="mb-3 form-check">
+                            <input class="form-check-input" type="checkbox" name=femaleField id="femaleField"></input>
+                            <label class="form-check-label" name=femaleField for="female">{{ sub_filter }}</label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                    <button class="btn btn-primary btn-block" type = "submit" id="filterSubmit">Filter Data</button>
+                </form> <br>
             </div>
         </div>
 
@@ -147,6 +154,7 @@
 <script>
 
 
+
 $(document).ready(function () {
     $('#sidebarCollapse').on('click', function () {
         $('#sidebar').toggleClass('hide');
@@ -167,27 +175,27 @@ $(document).ready(function () {
 
 });
 
-var form = document.getElementById('filterForm')
+// var form = document.getElementById('filterForm')
 
-//var form_elements = document.getElementById("filterForm").elements
+// //var form_elements = document.getElementById("filterForm").elements
 
-document.getElementById('filterSubmit').addEventListener("click", function(){
-    event.preventDefault();
+// document.getElementById('filterSubmit').addEventListener("click", function(){
+//     event.preventDefault();
 
-    console.log(form.elements['maleField'].checked);
-    //console.log(document.forms[1])
-    //var formData = new FormData(form[0])
-    //console.log('test' + formData.get('femaleField'))
+//     console.log(form.elements['maleField'].checked);
+//     //console.log(document.forms[1])
+//     //var formData = new FormData(form[0])
+//     //console.log('test' + formData.get('femaleField'))
 
 
-    // var form_elements = document.getElementById("filterForm").elements 
-    // alert(data)
-    // console.log(data)
+//     // var form_elements = document.getElementById("filterForm").elements 
+//     // alert(data)
+//     // console.log(data)
 
-    // var form_data = new FormData(data[0])
-    // alert(data.get('male'))
+//     // var form_data = new FormData(data[0])
+//     // alert(data.get('male'))
 
-}); 
+// }); 
 
   // center of the map
 var center = [0.0, 20];
