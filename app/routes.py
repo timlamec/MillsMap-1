@@ -58,66 +58,13 @@ r =requests.get(url, headers=headers)
 # 			print(key)
 # 			a[key] = b[key]
 # 	return a
-submissions = odata_submissions(base_url, aut, projectId, formId)
-submissions_machine = odata_submissions_machine(base_url, aut, projectId, formId)
-submissions_len = len(submissions.json()['value'])
-charts(submissions_machine.json()['value'], submissions.json()['value'])
-submissions_table =  pd.DataFrame(odata_submissions_table(base_url, aut, projectId, formId, 'Submissions')['value'])
-submissions_machine_table =  pd.DataFrame(odata_submissions_table(base_url, aut, projectId, formId, 'Submissions.machines.machine')['value'])
-dictionary_columns = []
-while True:
-	data_types = []
-	for col in submissions_table:
-		data_types.append(type(submissions_table[col][0]))
-	if dict not in data_types:
-		break
-	for col in submissions_table:
-		if (type(submissions_table[col][0])) == dict:
-			dictionary_columns.append(col)
-			submissions_table = pd.concat([submissions_table.drop(col, axis=1), submissions_table[col].apply(pd.Series)], axis=1)
-#submissions_table.to_csv('submissions_table.csv')
-
-
-dictionary_columns = []
-while True:
-	data_types = []
-	for col in submissions_machine_table:
-		data_types.append(type(submissions_machine_table[col][0]))
-	if dict not in data_types:
-		break
-	for col in submissions_machine_table:
-		if (type(submissions_machine_table[col][0])) == dict:
-			dictionary_columns.append(col)
-			submissions_machine_table = pd.concat([submissions_machine_table.drop(col, axis=1), submissions_machine_table[col].apply(pd.Series)], axis=1)
-#submissions_machine_table.to_csv('submissions_machine_table.csv')
-
-submissions_all = submissions_table.merge(submissions_machine_table, left_on = '__id', right_on = '__Submissions-id')
-#submissions_all.to_csv('submissions_all.csv')
 
 @app.route('/')
 @app.route('/index')
 @app.route('/home')
 def index():
-	filter_selection_dict = {} 
-	filter_selections = ['mill_owner', 'commodity_milled', 'mill_type', 'operational_mill', 'non_operational', 'energy_source', 'flour_fortified', 'flour_fortified_standard']
-	unique_values_filters = []
-	filter_columns = submissions_all.loc[:,filter_selections]
-	
-	for col in filter_columns:
-		values_list = []
-		values_list = filter_columns.loc[:,col].str.split()
-		unique_values_list =[]
-		for item in (values_list):
-			if type(item) == list:
-				for sub_item in item:
-					if sub_item not in unique_values_list:
-						unique_values_list.append(sub_item)
-			else:
-				if sub_item not in unique_values_list:
-					unique_values_list.append(sub_item)
-		filter_selection_dict[col] = unique_values_list
-		unique_values_filters.append(unique_values_list)
-	return render_template('index.html', filter_selection_dict = filter_selection_dict, submissions_len = submissions_len, submissions=submissions.json(), submissions_machine = submissions_machine.json(), title='Map')
+
+	return render_template('index.html', title='Map')
 
 @app.route('/filterform', methods = ['GET', 'POST'])
 def filter_data():
