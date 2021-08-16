@@ -245,48 +245,29 @@ let unique_values = [new Set(value_arr)];
 
 
 var submissions_filtered = {{ submissions_filtered|tojson }};
-console.log(submissions_filtered);
+submissions_filtered_json = JSON.parse(submissions_filtered)
+console.log(submissions_filtered_json);
 
-{% for i in range(0, (submissions_len)) %}
-    
-    var submission ={{submissions.value[i]|tojson}}
+for (submission_index in submissions_filtered_json){
+    var submission = submissions_filtered_json[submission_index]
     try {
-        var coordinates = submission['Location']['mill_gps']['coordinates']
+        var coordinates = submission['coordinates']
     }
     catch(err) {
         console.log("No GPS coordinates found for the submission", submission)
     }
     color = 'blue'
-    // {% if  submissions_machine['value'][i]['operational_mill'] == 'yes'%}
-    //     var color = 'green';
-    // {% else %}
-    //     var color = 'red';
-    // {% endif %}
+
     var lng = coordinates[1]
     var lat = coordinates[0]
     var marker = L.circleMarker([lng, lat],{stroke: false, fillOpacity: 0.8});
     marker.setStyle({fillColor: color});
     markers.addLayer(marker);
-
-    var submission_id = {{ submissions['value'][i]['__id']|tojson }}
-    var machines = {{ submissions_machine['value']|tojson }}
+}
     
-    //{% for machine in machines %}
-        //console.log(machine)
-    //{% endfor %}
+    
 
-    // const machine_list = []
-    // {% for machine in submissions_machine %}
-    //     console.log(machine)
-    // {% endfor %}
 
-    toolTip = 
-        "<dt>Number of milling machines: {{ submissions['value'][i]['mills']['number_milling_machines'] }}</dt>" +
-        "<dt>Submissions ID: {{ submissions_machine['value'][i]['__Submissions-id']}}</dt>" 
-        // "<dt>Mill type: {{ submissions_machine['value'][i]['mill_type']}}</dt>" + 
-        // "<dt> Mill is operational: {{ submissions_machine['value'][i]['operational_mill'] }} </dt>"
-    marker.bindTooltip(toolTip);
-{% endfor %}
 map.isFullscreen() // Is the map fullscreen?
 map.toggleFullscreen() // Either go fullscreen, or cancel the existing fullscreen.
  

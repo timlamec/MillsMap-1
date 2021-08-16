@@ -1,7 +1,6 @@
 from flask import render_template, send_file, send_from_directory, request
 from app import app
 from app.odk_requests import odata_submissions, export_submissions, odata_submissions_machine, odata_submissions_table
-from app.pd_df_to_geojson import df_to_geojson
 from flask_wtf import FlaskForm
 from wtforms import SubmitField
 import requests, os
@@ -104,10 +103,10 @@ def index():
 		unique_values_filters.append(unique_values_list)
 		#submissions_all[['Latitude', 'Longitude', 'Elevation']] = pd.DataFrame(submissions_all["coordinates"].to_list(), columns=['Latitude', 'Longitude', 'Elevation']) 
 		#print(submissions_all.columns.values.tolist())	
-		print(type(submissions_all))
 
-		submissions_filtered = submissions_all.to_json()
-	return render_template('index.html', submissions_filtered = submissions_filtered, filter_selection_dict = filter_selection_dict, submissions_len = submissions_len, submissions=submissions.json(), submissions_machine = submissions_machine.json(), title='Map')
+		submissions_filtered = submissions_all.to_json(orient = 'index')
+		submissions_table_filtered = submissions_table.to_json(orient = 'index')
+	return render_template('index.html', submissions_filtered = submissions_table_filtered, filter_selection_dict = filter_selection_dict, submissions_len = submissions_len, submissions=submissions.json(), submissions_machine = submissions_machine.json(), title='Map')
 
 @app.route('/filterform', methods = ['GET', 'POST'])
 def filter_data():
