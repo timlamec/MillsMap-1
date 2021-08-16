@@ -15,6 +15,7 @@ def count_items(dictionary, value, key1, key2 = None, multiple_choice = False):
 		else:
 			for item in dictionary:
 				if value in item[key1].split():
+					print(item[key1])
 					count += 1
 	return count
 

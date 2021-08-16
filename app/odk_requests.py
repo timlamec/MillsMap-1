@@ -47,16 +47,6 @@ import codecs
 import urllib
 
 
-def odata_submissions_table(base_url, auth, projectId, formId, table):
-    """
-    Fetch the submissions using the odata api. 
-    use submissions.json()['value'] to get a list of dicts, wherein 
-    each dict is a single submission with the form question names as keys.
-    """    
-    url = f'{base_url}/v1/projects/{projectId}/forms/{formId}.svc/{table}'
-    submissions = requests.get(url, auth = auth).json()
-    return submissions
-
 def odata_submissions(base_url, auth, projectId, formId):
     """
     Fetch the submissions using the odata api. 

@@ -2,7 +2,350 @@
 {% block content %}
 <html>
 <body>
- Hello World!
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-3" id="sidebar"> 
+                <div class="row">
+                    <div class="col-11 " >
+                        <div class="wrapper p-4">
+                        
+                            <nav >
+                                <div class="row">
+                                    <div class="col-8">
+                                        <img class="omdtz-logo" src="static/static_figures/OMDTZ-logo.png" alt="OMDTZ-logo">
+                                    </div>
+                                    <div class="col-4">
+                                        <img class="wfp-logo" src="static/static_figures/WFP.jpeg" alt="WFP-logo">
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="row">
+                                    <h1>Nationwide Mills Census in Tanzania</h1>
+                                         <p>OpenMap Development Tanzania (OMDTZ), supported by WFP Tanzania, is conducting a national-wide mills census from August through November 2021. The project aims at mapping approximately 13,000 mills and additional mills found in the field by collecting Geographical Positioning System (GPS) coordinates, operation, production capacity, type of mills, commodity milled, flour fortification, and other relevant information. Community mapping methodology employed for the mapping and data set will be available openly through here and  Openstreetmaps 
+                                        </p>
+                                    </div>
+                                    <hr>
+                            </nav>
+                        </div>
+                    </div>                   
+                    <div class="col-1">
+                        <button type="button" id="sidebarCollapse" class="btn btn-info">
+                            <span id="left-arrow">&#10096;&#10096;</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-1 hide" id="right-arrow">
+                <button type="button" id="sidebarOpen" class="btn btn-info">
+                    <span>&#10095;&#10095;</span>
+                </button>
+            </div>
+
+            <div class="col-6 mt-5" id="mapbar">
+                <div id="mapid" class="mb-3">
+                    <span class="ouro">
+                        <span class="left"><span class="anim"></span></span>
+                        <span class="right"><span class="anim"></span></span>
+                    </span>
+                </div>
+
+            </div>
+<!--                
+                <form enctype="multipart/form-data" method="get" action="/download_data">
+                    <button class = 'download-data-button btn-info btn' type="submit">Download all the data</button>
+                </form>
+                <div> -->
+                 <!--    <hr>
+                    <table class="table table-sortable">
+                        <thead>
+                            <tr>
+                                <th>Name of the mill</th>
+                                <th>Submission date</th>
+                                <th>Opening hours</th>
+                                <th>Owner of the mill</th>
+                                <th>Machine count</th>
+                                <th>Mill owner</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for submission in submissions['value'] %}
+                            <tr>
+                                <td>{{ submission['mills']['name_mill'] }}</td> 
+                                <td>{{ submission['today'] }}</td> 
+                                <td>{{ submission['Location']['opening_hours'] }}</td> 
+                                <td>{{ submission['interviewee']['owner_name'] }}</td> 
+                                <td>{{ submission['machines']['machine_count'] }}</td> 
+                                <td>{{ submission['interviewee']['mill_owner'] }}</td> 
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                    <hr>
+                        {% for i in range(0, submissions_len) %}
+                        <p>{{
+                             submissions_machine['value'][i]
+                            }}
+                        </p> 
+                        {% endfor %}
+                         </div>
+ -->
+
+            <div class="col-3 form-inline mb-3" id="filterbar">
+                <h1>Filters</h1>
+                <form method="get" action="#" id="filterForm" class="form">
+                    <label for="gender" class="form-label btn btn-info btn-block" data-toggle="collapse" data-target="#genderCheck" >Gender of the owner</label> <br>
+                    <div id="genderCheck" class="collapse">
+                        <div class="mb-3 form-check">
+                            <input class="form-check-input" type="checkbox" name=femaleField id="femaleField"></input>
+                            <label class="form-check-label" name=femaleField for="female">Female</label>
+                        </div>
+                        <div class="mb-3">
+                            <input class="form-check-input" type="checkbox" name=maleField id="maleField"></input>
+                            <label class="form-check-label" name=maleField for="male">Male</label>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary btn-block" id="filterSubmit">Filter Data</button>
+                </form> <br>
+                <p>
+                    {{ submissions['value'][0]}}
+                    </p>
+
+                </p>
+            </div>
+        </div>
+
+    </div>
+    <hr>
+    <div class="container">
+        <div class="row">
+            <h1>Statistics</h1>
+            <div class="col-6">
+                <div class="card m-5 shadow p-3 mb-5 bg-white rounded">
+                    <h3  class="card-title text-center">Functional mills</h3>
+                    <img src="static/figures/piechart.jpg" alt="piechart of functionality">
+                </div>
+                <div class="card m-5 shadow p-3 mb-5 bg-white rounded">
+                    <h3  class="card-title text-center">Mill types</h3>
+                    <img src="static/figures/barplot.jpg" alt="mill type barplot">
+                </div>
+            </div>
+            
+            <div class="col-6">
+                <div class="card m-5 shadow p-3 mb-5 bg-white rounded">
+                    <h3  class="card-title text-center">Commodity milled</h3>
+                    <img src="static/figures/barplot_commodity_milled.jpg" alt="commodity milled type barplot">
+                </div>
+                <div class="card m-5 shadow p-3 mb-5 bg-white rounded">
+                    <h3  class="card-title text-center">Flour is fortified</h3>
+                    <img src="static/figures/barplot_flour_fortified.jpg" alt="commodity milled type barplot">
+                </div>
+            </div>
+
+        </div>
+    </div>
+       
+<script>
+
+
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function () {
+        $('#sidebar').toggleClass('hide');
+        $('#mapbar').toggleClass('col-8');
+        $('#left-arrow').toggleClass('hide');
+        $('#right-arrow').toggleClass('hide');
+    });
+
+});
+
+$(document).ready(function () {
+    $('#sidebarOpen').on('click', function () {
+        $('#sidebar').toggleClass('hide');
+        $('#mapbar').toggleClass('col-8');
+        $('#left-arrow').toggleClass('hide');
+        $('#right-arrow').toggleClass('hide');
+    });
+
+});
+
+var form = document.getElementById('filterForm')
+
+//var form_elements = document.getElementById("filterForm").elements
+
+document.getElementById('filterSubmit').addEventListener("click", function(){
+    event.preventDefault();
+
+    console.log(form.elements['maleField'].checked);
+    //console.log(document.forms[1])
+    //var formData = new FormData(form[0])
+    //console.log('test' + formData.get('femaleField'))
+
+
+    // var form_elements = document.getElementById("filterForm").elements 
+    // alert(data)
+    // console.log(data)
+
+    // var form_data = new FormData(data[0])
+    // alert(data.get('male'))
+
+}); 
+
+  // center of the map
+var center = [0.0, 20];
+// Create the map
+var map = new L.map('mapid', {
+    fullscreenControl: true
+    }).setView(center, 3);
+// Set up the OSM layer
+L.tileLayer(
+  'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: 'Data © <a href="http://osm.org/copyright">OpenStreetMap</a>',
+    maxZoom: 18,
+  }).addTo(map);
+
+
+var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 18,
+    attribution: '&copy; <a href="https://openstreetmap.org/copyright" target="_blank">OpenStreetMap contributors' +
+        '</a> ',
+    tileSize: 256,
+});
+var googleSat = L.tileLayer('http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+    maxZoom: 20,
+    subdomains:['mt0','mt1','mt2','mt3']
+});
+var googleTer = L.tileLayer('http://{s}.google.com/vt/lyrs=p&x={x}&y={y}&z={z}', {
+    maxZoom: 20,
+    subdomains:['mt0','mt1','mt2','mt3']
+});
+var hotLayer = L.tileLayer('http://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+    maxZoom: 20,
+})
+var baseMaps = {
+    "OpenStreetMap": osmLayer,
+    "Google Satellite": googleSat,
+    "Google Terrain": googleTer,
+    "HOTOSM": hotLayer
+} //here more layers: https://www.tutorialspoint.com/leafletjs/leafletjs_getting_started.htm
+
+L.control.layers(baseMaps).addTo(map);
+osmLayer.addTo(map);
+// add a scale at at your map.
+var scale = L.control.scale().addTo(map);
+
+var markers = new L.MarkerClusterGroup();
+
+//var markers = L.featureGroup();
+markers.addTo(map);
+
+// Get unique values for a submission
+var submission_values = {{ submissions|tojson }}
+var submission_values = submission_values['value']
+var value_arr = [];
+for(i in submission_values){
+    var value = submission_values[i]['interviewee']['ownership']
+    value_arr.push(value)
+}
+let unique_values = [new Set(value_arr)];
+
+
+{% for i in range(0, (submissions_len)) %}
+    
+    var submission ={{submissions.value[i]|tojson}}
+    try {
+        var coordinates = submission['Location']['mill_gps']['coordinates']
+    }
+    catch(err) {
+        console.log("No GPS coordinates found for the submission", submission)
+    }
+    color = 'blue'
+    // {% if  submissions_machine['value'][i]['operational_mill'] == 'yes'%}
+    //     var color = 'green';
+    // {% else %}
+    //     var color = 'red';
+    // {% endif %}
+    var lng = coordinates[1]
+    var lat = coordinates[0]
+    var marker = L.circleMarker([lng, lat],{stroke: false, fillOpacity: 0.8});
+    marker.setStyle({fillColor: color});
+    markers.addLayer(marker);
+
+    var submission_id = {{ submissions['value'][i]['__id']|tojson }}
+    var machines = {{ submissions_machine['value']|tojson }}
+    
+    //{% for machine in machines %}
+        //console.log(machine)
+    //{% endfor %}
+
+    // const machine_list = []
+    // {% for machine in submissions_machine %}
+    //     console.log(machine)
+    // {% endfor %}
+
+    toolTip = 
+        "<dt>Number of milling machines: {{ submissions['value'][i]['mills']['number_milling_machines'] }}</dt>" +
+        "<dt>Submissions ID: {{ submissions_machine['value'][i]['__Submissions-id']}}</dt>" 
+        // "<dt>Mill type: {{ submissions_machine['value'][i]['mill_type']}}</dt>" + 
+        // "<dt> Mill is operational: {{ submissions_machine['value'][i]['operational_mill'] }} </dt>"
+    marker.bindTooltip(toolTip);
+{% endfor %}
+map.isFullscreen() // Is the map fullscreen?
+map.toggleFullscreen() // Either go fullscreen, or cancel the existing fullscreen.
+ 
+// // `fullscreenchange` Event that's fired when entering or exiting fullscreen.
+// map.on('fullscreenchange', function () {
+//     if (map.isFullscreen()) {
+//         console.log('entered fullscreen');
+//     } else {
+//         console.log('exited fullscreen');
+//     }
+// });
+ 
+L.Control.Fullscreen
+map.fitBounds(markers.getBounds());
+/**
+*
+* @param{HTMLTableElement} table to sort
+* @param{number} index of the column to sort
+* @param{boolean} determines if the sorting will be ascending order
+* 
+**/
+function sortTableByColumn(table, column, asc = true){
+    const dirModifier = asc ? 1 : -1;
+    const tBody = table.tBodies[0];
+    const rows = Array.from(tBody.querySelectorAll('tr'));
+
+    //sort each row
+    const sortedRows = rows.sort((a,b) => {
+        const aColText = a.querySelector(`td:nth-child(${ column + 1 })`).textContent.trim();
+        const bColText = b.querySelector(`td:nth-child(${ column + 1 })`).textContent.trim();
+        return aColText > bColText ? (1 * dirModifier) : (-1 * dirModifier);
+    });
+
+    // Remove all existing TRs from the table
+    while (tBody.firstChild){
+        tBody.removeChild(tBody.firstChild);
+    }
+
+    // Add the newly sorted rows
+    tBody.append(...sortedRows);
+
+    // Remember how the column is currently sorted
+    table.querySelectorAll('th').forEach(th => th.classList.remove("th-sort-asc", "th-sort-desc"));
+    table.querySelector(`th:nth-child(${ column + 1})`).classList.toggle("th-sort-asc", asc)
+    table.querySelector(`th:nth-child(${ column + 1})`).classList.toggle("th-sort-desc", !asc)
+}
+
+document.querySelectorAll(".table-sortable th").forEach(headerCell => {
+    headerCell.addEventListener("click", () =>{
+        const tableElement = headerCell.parentElement.parentElement.parentElement;
+        const headerIndex = Array.prototype.indexOf.call(headerCell.parentElement.children, headerCell);
+        const currentIsAscending = headerCell.classList.contains('th-sort-asc');
+
+        sortTableByColumn(tableElement, headerIndex, !currentIsAscending);
+   });
+});
+//sortTableByColumn(document.querySelector('table'),1)
+</script>
 </body>
 </html>
 
