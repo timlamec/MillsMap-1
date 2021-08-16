@@ -93,20 +93,13 @@
             <div class="col-3 form-inline mb-3" id="filterbar">
                 <h1>Filters</h1>
                 <form enctype="multipart/form-data" method="post" action="/filterform" id="filterForm" class="form">
-                    <label class="form-label btn btn-info btn-block" data-toggle="collapse" data-target="#genderCheck" >Gender of the owner</label> <br>
-                    <div id="genderCheck" class="collapse">
-                        <div class="mb-3 form-check">
-                            <input class="form-check-input" type="checkbox" name=femaleField></input>
-                            <label class="form-check-label" for="female">Female</label>
-                        </div>
-                    </div>
 
                     {% for filterform_key in filter_selection_dict %}
                     <label class="form-label btn btn-info btn-block" data-toggle="collapse" data-target="#{{ filterform_key }}">{{ filterform_key }}</label> <br>
                     <div id="{{ filterform_key }}" class="collapse">
                         {% for filterform_value in filter_selection_dict[filterform_key] %}
                             <div class="mb-3">
-                                <input class="form-check-input" type="checkbox" name={{ filterform_value }} ></input>
+                                <input class="form-check-input" type="checkbox" checked = 'True' name={{ filterform_value }} ></input>
                                 <label class="form-check-label" name={{ filterform_value }}>{{ filterform_value }}</label>
                             </div>
                         {% endfor    %}
@@ -250,6 +243,9 @@ for(i in submission_values){
 }
 let unique_values = [new Set(value_arr)];
 
+
+var submissions_filtered = {{ submissions_filtered|tojson }};
+console.log(submissions_filtered);
 
 {% for i in range(0, (submissions_len)) %}
     
