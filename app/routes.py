@@ -1,15 +1,10 @@
 from flask import render_template, send_file, send_from_directory, request
 
 
-
-
-from flask_wtf import FlaskForm
-from wtforms import SubmitField
 import requests, os
 from werkzeug.wrappers import Response
 import json
 import pandas as pd
-from pandas.io.json import json_normalize
 
 from app import app
 from app.odk_requests import odata_submissions, export_submissions, odata_submissions_machine, odata_submissions_table
@@ -67,11 +62,9 @@ def index():
 	machine_filter_list = ['commodity_milled', 'mill_type', 'operational_mill', 'non_operational', 'energy_source']
 	mill_filter_selection = get_filters(mill_filter_list, submissions_all)
 	machine_filter_selection = get_filters(machine_filter_list, submissions_all)
-	print(machine_filter_selection)
 
-	submissions_filtered = submissions_all.to_json(orient = 'index')
 	submissions_table_filtered = submissions_table.to_json(orient = 'index')
-	return render_template('index.html', submissions_filtered = submissions_table_filtered, mill_filter_selection = mill_filter_selection, submissions=submissions.json(), title='Map')
+	return render_template('index.html', submissions_filtered = submissions_table_filtered, mill_filter_selection = mill_filter_selection, machine_filter_selection = machine_filter_selection, title='Map')
 
 @app.route('/filterform', methods = ['GET', 'POST'])
 def filter_data():
@@ -103,7 +96,9 @@ def filter_data():
 
 		mill_filter_list = ['mill_owner','flour_fortified', 'flour_fortified_standard']
 		machine_filter_list = ['commodity_milled', 'mill_type', 'operational_mill', 'non_operational', 'energy_source']
-		mill_filter_selection = get_filters(mill_filter_list, submissions_all)
+		mill_filter_selection = get_filters(mill_filter_list, submissions_table)
+		#machine_filter_selection = get_filters(machine_filter_list, submissions_all)
+
 
 	return render_template('index.html', submissions_filtered = submissions_table_filtered, mill_filter_selection = mill_filter_selection, title='Map', choices_dict = choices_dict)
 	#return render_template('filterform.html', choices = choices)
