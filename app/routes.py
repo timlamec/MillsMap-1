@@ -97,19 +97,37 @@ def filter_data():
 		submissions_all = submissions_table.merge(submissions_machine_table, left_on = '__id', right_on = '__Submissions-id')
 
 
-
 		# Filtering based on the form for machines
 		for dict_key, dict_values in zip(list(choices_dict.keys()), list(choices_dict.values())):
-			submissions_machine_table = submissions_machine_table.loc[submissions_all[dict_key].isin(dict_values)]
+			if dict_key in submissions_machine_table.columns:
+				submissions_machine_table = submissions_machine_table.loc[submissions_machine_table[dict_key].isin(dict_values)]
 		submissions_table_filtered_machine = submissions_machine_table.to_dict(orient = 'index')
 		#submissions_table_filtered_machine_dict = json.loads(submissions_table_filtered_machine)
 		#{k: [d[k] for d in dicts] for k in dicts[0]}
 
 		# Filtering based on the form for all
+		include_all_lists = []
 		for dict_key, dict_values in zip(list(choices_dict.keys()), list(choices_dict.values())):
-			submissions_table_filtered = submissions_table.loc[submissions_table[dict_key].isin(dict_values)]
-		submissions_table_filtered.set_index('__id', inplace=True)
-		submissions_filtered_dict = submissions_table_filtered.to_dict(orient='index')
+			if dict_key in submissions_table.columns:
+				include_list = []
+				for index, row in submissions_table.iterrows():
+					included = submissions_table[dict_key].str.split()[index]
+					if included == None:
+						included = 'none'
+					else: 
+						included = bool(set(included).intersection(dict_values))
+						include_list.append(included)
+
+				include_all_lists.append(include_list)
+
+		include_all_lists_df = pd.DataFrame(include_all_lists)
+		include_rows = [all(include_all_lists_df[col]) for col in include_all_lists_df]
+		submissions_table = submissions_table[include_rows]
+		print(len(submissions_table))
+
+
+		submissions_table.set_index('__id', inplace=True)
+		submissions_filtered_dict = submissions_table.to_dict(orient='index')
 		#submissions_table_filtered_dict = json.loads(submissions_table_filtered)
 
 		# Make submissions_table_filtered into dictionary of dictionaries with machine information nested within
