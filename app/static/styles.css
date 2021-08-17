@@ -23,6 +23,9 @@ thead{
     background: aliceblue;
 }
 
+.social-media-icon{
+    float:left;
+}
 
 img{
 width: 100%;

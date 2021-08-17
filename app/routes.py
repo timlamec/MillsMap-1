@@ -88,11 +88,36 @@ def filter_data():
 		submissions_table = nested_dictionary_to_df(submissions_table)
 		submissions_machine_table = nested_dictionary_to_df(submissions_machine_table)
 		submissions_all = submissions_table.merge(submissions_machine_table, left_on = '__id', right_on = '__Submissions-id')
-		
-		# Filtering based on the form
+
+
+
+		# Filtering based on the form for machines
 		for dict_key, dict_values in zip(list(choices_dict.keys()), list(choices_dict.values())):
-			submissions_table = submissions_table.loc[submissions_table[dict_key].isin(dict_values)]
-		submissions_table_filtered = submissions_table.to_json(orient = 'index')
+			submissions_machine_table = submissions_machine_table.loc[submissions_all[dict_key].isin(dict_values)]
+		submissions_table_filtered_machine = submissions_machine_table.to_dict(orient = 'index')
+		#submissions_table_filtered_machine_dict = json.loads(submissions_table_filtered_machine)
+		#{k: [d[k] for d in dicts] for k in dicts[0]}
+
+		# Filtering based on the form for all
+		for dict_key, dict_values in zip(list(choices_dict.keys()), list(choices_dict.values())):
+			submissions_table_filtered = submissions_table.loc[submissions_table[dict_key].isin(dict_values)]
+		submissions_table_filtered.set_index('__id', inplace=True)
+		submissions_filtered_dict = submissions_table_filtered.to_dict(orient='index')
+		#submissions_table_filtered_dict = json.loads(submissions_table_filtered)
+
+		# Make submissions_table_filtered into dictionary of dictionaries with machine information nested within
+		submissions_dict = submissions_filtered_dict
+		for submission_id in submissions_dict:
+			for machine_index in submissions_table_filtered_machine:
+				machine_submission_id = submissions_table_filtered_machine[machine_index]['__Submissions-id']
+				machine_id = submissions_table_filtered_machine[machine_index]['__id']
+				if machine_submission_id == submission_id:
+					submissions_dict[submission_id][machine_id] = submissions_table_filtered_machine[machine_index]
+
+		submissions_filtered_json = json.dumps(submissions_dict)
+
+
+		#print(submissions_table_filtered_machine.head())
 
 		mill_filter_list = ['mill_owner','flour_fortified', 'flour_fortified_standard']
 		machine_filter_list = ['commodity_milled', 'mill_type', 'operational_mill', 'non_operational', 'energy_source']
@@ -100,7 +125,7 @@ def filter_data():
 		#machine_filter_selection = get_filters(machine_filter_list, submissions_all)
 
 
-	return render_template('index.html', submissions_filtered = submissions_table_filtered, mill_filter_selection = mill_filter_selection, title='Map', choices_dict = choices_dict)
+	return render_template('index.html', submissions_filtered = submissions_filtered_json, mill_filter_selection = mill_filter_selection, title='Map', choices_dict = choices_dict)
 	#return render_template('filterform.html', choices = choices)
 
 @app.route('/download_data/')
