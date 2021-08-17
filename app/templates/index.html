@@ -254,6 +254,19 @@ for (submission_index in submissions_filtered_json){
     var marker = L.circleMarker([lng, lat],{stroke: false, fillOpacity: 0.8});
     marker.setStyle({fillColor: color});
     markers.addLayer(marker);
+
+    mill_toolTip = 
+        "<dt>Number of milling machines: " + submission['number_milling_machines'] + "</dt>" 
+    var machine_toolTip ="<dt>Mill </dt>";
+    for (machine_index in submission['machine']){
+        var machine = submission['machine'][machine_index];
+        machine_toolTip.concat("<dt>Mill type: ");
+        machine_toolTip.concat(machine['mill_type']);
+        machine_toolTip.concat("</dt>");
+        console.log(machine_toolTip);
+    };
+    console.log(machine_toolTip);   
+    marker.bindTooltip(mill_toolTip);
 }
     
     
