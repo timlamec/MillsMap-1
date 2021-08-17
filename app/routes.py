@@ -83,7 +83,6 @@ def filter_data():
 			if choice_element not in choices_dict:
 				choices_dict[choice_element] = []
 			choices_dict[choice_element].append(choice.split(", ")[1])
-		print(choices_dict)
 
 
 		submissions = odata_submissions(base_url, aut, projectId, formId)
@@ -96,72 +95,22 @@ def filter_data():
 		submissions_table = nested_dictionary_to_df(submissions_table)
 		submissions_machine_table = nested_dictionary_to_df(submissions_machine_table)
 		submissions_all = submissions_table.merge(submissions_machine_table, left_on = '__id', right_on = '__Submissions-id')
-		submissions_table_flat = submissions_table
-		submissions_machine_table_flat = submissions_machine_table
+
 
 
 		# Filtering based on the form for machines
 		for dict_key, dict_values in zip(list(choices_dict.keys()), list(choices_dict.values())):
-			if(dict_key in submissions_machine_table_flat.columns):
-				print('dict key in machine')
-				print(dict_key)
-				submissions_machine_table_flat = submissions_machine_table_flat.loc[submissions_machine_table_flat[dict_key].isin(dict_values)]
-		#make a dictionary of the filtered table
-		print(submissions_machine_table_flat.shape[0])
-		print(submissions_machine_table_flat.shape[0])
-		submissions_table_filtered_machine = submissions_machine_table_flat.to_dict(orient = 'index')
+			submissions_machine_table = submissions_machine_table.loc[submissions_all[dict_key].isin(dict_values)]
+		submissions_table_filtered_machine = submissions_machine_table.to_dict(orient = 'index')
+		#submissions_table_filtered_machine_dict = json.loads(submissions_table_filtered_machine)
+		#{k: [d[k] for d in dicts] for k in dicts[0]}
 
-		def intersection_lists_column(column_values, intersection_values):
-			return column_values.intersection(intersection_values)
-
-
-
-		# Filtering based on the form for submissions
+		# Filtering based on the form for all
 		for dict_key, dict_values in zip(list(choices_dict.keys()), list(choices_dict.values())):
-			if(dict_key in submissions_table_flat.columns):
-				print(dict_key)
-				print(dict_values)
-
-				
-
-				# matches = [test_value in dict_values for test_value in  submissions_table_flat[dict_key]]
-				# if dict_key == 'flour_fortified_standard':
-				# 	puuu
-
-				# submissions_table_flat = submissions_table_flat[matches]
-
-				in_list = []
-				for value in submissions_table_flat[dict_key].str.split():
-					if value == None:
-						in_list.append(False)
-					elif type(value) == list:
-						if set(value).intersection(dict_values):
-							in_list.append(True)
-						else:
-							in_list.append(False)
-					else:
-						in_list.append(False)
-						print('NOTHING!')
-
-
-				print(len(in_list))
-				submissions_table_flat = submissions_table_flat[in_list]
-
-
-				# .apply(intersection_lists_column, args=())
-				#submissions_table_flat = submissions_table_flat.loc[any(submissions_table_flat[dict_key].str.split()).isin(dict_values)]
-				
-				print('submissions_table_flat.shape[0]')
-				print(submissions_table_flat.shape[0])
-
-		submissions_table_filtered = submissions_table_flat.copy()
-		print('submissions_table_flat.shape[0]')
-		print(submissions_table_flat.shape[0])
+			submissions_table_filtered = submissions_table.loc[submissions_table[dict_key].isin(dict_values)]
 		submissions_table_filtered.set_index('__id', inplace=True)
-		print('submissions_table_filtered.shape[0]')
-		print(submissions_table_filtered.shape[0])
 		submissions_filtered_dict = submissions_table_filtered.to_dict(orient='index')
-
+		#submissions_table_filtered_dict = json.loads(submissions_table_filtered)
 
 		# Make submissions_table_filtered into dictionary of dictionaries with machine information nested within
 		submissions_dict = submissions_filtered_dict
@@ -170,7 +119,7 @@ def filter_data():
 				machine_submission_id = submissions_table_filtered_machine[machine_index]['__Submissions-id']
 				machine_id = submissions_table_filtered_machine[machine_index]['__id']
 				if machine_submission_id == submission_id:
-					submissions_dict[submission_id]['machine'] = {machine_id:submissions_table_filtered_machine[machine_index]}
+					submissions_dict[submission_id][machine_id] = submissions_table_filtered_machine[machine_index]
 
 		submissions_filtered_json = json.dumps(submissions_dict)
 
