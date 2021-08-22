@@ -84,7 +84,7 @@ def filter_data():
 				choices_dict[choice_element] = []
 			choices_dict[choice_element].append(choice.split(", ")[1])
 
-
+		print(choices_dict)
 		submissions = odata_submissions(base_url, aut, projectId, formId)
 		submissions_machine = odata_submissions_machine(base_url, aut, projectId, formId)
 		#charts(submissions_machine.json()['value'], submissions.json()['value'])
@@ -96,6 +96,9 @@ def filter_data():
 		submissions_machine_table = nested_dictionary_to_df(submissions_machine_table)
 		submissions_all = submissions_table.merge(submissions_machine_table, left_on = '__id', right_on = '__Submissions-id')
 
+		mill_filter_list = ['mill_owner','flour_fortified', 'flour_fortified_standard']
+		machine_filter_list = ['commodity_milled', 'mill_type', 'operational_mill', 'non_operational', 'energy_source']
+		mill_filter_selection = get_filters(mill_filter_list, submissions_all)
 
 		# Filtering based on the form for machines
 		for dict_key, dict_values in zip(list(choices_dict.keys()), list(choices_dict.values())):
@@ -106,21 +109,18 @@ def filter_data():
 		#{k: [d[k] for d in dicts] for k in dicts[0]}
 
 		# Filtering based on the form for the mill
-
-		submissions_table['flour_fortified_standard'] = list(map(str, list(submissions_table['flour_fortified_standard'])))
-		print(submissions_table['flour_fortified_standard'])
-
-
+		#if all the selections have been deselected from one category
+		for mill_key in mill_filter_selection:	
+			if mill_key not in list(choices_dict.keys()):
+				submissions_table.drop(submissions_table.index, inplace=True)
+		#filter based on the choices
 		for dict_key, dict_values in zip(list(choices_dict.keys()), list(choices_dict.values())):
 			if dict_key in submissions_table.columns:
-				submissions_table_filtered = submissions_table.loc[submissions_table[dict_key].isin(dict_values)]
-		submissions_table_filtered.set_index('__id', inplace=True)
+				submissions_table[dict_key] = list(map(str, list(submissions_table[dict_key])))
+				submissions_table = submissions_table.loc[submissions_table[dict_key].isin(dict_values)]
+		submissions_table.set_index('__id', inplace=True)
 
-
-		print(submissions_table_filtered.head())
-		print(submissions_table_filtered['flour_fortified_standard'])
-
-		submissions_filtered_dict = submissions_table_filtered.to_dict(orient='index')
+		submissions_filtered_dict = submissions_table.to_dict(orient='index')
 		#submissions_table_filtered_dict = json.loads(submissions_table_filtered)
 
 		# Make submissions_table_filtered into dictionary of dictionaries with machine information nested within
@@ -133,12 +133,6 @@ def filter_data():
 					submissions_dict[submission_id][machine_id] = submissions_table_filtered_machine[machine_index]
 
 		submissions_filtered_json = json.dumps(submissions_dict)
-
-
-
-		mill_filter_list = ['mill_owner','flour_fortified', 'flour_fortified_standard']
-		machine_filter_list = ['commodity_milled', 'mill_type', 'operational_mill', 'non_operational', 'energy_source']
-		mill_filter_selection = get_filters(mill_filter_list, submissions_all)
 
 
 	return render_template('index.html', submissions_filtered = submissions_filtered_json, mill_filter_selection = mill_filter_selection, title='Map', choices_dict = choices_dict)

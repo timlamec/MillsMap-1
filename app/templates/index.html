@@ -71,10 +71,14 @@
                         {% for filterform_value in mill_filter_selection[filterform_key] %}
                             <div class="mb-3">
                                 {% if choices_dict %}
-                                    {% if filterform_value in choices_dict[filterform_key] %}
-                                    <input class="form-check-input" type="checkbox" checked = 'True' name="{{ filterform_key }}, {{filterform_value }}" ></input>
+                                    {% if filterform_key in choices_dict.keys() %}
+                                        {% if filterform_value in choices_dict[filterform_key] %}
+                                        <input class="form-check-input" type="checkbox" checked = 'True' name="{{ filterform_key }}, {{filterform_value }}" ></input>
+                                        {% else %}
+                                        <input class="form-check-input" type="checkbox" name="{{ filterform_key }}, {{filterform_value }}" ></input>
+                                        {% endif %}
                                     {% else %}
-                                    <input class="form-check-input" type="checkbox" name="{{ filterform_key }}, {{filterform_value }}" ></input>
+                                        <input class="form-check-input" type="checkbox" name="{{ filterform_key }}, {{filterform_value }}" ></input>
                                     {% endif %}
                                 {% else %}
                                 <input class="form-check-input" type="checkbox" checked = 'True' name="{{ filterform_key }}, {{filterform_value }}" ></input>
