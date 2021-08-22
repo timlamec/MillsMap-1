@@ -19,19 +19,31 @@ def get_filters(filter_column_names, df):
 	filter_columns = df.loc[:,filter_column_names]
 	for col in filter_columns:
 		values_list = []
-		values_list = filter_columns.loc[:,col].str.split()
+		values_list = filter_columns.loc[:,col]
 		unique_values_list =[]
-		for item in (values_list):
-			if type(item) == list:
-				for sub_item in item:
-					if sub_item not in unique_values_list:
-						unique_values_list.append(sub_item)
-			else:
-				if sub_item not in unique_values_list:
-					unique_values_list.append(sub_item)
+		unique_values_list = list(map(str, list(set(values_list))))
 		filter_selection[col] = unique_values_list
+		print(unique_values_list)
 	return filter_selection
 
+
+# def get_filters_list(filter_column_names, df):
+# 	filter_selection = {} 
+# 	filter_columns = df.loc[:,filter_column_names]
+# 	for col in filter_columns:
+# 		values_list = []
+# 		values_list = filter_columns.loc[:,col].str.split()
+# 		unique_values_list =[]
+# 		for item in (values_list):
+# 			if type(item) == list:
+# 				for sub_item in item:
+# 					if sub_item not in unique_values_list:
+# 						unique_values_list.append(sub_item)
+# 			else:
+# 				if sub_item not in unique_values_list:
+# 					unique_values_list.append(sub_item)
+# 		filter_selection[col] = unique_values_list
+# 	return filter_selection
 
 def nested_dictionary_to_df(nested_table):
 	while True:

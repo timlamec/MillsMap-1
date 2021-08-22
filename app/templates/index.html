@@ -235,6 +235,10 @@ for (submission_index in submissions_filtered_json){
     var marker = L.circleMarker([lng, lat],{stroke: false, fillOpacity: 0.8});
     marker.setStyle({fillColor: color});
     markers.addLayer(marker);
+
+    toolTip = 
+        "<dt>Number of milling machines:" + submission['number_milling_machines'] + "</dt>" 
+    marker.bindTooltip(toolTip);
 }
     
     
