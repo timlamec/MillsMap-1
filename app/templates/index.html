@@ -240,9 +240,29 @@ for (submission_index in submissions_filtered_json){
     marker.setStyle({fillColor: color});
     markers.addLayer(marker);
 
-    toolTip = 
+    var toolTip = 
         "<dt>Number of milling machines:" + submission['number_milling_machines'] + "</dt>" 
+    toolTip += "<hr>"
+
+    console.log(submission)
+    counter = 0
+    for (machine_index in submission['machines']){
+        counter += 1
+        toolTip += "<dt> Machine: " + counter + "</dt>";
+        toolTip += "<div> ID: " + submission['machines'][machine_index]['__id'] + "</div>";
+        toolTip += "<div> Type of mill: ";
+        toolTip += submission['machines'][machine_index]['mill_type'] + "</div>";
+        toolTip += "<div> Operational: ";
+        toolTip += submission['machines'][machine_index]['operational_mill'] + "</div>";
+        toolTip += "<div> Energy source: ";
+        toolTip += submission['machines'][machine_index]['energy_source'] + "</div>";
+
+        //console.log(submission['machines'][machine_index]['energy_source'])
+        //console.log(submission['machines'][machine_index])
+    }
+    console.log(toolTip)
     marker.bindTooltip(toolTip);
+
 }
     
     

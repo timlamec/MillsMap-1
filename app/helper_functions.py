@@ -23,7 +23,6 @@ def get_filters(filter_column_names, df):
 		unique_values_list =[]
 		unique_values_list = list(map(str, list(set(values_list))))
 		filter_selection[col] = unique_values_list
-		print(unique_values_list)
 	return filter_selection
 
 

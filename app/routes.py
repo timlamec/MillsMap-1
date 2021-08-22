@@ -84,7 +84,6 @@ def filter_data():
 				choices_dict[choice_element] = []
 			choices_dict[choice_element].append(choice.split(", ")[1])
 
-		print(choices_dict)
 		submissions = odata_submissions(base_url, aut, projectId, formId)
 		submissions_machine = odata_submissions_machine(base_url, aut, projectId, formId)
 		#charts(submissions_machine.json()['value'], submissions.json()['value'])
@@ -126,11 +125,13 @@ def filter_data():
 		# Make submissions_table_filtered into dictionary of dictionaries with machine information nested within
 		submissions_dict = submissions_filtered_dict
 		for submission_id in submissions_dict:
+			submissions_dict[submission_id]['machines'] = {}
 			for machine_index in submissions_table_filtered_machine:
 				machine_submission_id = submissions_table_filtered_machine[machine_index]['__Submissions-id']
 				machine_id = submissions_table_filtered_machine[machine_index]['__id']
 				if machine_submission_id == submission_id:
-					submissions_dict[submission_id][machine_id] = submissions_table_filtered_machine[machine_index]
+					submissions_dict[submission_id]['machines'][machine_index] = submissions_table_filtered_machine[machine_index]
+
 
 		submissions_filtered_json = json.dumps(submissions_dict)
 
