@@ -35,6 +35,9 @@ object-fit: cover;
     background: aliceblue;
 }
 
+.btn-block{
+    display: -webkit-inline-box!important;
+}
 /* SideNav */
 .wrapper {
     display: flex;
