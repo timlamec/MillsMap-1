@@ -16,6 +16,14 @@ from app.odk_requests import odata_submissions, export_submissions, odata_submis
 from app.helper_functions import get_filters, nested_dictionary_to_df
 from app.graphics import count_items, unique_key_counts, charts
 
+#For time testing
+import time
+def timer(message, function):
+    tic = time.perf_counter()
+    tutorial = feed.get_article(0)
+    toc = time.perf_counter()
+    print(f"{message}' '{toc - tic:0.4f} seconds")
+
 secret_tokens = json.load(open('secret_tokens.json', 'r'))
 email = secret_tokens['email']
 password = secret_tokens['password']
@@ -44,24 +52,36 @@ headers = {
 url = f'{base_url}/v1/projects/'
 r =requests.get(url, headers=headers)
 
-def dict_to_df(dict):
-	return df
+
 
 @app.route('/')
 @app.route('/index')
 @app.route('/home')
 def index():
 
+	start_time = time.perf_counter()
+
 	submissions = odata_submissions(base_url, aut, projectId, formId)
 	submissions_machine = odata_submissions_machine(base_url, aut, projectId, formId)
-	charts(submissions_machine.json()['value'], submissions.json()['value'])
+
+	requests_complete_time = time.perf_counter()
+
 	submissions_table =  pd.DataFrame(submissions.json()['value'])
 	submissions_machine_table =  pd.DataFrame(submissions_machine.json()['value'])
+
+	pd_df_complete_time = time.perf_counter()
+
+	charts(submissions_machine.json()['value'], submissions.json()['value'])
+
+	charts_complete_time = time.perf_counter()
+
 
 	# Dataframe with nested dictionaries to flat dictionary
 	submissions_table = nested_dictionary_to_df(submissions_table)
 	submissions_machine_table = nested_dictionary_to_df(submissions_machine_table)
 	submissions_all = submissions_table.merge(submissions_machine_table, left_on = '__id', right_on = '__Submissions-id')
+
+	tables_to_flat_complete_time = time.perf_counter()
 
 
 	mill_filter_list = ['mill_owner','flour_fortified', 'flour_fortified_standard']
@@ -69,9 +89,31 @@ def index():
 	mill_filter_selection = get_filters(mill_filter_list, submissions_all)
 	machine_filter_selection = get_filters(machine_filter_list, submissions_all)
 
-	submissions_filtered = submissions_all.to_json(orient = 'index')
-	submissions_table_filtered = submissions_table.to_json(orient = 'index')
-	return render_template('index.html', submissions_filtered = submissions_table_filtered, mill_filter_selection = mill_filter_selection, submissions=submissions.json(), title='Map')
+	get_filters_complete_time = time.perf_counter()
+
+	submissions_table_filtered_machine = submissions_machine_table.to_dict(orient = 'index')
+
+	submissions_filtered_dict = submissions_table.to_dict(orient='index')
+	#submissions_table_filtered_dict = json.loads(submissions_table_filtered)
+
+	# Make submissions_table_filtered into dictionary of dictionaries with machine information nested within
+	submissions_dict = submissions_filtered_dict
+	for submission_id in submissions_dict:
+		submissions_dict[submission_id]['machines'] = {}
+		for machine_index in submissions_table_filtered_machine:
+			machine_submission_id = submissions_table_filtered_machine[machine_index]['__Submissions-id']
+			machine_id = submissions_table_filtered_machine[machine_index]['__id']
+			if machine_submission_id == submission_id:
+				submissions_dict[submission_id]['machines'][machine_index] = submissions_table_filtered_machine[machine_index]
+
+
+	submissions_filtered_json = json.dumps(submissions_dict)
+
+	to_json_complete_time = time.perf_counter()
+
+	print(f'Requests are complete at {requests_complete_time-start_time}s, pandas dataframes are complete at {pd_df_complete_time-requests_complete_time}s, charts are complete at {charts_complete_time-pd_df_complete_time}s, tables are flat in {tables_to_flat_complete_time-charts_complete_time}s, got filters in {get_filters_complete_time-tables_to_flat_complete_time}s, and to_json in {to_json_complete_time-get_filters_complete_time}s')
+
+	return render_template('index.html', submissions_filtered = submissions_filtered_json, mill_filter_selection = mill_filter_selection, title='Map')
 
 @app.route('/filterform', methods = ['GET', 'POST'])
 def filter_data():

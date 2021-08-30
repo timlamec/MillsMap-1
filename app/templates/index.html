@@ -92,6 +92,7 @@
  -->
                     <button class="btn btn-primary btn-block" type = 'submit' id="filterSubmit">Filter Data</button>
                 </form> <br>
+
             </div>
         </div>
 
@@ -182,6 +183,8 @@ L.tileLayer(
     attribution: 'Data © <a href="http://osm.org/copyright">OpenStreetMap</a>',
     maxZoom: 18,
   }).addTo(map);
+// L.tileLayer.bing(bing_key).addTo(map)
+//var bing = new L.BingLayer(bing_key);
 
 
 var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -201,6 +204,9 @@ var googleTer = L.tileLayer('http://{s}.google.com/vt/lyrs=p&x={x}&y={y}&z={z}',
 var hotLayer = L.tileLayer('http://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
     maxZoom: 20,
 })
+var mqi = L.tileLayer("http://{s}.mqcdn.com/tiles/1.0.0/sat/{LOD}/{X}/{Y}.png", {
+    subdomains: ['otile1','otile2','otile3','otile4']
+});
 var baseMaps = {
     "OpenStreetMap": osmLayer,
     "Google Satellite": googleSat,
@@ -210,6 +216,7 @@ var baseMaps = {
 
 L.control.layers(baseMaps).addTo(map);
 osmLayer.addTo(map);
+
 // add a scale at at your map.
 var scale = L.control.scale().addTo(map);
 
@@ -240,10 +247,10 @@ for (submission_index in submissions_filtered_json){
     var toolTip = 
         "<dt>Number of milling machines:" + submission['number_milling_machines'] + "</dt>" 
     toolTip += "<hr>"
-
-    console.log(submission)
+    console.log(submission['machines'])
     counter = 0
     for (machine_index in submission['machines']){
+        console.log(submission['machines']['machine_index'])
         counter += 1
         toolTip += "<dt> Machine: " + counter + "</dt>";
         toolTip += "<div> ID: " + submission['machines'][machine_index]['__id'] + "</div>";
@@ -257,7 +264,6 @@ for (submission_index in submissions_filtered_json){
         //console.log(submission['machines'][machine_index]['energy_source'])
         //console.log(submission['machines'][machine_index])
     }
-    console.log(toolTip)
     marker.bindTooltip(toolTip);
 
 }
