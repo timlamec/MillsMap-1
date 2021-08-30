@@ -221,10 +221,8 @@ promise.then(function(submissions_filtered) {
         var toolTip = 
             "<dt>Number of milling machines:" + submission['number_milling_machines'] + "</dt>" 
         toolTip += "<hr>"
-        console.log(submission['machines'])
         counter = 0
         for (machine_index in submission['machines']){
-            console.log(submission['machines']['machine_index'])
             counter += 1
             toolTip += "<dt> Machine: " + counter + "</dt>";
             toolTip += "<div> ID: " + submission['machines'][machine_index]['__id'] + "</div>";

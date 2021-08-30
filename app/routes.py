@@ -1,8 +1,5 @@
 from flask import render_template, send_file, send_from_directory, request
 
-
-
-
 from flask_wtf import FlaskForm
 from wtforms import SubmitField
 import requests, os
