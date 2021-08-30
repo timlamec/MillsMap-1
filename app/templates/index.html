@@ -195,7 +195,7 @@ var markers = new L.MarkerClusterGroup();
 markers.addTo(map);
 
 
-promise = $.get('/json_test2')
+promise = $.get('/mill_points')
 promise.then(function(submissions_filtered) {
     var element = document.getElementById("spin");
     element.classList.toggle("hide");
