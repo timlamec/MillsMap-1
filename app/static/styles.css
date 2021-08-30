@@ -76,8 +76,9 @@ object-fit: cover;
 
 /*Loading giff*/
 .ouro {
+    z-index: 500;
     position: absolute;
-    top: 50%;
+    top: 40%;
     left: 50%;
     margin-right: -50%;
     transform: translate(-50%, -50%) 

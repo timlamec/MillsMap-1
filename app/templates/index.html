@@ -52,12 +52,13 @@
             </div>
 
             <div class="col-6 mt-5" id="mapbar">
+                <span class="ouro" id="spin">
+                    <span class="left"><span class="anim"></span></span>
+                    <span class="right"><span class="anim"></span></span>
+                </span>
                 <div id="mapid" class="mb-3">
-                    <span class="ouro">
-                        <span class="left"><span class="anim"></span></span>
-                        <span class="right"><span class="anim"></span></span>
-                    </span>
                 </div>
+
 
             </div>
 
@@ -94,7 +95,7 @@
         </div>
     </div>
        
-<script>
+<script type="text/javascript">
 
 
 $(document).ready(function () {
@@ -140,11 +141,11 @@ var form = document.getElementById('filterForm')
 //}); 
 
   // center of the map
-var center = [0.0, 20];
+var center = [-6.23, 34.9];
 // Create the map
 var map = new L.map('mapid', {
     fullscreenControl: true
-    }).setView(center, 3);
+    }).setView(center, 6);
 // Set up the OSM layer
 L.tileLayer(
   'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -193,12 +194,60 @@ var markers = new L.MarkerClusterGroup();
 //var markers = L.featureGroup();
 markers.addTo(map);
 
-// 
+
+promise = $.get('/json_test2')
+promise.then(function(submissions_filtered) {
+    var element = document.getElementById("spin");
+    element.classList.toggle("hide");
+
+    var submissions_filtered_json = JSON.parse(submissions_filtered)
+
+    for (submission_index in submissions_filtered_json){
+        var submission = submissions_filtered_json[submission_index]
+        try {
+            var coordinates = submission['coordinates']
+        }
+        catch(err) {
+            console.log("No GPS coordinates found for the submission", submission)
+        }
+        color = 'blue'
+
+        var lng = coordinates[1]
+        var lat = coordinates[0]
+        var marker = L.circleMarker([lng, lat],{stroke: false, fillOpacity: 0.8});
+        marker.setStyle({fillColor: color});
+        markers.addLayer(marker);
+
+        var toolTip = 
+            "<dt>Number of milling machines:" + submission['number_milling_machines'] + "</dt>" 
+        toolTip += "<hr>"
+        console.log(submission['machines'])
+        counter = 0
+        for (machine_index in submission['machines']){
+            console.log(submission['machines']['machine_index'])
+            counter += 1
+            toolTip += "<dt> Machine: " + counter + "</dt>";
+            toolTip += "<div> ID: " + submission['machines'][machine_index]['__id'] + "</div>";
+            toolTip += "<div> Type of mill: ";
+            toolTip += submission['machines'][machine_index]['mill_type'] + "</div>";
+            toolTip += "<div> Operational: ";
+            toolTip += submission['machines'][machine_index]['operational_mill'] + "</div>";
+            toolTip += "<div> Energy source: ";
+            toolTip += submission['machines'][machine_index]['energy_source'] + "</div>";
+
+            //console.log(submission['machines'][machine_index]['energy_source'])
+            //console.log(submission['machines'][machine_index])
+        }
+        marker.bindTooltip(toolTip);
+
+    }
     
+    map.isFullscreen() // Is the map fullscreen?
+    map.toggleFullscreen() // Either go fullscreen, or cancel the existing fullscreen.
+    L.Control.Fullscreen
+    map.fitBounds(markers.getBounds())
+});
 
-
-map.isFullscreen() // Is the map fullscreen?
-map.toggleFullscreen() // Either go fullscreen, or cancel the existing fullscreen.
  
 // // `fullscreenchange` Event that's fired when entering or exiting fullscreen.
 // map.on('fullscreenchange', function () {
@@ -209,8 +258,7 @@ map.toggleFullscreen() // Either go fullscreen, or cancel the existing fullscree
 //     }
 // });
  
-L.Control.Fullscreen
-map.fitBounds(markers.getBounds());
+
 /**
 *
 * @param{HTMLTableElement} table to sort
