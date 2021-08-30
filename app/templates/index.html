@@ -61,39 +61,7 @@
 
             </div>
 
-            <div class="col-3 form-inline mb-3" id="filterbar">
-                <h1>Filters</h1>
-                <form enctype="multipart/form-data" method="post" action="/filterform" id="filterForm" class="form">
-                    <h3>Mill filters</h3>
-                    {% for filterform_key in mill_filter_selection %}
-                    <label class="form-label btn btn-info btn-block" data-toggle="collapse" data-target="#{{ filterform_key }}">{{ filterform_key }}</label> <br>
-                    <div id="{{ filterform_key }}" class="collapse">
-                        {% for filterform_value in mill_filter_selection[filterform_key] %}
-                            <div class="mb-3">
-                                {% if choices_dict %}
-                                    {% if filterform_key in choices_dict.keys() %}
-                                        {% if filterform_value in choices_dict[filterform_key] %}
-                                        <input class="form-check-input" type="checkbox" checked = 'True' name="{{ filterform_key }}, {{filterform_value }}" ></input>
-                                        {% else %}
-                                        <input class="form-check-input" type="checkbox" name="{{ filterform_key }}, {{filterform_value }}" ></input>
-                                        {% endif %}
-                                    {% else %}
-                                        <input class="form-check-input" type="checkbox" name="{{ filterform_key }}, {{filterform_value }}" ></input>
-                                    {% endif %}
-                                {% else %}
-                                <input class="form-check-input" type="checkbox" checked = 'True' name="{{ filterform_key }}, {{filterform_value }}" ></input>
-                                {% endif %}
-                                <label class="form-check-label" name={{ filterform_value }}>{{ filterform_value }}</label>
-                            </div>
-                        {% endfor %}
-                    </div>
-                    {% endfor %}
-<!--                     <h3>Machine filters</h3>
- -->
-                    <button class="btn btn-primary btn-block" type = 'submit' id="filterSubmit">Filter Data</button>
-                </form> <br>
 
-            </div>
         </div>
 
     </div>
@@ -225,49 +193,7 @@ var markers = new L.MarkerClusterGroup();
 //var markers = L.featureGroup();
 markers.addTo(map);
 
-var submissions_filtered = {{ submissions_filtered|tojson }};
-submissions_filtered_json = JSON.parse(submissions_filtered)
-
-for (submission_index in submissions_filtered_json){
-    var submission = submissions_filtered_json[submission_index]
-    try {
-        var coordinates = submission['coordinates']
-    }
-    catch(err) {
-        console.log("No GPS coordinates found for the submission", submission)
-    }
-    color = 'blue'
-
-    var lng = coordinates[1]
-    var lat = coordinates[0]
-    var marker = L.circleMarker([lng, lat],{stroke: false, fillOpacity: 0.8});
-    marker.setStyle({fillColor: color});
-    markers.addLayer(marker);
-
-    var toolTip = 
-        "<dt>Number of milling machines:" + submission['number_milling_machines'] + "</dt>" 
-    toolTip += "<hr>"
-    console.log(submission['machines'])
-    counter = 0
-    for (machine_index in submission['machines']){
-        console.log(submission['machines']['machine_index'])
-        counter += 1
-        toolTip += "<dt> Machine: " + counter + "</dt>";
-        toolTip += "<div> ID: " + submission['machines'][machine_index]['__id'] + "</div>";
-        toolTip += "<div> Type of mill: ";
-        toolTip += submission['machines'][machine_index]['mill_type'] + "</div>";
-        toolTip += "<div> Operational: ";
-        toolTip += submission['machines'][machine_index]['operational_mill'] + "</div>";
-        toolTip += "<div> Energy source: ";
-        toolTip += submission['machines'][machine_index]['energy_source'] + "</div>";
-
-        //console.log(submission['machines'][machine_index]['energy_source'])
-        //console.log(submission['machines'][machine_index])
-    }
-    marker.bindTooltip(toolTip);
-
-}
-    
+// 
     
 
 

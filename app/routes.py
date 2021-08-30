@@ -52,12 +52,8 @@ headers = {
 url = f'{base_url}/v1/projects/'
 r =requests.get(url, headers=headers)
 
-
-
-@app.route('/')
-@app.route('/index')
-@app.route('/home')
-def index():
+@app.route('/ajax')
+def ajax():
 
 	start_time = time.perf_counter()
 
@@ -110,10 +106,16 @@ def index():
 	submissions_filtered_json = json.dumps(submissions_dict)
 
 	to_json_complete_time = time.perf_counter()
-
 	print(f'Requests are complete at {requests_complete_time-start_time}s, pandas dataframes are complete at {pd_df_complete_time-requests_complete_time}s, charts are complete at {charts_complete_time-pd_df_complete_time}s, tables are flat in {tables_to_flat_complete_time-charts_complete_time}s, got filters in {get_filters_complete_time-tables_to_flat_complete_time}s, and to_json in {to_json_complete_time-get_filters_complete_time}s')
-
 	return render_template('index.html', submissions_filtered = submissions_filtered_json, mill_filter_selection = mill_filter_selection, title='Map')
+
+
+@app.route('/')
+@app.route('/index')
+@app.route('/home')
+def index():
+
+	return render_template('index.html', title='Map')
 
 @app.route('/filterform', methods = ['GET', 'POST'])
 def filter_data():
