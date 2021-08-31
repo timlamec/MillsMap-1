@@ -18,7 +18,6 @@ sudo apt -y upgrade
 
 echo setting up a few random Python dependencies
 sudo apt install -y build-essential libssl-dev libffi-dev python3-setuptools
-
 echo setting up virtualenv and Flask infrastructure
 sudo apt install -y python3-venv
 sudo apt install -y python3-dev
@@ -43,7 +42,7 @@ server {
 
     location / {
         include uwsgi_params;
-        uwsgi_pass unix:/millsmap/millsmap.soc
+        uwsgi_pass unix:/millsmap/millsmap.sock;
     }
 }
 EOF
