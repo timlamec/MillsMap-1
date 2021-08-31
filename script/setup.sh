@@ -4,7 +4,7 @@
 # Tested on a $10/month Digital Ocean droplet with Ubuntu 20.04
 # installed.
 
-# Assumes a non-root sudo user called reetta.
+# Assumes a non-root sudo user called millsmap.
 
 echo please enter the domain name of your server
 read domain_name
@@ -73,11 +73,11 @@ Description=uWSGI instance to serve millsmap
 After=network.target
 
 [Service]
-User=reetta
+User=millsmap
 Group=www-data
-WorkingDirectory=/home/millsmap
-Environment="PATH=/home/millsmap/venv/bin"
-ExecStart=/home/millsmap/venv/bin/uwsgi --ini millsmap.ini
+WorkingDirectory=/home/millsmap/MillsMap
+Environment="PATH=/home/millsmap/MillsMap/venv/bin"
+ExecStart=/home/millsmap/MillsMap/venv/bin/uwsgi --ini millsmap.ini
 
 [Install]
 WantedBy=multi-user.target
@@ -88,8 +88,3 @@ sudo mv millsmap.service /etc/systemd/system/
 echo starting and enabling the MillsMap service with Systemd
 sudo systemctl start millsmap.service
 sudo systemctl enable millsmap.service
-
-echo
-echo ##################################################
-echo NOW YOU NEED TO PROVIDE A URL_formats.txt FILE!!!!
-echo ##################################################
