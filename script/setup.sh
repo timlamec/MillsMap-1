@@ -25,6 +25,10 @@ python3 -m venv venv
 source venv/bin/activate
 pip install wheel
 pip install flask
+pip install flask-wtf
+pip install requests
+pip install pandas
+pip install matplotlib
 pip install uwsgi
 
 echo installing nginx
