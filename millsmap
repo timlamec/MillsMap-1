@@ -1,9 +1,0 @@
-server {
-    listen 80;
-    server_name millmaps.org www.millmaps.org;
-
-    location / {
-        include uwsgi_params;
-        uwsgi_pass unix:/home/millsmap/MillsMap/millsmap.sock;
-    }
-}
