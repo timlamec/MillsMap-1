@@ -1,6 +1,5 @@
 <script type="text/javascript">
 
-
 $(document).ready(function () {
     $('#sidebarCollapse').on('click', function () {
         $('#sidebar').toggleClass('hide');
@@ -22,26 +21,6 @@ $(document).ready(function () {
 });
 
 var form = document.getElementById('filterForm')
-
-//var form_elements = document.getElementById("filterForm").elements
-
-// document.getElementById('filterSubmit').addEventListener("click", function(){
-//     event.preventDefault();
-
-    //console.log(form.elements['maleField'].checked);
-    //console.log(document.forms[1])
-    //var formData = new FormData(form[0])
-    //console.log('test' + formData.get('femaleField'))
-
-
-    // var form_elements = document.getElementById("filterForm").elements 
-    // alert(data)
-    // console.log(data)
-
-    // var form_data = new FormData(data[0])
-    // alert(data.get('male'))
-
-//}); 
 
   // center of the map
 var center = [-6.23, 34.9];
@@ -97,7 +76,7 @@ var markers = new L.MarkerClusterGroup();
 //var markers = L.featureGroup();
 markers.addTo(map);
 
-
+/*
 promise = $.get('/mill_points')
 promise.then(function(submissions_filtered) {
     var element = document.getElementById("spin");
@@ -148,7 +127,7 @@ promise.then(function(submissions_filtered) {
     L.Control.Fullscreen
     map.fitBounds(markers.getBounds())
 });
-
+*/
  
 // // `fullscreenchange` Event that's fired when entering or exiting fullscreen.
 // map.on('fullscreenchange', function () {
