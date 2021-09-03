@@ -21,7 +21,7 @@
                                 <hr>
                                 <div class="row">
                                     <h1>Nationwide Mills Census in Tanzania</h1>
-                                         <p>OpenMap Development Tanzania (OMDTZ), supported by WFP Tanzania, is conducting a national-wide mills census from August through November 2021. The project aims at mapping approximately 13,000 mills and additional mills found in the field by collecting Geographical Positioning System (GPS) coordinates, operation, production capacity, type of mills, commodity milled, flour fortification, and other relevant information. Community mapping methodology employed for the mapping and data set will be available openly through here and  Openstreetmaps 
+                                         <p>{{url_for('static', filename='map.js')}}OpenMap Development Tanzania (OMDTZ), supported by WFP Tanzania, is conducting a national-wide mills census from August through November 2021. The project aims at mapping approximately 13,000 mills and additional mills found in the field by collecting Geographical Positioning System (GPS) coordinates, operation, production capacity, type of mills, commodity milled, flour fortification, and other relevant information. Community mapping methodology employed for the mapping and data set will be available openly through here and  Openstreetmaps 
                                         </p>
                                     </div>
                                     <hr>
@@ -96,7 +96,28 @@
     </div>
 </body>
 
-<script src="{{url_for('static', filename='map.js')}}"></script>
+<script type="text/javascript">
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function () {
+        $('#sidebar').toggleClass('hide');
+        $('#mapbar').toggleClass('col-8');
+        $('#left-arrow').toggleClass('hide');
+        $('#right-arrow').toggleClass('hide');
+    });
+
+});
+
+$(document).ready(function () {
+    $('#sidebarOpen').on('click', function () {
+        $('#sidebar').toggleClass('hide');
+        $('#mapbar').toggleClass('col-8');
+        $('#left-arrow').toggleClass('hide');
+        $('#right-arrow').toggleClass('hide');
+    });
+
+}); 
+</script>
+
 
 </html>
 {% endblock content %}
