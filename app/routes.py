@@ -207,23 +207,20 @@ def filter_data():
             #    json.loads(submissions_table_filtered_machine)
 		#{k: [d[k] for d in dicts] for k in dicts[0]}
 
-		# Filtering based on the form for the mill
-		#if all the selections have been deselected from one category
-		for mill_key in mill_filter_selection:	
-			if mill_key not in list(choices_dict.keys()):
-				submissions_table.drop(submissions_table.index, inplace=True)
+	    # Filtering based on the form for the mill
+	    #if all the selections have been deselected from one category
+            for mill_key in mill_filter_selection:
+                if mill_key not in list(choices_dict.keys()):
+                    submissions_table.drop(submissions_table.index, inplace=True)
 		#filter based on the choices
-		for dict_key, dict_values in zip(list(choices_dict.keys()), list(choices_dict.values())):
-			if dict_key in submissions_table.columns:
-                            submissions_table[dict_key] = \
-                                list(map(str,
-                                         list(submissions_table[dict_key])))
-                            submissions_table = \
-                                submissions_table.loc[submissions_table[dict_key].isin(dict_values)]
-                            
-		submissions_table.set_index('__id', inplace=True)
-
-		submissions_filtered_dict = \
+            for dict_key, dict_values in zip(list(choices_dict.keys()), list(choices_dict.values())):
+                if dict_key in submissions_table.columns:
+                    submissions_table[dict_key] = \
+                        list(map(str,list(submissions_table[dict_key])))
+                    submissions_table = \
+                        submissions_table.loc[submissions_table[dict_key].isin(dict_values)]                      
+                submissions_table.set_index('__id', inplace=True)
+                submissions_filtered_dict = \
                     submissions_table.to_dict(orient='index')
 		#submissions_table_filtered_dict = \
                 #    json.loads(submissions_table_filtered)
@@ -231,8 +228,8 @@ def filter_data():
 
 		# Make submissions_table_filtered into dictionary of
                 # dictionaries with machine information nested within
-		submissions_dict = submissions_filtered_dict
-		for submission_id in submissions_dict:
+                submissions_dict = submissions_filtered_dict
+                for submission_id in submissions_dict:
                     submissions_dict[submission_id]['machines'] = {}
                     for machine_index in submissions_table_filtered_machine:
                         machine_submission_id = \
@@ -243,13 +240,11 @@ def filter_data():
                             submissions_dict[submission_id]['machines'][machine_index] = \
                                 submissions_table_filtered_machine[machine_index]
                             
-		submissions_filtered_json = json.dumps(submissions_dict)
-                
-	return render_template('index.html',
+        submissions_filtered_json = json.dumps(submissions_dict)        
+        return render_template('index.html',
                                submissions_filtered = submissions_filtered_json,
                                mill_filter_selection = mill_filter_selection,
                                title='Map', choices_dict = choices_dict)
-	#return render_template('filterform.html', choices = choices)
 
 @app.route('/download_data/')
 def export_data():
@@ -260,7 +255,7 @@ def export_data():
         outdir = os.makedirs('files')
         
 	#Saves the file also locally
-	with open(f'files/{file_name}.zip', 'wb') as zip:
+        with open(f'files/{file_name}.zip', 'wb') as zip:
             zip.write(r.content)
     basename = os.path.basename(f'files/{file_name}.zip')
     dirname = os.path.dirname(os.path.abspath(f'files/{file_name}.zip'))
