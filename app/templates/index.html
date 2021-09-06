@@ -173,11 +173,19 @@ var scale = L.control.scale().addTo(map);
 var markers = new L.MarkerClusterGroup();
 markers.addTo(map);
 
+// Launch fetch of mills and machines
+// Note that this happens concurrently, but we'll only use the
+// machines after the mills download is complete
+var subs
+var machines
 mills_promise = $.get('/mills')
+machines_promise = $.get('/machines')  
+
+// Now the promise chain that uses the mills and machines
 mills_promise.then(function(subs_json) {
     var element = document.getElementById("spin");
     element.classList.toggle("hide");
-    var subs = JSON.parse(subs_json)
+    subs = JSON.parse(subs_json)
     for (subindex in subs) {
 	var sub = subs[subindex]
 	try {

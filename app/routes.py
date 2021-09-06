@@ -14,6 +14,7 @@ from app.odk_requests import export_submissions
 from app.odk_requests import odata_submissions_machine
 from app.odk_requests import odata_submissions_table
 from app.helper_functions import get_filters, nested_dictionary_to_df
+from app.helper_functions import flatten_dict
 from app.graphics import count_items, unique_key_counts, charts
 
 #For time testing
@@ -52,35 +53,33 @@ headers = {
 url = f'{base_url}/v1/projects/'
 r =requests.get(url, headers=headers)
 
-# TODO: move to app.helper_functions
-from collections.abc import MutableMapping
-def _flatten_dict_gen(d, parent_key, sep):
-    """Flatten dictionary using python generators. Probably 100x faster than 
-    doing it using Pandas. Code adapted from 
-    https://www.freecodecamp.org/news/how-to-flatten-a-dictionary-
-    in-python-in-4    -different-ways/"""
-    for k, v in d.items():
-        new_key = parent_key + sep + k if parent_key else k
-        if isinstance(v, MutableMapping):
-            yield from flatten_dict(v, new_key, sep=sep).items()
-        else:
-            yield new_key, v
-
-def flatten_dict(d: MutableMapping,
-                 parent_key: str = '',
-                 sep: str = '.'):
-    """Flatten dictionary using Python generators"""
-    return dict(_flatten_dict_gen(d, parent_key, sep))
-
 @app.route('/mills')
 def mills():
     start_time = time.perf_counter()
     submissions_response = odata_submissions(base_url, aut, projectId, formId)
-    mill_request_complete_time = time.perf_counter()
+    mill_fetch_time = time.perf_counter()
     submissions = submissions_response.json()['value']
     flatsubs = [flatten_dict(sub) for sub in submissions]
+    print(f'Fetched mills in {mill_fetch_time - start_time}s')
     return json.dumps(flatsubs)
     
+@app.route('/machines')
+def machines():
+    start_time = time.perf_counter()
+    machines_response = \
+        odata_submissions_machine(base_url,
+                                  aut,
+                                  projectId,
+                                  formId)
+    machine_fetch_time = time.perf_counter()
+    machines = machines_response.json()['value']
+    flatmachines = [flatten_dict(mach) for mach in machines]
+    print(f'Fetched machines in {machine_fetch_time - start_time}s')
+    return json.dumps(flatmachines)
+
+@app.route('/sites')
+def sites():
+    pass
 
 @app.route('/mill_points')
 def mill_points():
