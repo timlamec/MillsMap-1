@@ -79,7 +79,17 @@ def machines():
 
 @app.route('/sites')
 def sites():
-    pass
+    import concurrent.futures
+
+    results = []
+    with concurrent.futures.ThreadPoolExecutor() as ex:
+        futures = []
+        futures.append(mills)
+        futures.append(machines)
+        for future in concurrent.futures.as_completed(futures):
+            results.append(future.result())
+    
+
 
 @app.route('/mill_points')
 def mill_points():
