@@ -3,7 +3,6 @@ __pycache__/
 *.pyc
 
 # The files folder
-files
 *.zip
 figures
 submission_files
