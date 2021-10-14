@@ -13,9 +13,6 @@ secret_tokens.json
 # Environments
 venv
 
-# CSV files
-*.csv
-
 # bloody osx
 *.DS_Store
 *.DS_Store?

@@ -17,6 +17,8 @@ from app.helper_functions import get_filters, nested_dictionary_to_df
 from app.helper_functions import flatten_dict
 from app.graphics import count_items, unique_key_counts, charts
 
+import csv
+
 #For time testing
 import time
 def timer(message, function):
@@ -31,8 +33,17 @@ password = secret_tokens['password']
 aut = (email, password)
 
 base_url = 'https://omdtz-data.org'
-projectId = 2 
-formId = "Tanzania_Mills_Mapping_Census_V_0.05"
+
+# get the form configured data
+form_details = list()
+with open('app/static/form_config.csv', newline='') as file:
+	form_config = csv.DictReader(file)
+	for row in form_config:
+		form_details.append(row)
+
+projectId = form_details[0]['projectId']
+formId = form_details[0]['formId']
+
 
 auth_values =json.dumps({
     "email": email,
