@@ -50,11 +50,8 @@ with open('app/static/form_config.csv', newline='') as file:
 	for row in form_config:
 		form_details.append(row)
 
-#projectId = form_details[0]['projectId']
-#formId = form_details[0]['formId']
-
-projectId = "Tanzania_Mills_Mapping_Census_V_0.05"
-formId = 2
+projectId = form_details[0]['projectId']
+formId = form_details[0]['formId']
 
 # Check it the files folder exist, if not, create one
 path = 'app/submission_files'
