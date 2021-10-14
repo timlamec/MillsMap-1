@@ -85,6 +85,16 @@ def odata_attachments(base_url, auth, projectId, formId, instanceId):
     # download the file contents in binary format
     return requests.get(url, auth = auth)
 
+def number_submissions(base_url, auth, projectId, formId):
+    """
+    Fetch the number of submissions in a form
+    Returns the number of submissions
+    """
+    url = f'{base_url}/v1/projects/{projectId}/forms/{formId}'
+    return requests.get(url, auth = auth, headers={'X-Extended-Metadata': 'true'}).json()['submissions']
+
+
+
 def export_submissions(base_url, auth, projectId, formId):
     """
     Fetch the submissions in a zip format

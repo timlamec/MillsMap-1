@@ -12,6 +12,7 @@ from app import app
 from app.odk_requests import odata_submissions
 from app.odk_requests import export_submissions
 from app.odk_requests import odata_submissions_machine
+from app.odk_requests import number_submissions
 from app.odk_requests import odata_submissions_table
 from app.helper_functions import get_filters, nested_dictionary_to_df
 from app.helper_functions import flatten_dict
@@ -52,6 +53,7 @@ with open('app/static/form_config.csv', newline='') as file:
 
 projectId = form_details[0]['projectId']
 formId = form_details[0]['formId']
+lastNumberRecords = form_details[0]['lastNumberRecords']
 
 # Check it the files folder exist, if not, create one
 path = 'app/submission_files'
@@ -72,6 +74,20 @@ headers = {
 url = f'{base_url}/v1/projects/'
 r =requests.get(url, headers=headers)
 
+# Check if there is new data at the odk server,and save the new count to the config file
+submission_count = number_submissions(base_url, aut, projectId, formId)
+form_details[0]['lastNumberRecords'] = submission_count
+form_details[0]['lastChecked'] = time.localtime(time.time())
+
+with open('app/static/form_config.csv', 'w', newline='') as file:
+    writer = csv.DictWriter(file, fieldnames=form_details[0].keys())
+    writer.writeheader()
+    for row in form_details:
+        writer.writerow(row)
+
+projectId = form_details[0]['projectId']
+formId = form_details[0]['formId']
+
 @app.route('/mills')
 def mills():
     start_time = time.perf_counter()
@@ -80,6 +96,31 @@ def mills():
     submissions = submissions_response.json()['value']
     flatsubs = [flatten_dict(sub) for sub in submissions]
     print(f'Fetched mills in {mill_fetch_time - start_time}s')
+
+    #open a file for writing
+    data_file = open('app/submission_files/mills.csv', 'w')
+    # create the csv writer object
+    csv_writer = csv.writer(data_file)
+    # Counter variable used for writing
+    # headers to the CSV file
+    count = 0
+    for emp in flatsubs:
+        if count == 0:
+            # Writing headers of CSV file
+            header = emp.keys()
+            csv_writer.writerow(header)
+            count += 1
+        # Writing data of CSV file
+        csv_writer.writerow(emp.values())
+    data_file.close()
+
+    # Read the data
+    mills = list()
+    with open('app/submission_files/mills.csv', newline='') as file:
+        mills_csv = csv.DictReader(file)
+        for row in mills_csv:
+            mills.append(row)
+    print(type(json.dumps(mills)))
     return json.dumps(flatsubs)
     
 @app.route('/machines')
@@ -94,6 +135,23 @@ def machines():
     machines = machines_response.json()['value']
     flatmachines = [flatten_dict(mach) for mach in machines]
     print(f'Fetched machines in {machine_fetch_time - start_time}s')
+
+    #open a file for writing
+    data_file = open('app/submission_files/machines.csv', 'w')
+    # create the csv writer object
+    csv_writer = csv.writer(data_file)
+    # Counter variable used for writing
+    # headers to the CSV file
+    count = 0
+    for emp in flatmachines:
+        if count == 0:
+            # Writing headers of CSV file
+            header = emp.keys()
+            csv_writer.writerow(header)
+            count += 1
+        # Writing data of CSV file
+        csv_writer.writerow(emp.values())
+    data_file.close()
     return json.dumps(flatmachines)
 
 @app.route('/sites')
