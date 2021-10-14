@@ -79,14 +79,21 @@ submission_count = number_submissions(base_url, aut, projectId, formId)
 form_details[0]['lastNumberRecords'] = submission_count
 form_details[0]['lastChecked'] = time.localtime(time.time())
 
+# Update the config file with the new number of submissions and the new current timestamp
 with open('app/static/form_config.csv', 'w', newline='') as file:
     writer = csv.DictWriter(file, fieldnames=form_details[0].keys())
     writer.writeheader()
     for row in form_details:
         writer.writerow(row)
 
-projectId = form_details[0]['projectId']
-formId = form_details[0]['formId']
+# Check if there are any new submissions
+new_records_flag = False
+if submission_count - int(lastNumberRecords) != 0:
+    new_records_flag = True
+    print('New records!')
+else:
+    print('No new records.')
+    new_records_flag = False
 
 @app.route('/mills')
 def mills():
