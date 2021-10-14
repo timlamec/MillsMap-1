@@ -32,6 +32,15 @@ email = secret_tokens['email']
 password = secret_tokens['password']
 aut = (email, password)
 
+auth_values =json.dumps({
+    "email": email,
+    "password": password
+    })	
+
+headers = {
+    'Content-Type': 'application/json'
+    }
+
 base_url = 'https://omdtz-data.org'
 
 # get the form configured data
@@ -44,15 +53,14 @@ with open('app/static/form_config.csv', newline='') as file:
 projectId = form_details[0]['projectId']
 formId = form_details[0]['formId']
 
-
-auth_values =json.dumps({
-    "email": email,
-    "password": password
-    })	
-
-headers = {
-    'Content-Type': 'application/json'
-    }
+# Check it the files folder exist, if not, create one
+path = 'app/submission_files'
+isdir = os.path.isdir(path) 
+if isdir:
+	next
+else:
+	os.makedirs('app/submission_files')
+	os.makedirs('app/submission_files/figures')
 
 session_info = requests.post(url = f'{base_url}/v1/sessions',
                              data=auth_values, headers=headers)

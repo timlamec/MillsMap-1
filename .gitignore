@@ -6,6 +6,7 @@ __pycache__/
 files
 *.zip
 figures
+submission_files
 
 # Secrets
 secret_tokens.json
