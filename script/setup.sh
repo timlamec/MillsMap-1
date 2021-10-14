@@ -46,7 +46,7 @@ server {
 
     location / {
         include uwsgi_params;
-        uwsgi_pass unix:/millsmap/millsmap.sock;
+        uwsgi_pass unix:/home/millsmap/MillsMap/millsmap.sock;
     }
 }
 EOF

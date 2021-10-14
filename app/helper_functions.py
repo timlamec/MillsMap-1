@@ -56,6 +56,25 @@ def nested_dictionary_to_df(nested_table):
 	flat_table = nested_table
 	return flat_table
 
+from collections.abc import MutableMapping
+def _flatten_dict_gen(d, parent_key, sep):
+    """Flatten dictionary using python generators. Probably 100x faster than 
+    doing it using Pandas. Code adapted from 
+    https://www.freecodecamp.org/news/how-to-flatten-a-dictionary-
+    in-python-in-4    -different-ways/"""
+    for k, v in d.items():
+        new_key = parent_key + sep + k if parent_key else k
+        if isinstance(v, MutableMapping):
+            yield from flatten_dict(v, new_key, sep=sep).items()
+        else:
+            yield new_key, v
+
+def flatten_dict(d: MutableMapping,
+                 parent_key: str = '',
+                 sep: str = '.'):
+    """Flatten dictionary using Python generators"""
+    return dict(_flatten_dict_gen(d, parent_key, sep))
+
 
 
 

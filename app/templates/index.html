@@ -94,10 +94,8 @@
 
         </div>
     </div>
-       
-<script type="text/javascript">
-
-
+    
+<script>
 $(document).ready(function () {
     $('#sidebarCollapse').on('click', function () {
         $('#sidebar').toggleClass('hide');
@@ -105,7 +103,6 @@ $(document).ready(function () {
         $('#left-arrow').toggleClass('hide');
         $('#right-arrow').toggleClass('hide');
     });
-
 });
 
 $(document).ready(function () {
@@ -117,30 +114,15 @@ $(document).ready(function () {
     });
 
 });
+</script>
 
-var form = document.getElementById('filterForm')
+<script>
+  //src="{{ url_for('static', filename='filterform.js') }}"
+</script>
 
-//var form_elements = document.getElementById("filterForm").elements
-
-// document.getElementById('filterSubmit').addEventListener("click", function(){
-//     event.preventDefault();
-
-    //console.log(form.elements['maleField'].checked);
-    //console.log(document.forms[1])
-    //var formData = new FormData(form[0])
-    //console.log('test' + formData.get('femaleField'))
-
-
-    // var form_elements = document.getElementById("filterForm").elements 
-    // alert(data)
-    // console.log(data)
-
-    // var form_data = new FormData(data[0])
-    // alert(data.get('male'))
-
-//}); 
-
-  // center of the map
+<script type="text/javascript">
+  
+// center of the map
 var center = [-6.23, 34.9];
 // Create the map
 var map = new L.map('mapid', {
@@ -154,7 +136,6 @@ L.tileLayer(
   }).addTo(map);
 // L.tileLayer.bing(bing_key).addTo(map)
 //var bing = new L.BingLayer(bing_key);
-
 
 var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 18,
@@ -190,61 +171,88 @@ osmLayer.addTo(map);
 var scale = L.control.scale().addTo(map);
 
 var markers = new L.MarkerClusterGroup();
-
-//var markers = L.featureGroup();
 markers.addTo(map);
 
+// Launch fetch of mills and machines
+// Note that this happens concurrently, but we'll only use the
+// machines after the mills download is complete
+var subs
+var machines
+mills_promise = $.get('/mills')
+machines_promise = $.get('/machines')  
 
-promise = $.get('/mill_points')
-promise.then(function(submissions_filtered) {
+// Now the promise chain that uses the mills and machines
+mills_promise.then(function(subs_json) {
     var element = document.getElementById("spin");
     element.classList.toggle("hide");
-
-    var submissions_filtered_json = JSON.parse(submissions_filtered)
-
-    for (submission_index in submissions_filtered_json){
-        var submission = submissions_filtered_json[submission_index]
-        try {
-            var coordinates = submission['coordinates']
-        }
-        catch(err) {
-            console.log("No GPS coordinates found for the submission", submission)
-        }
-        color = 'blue'
-
-        var lng = coordinates[1]
-        var lat = coordinates[0]
-        var marker = L.circleMarker([lng, lat],{stroke: false, fillOpacity: 0.8});
-        marker.setStyle({fillColor: color});
-        markers.addLayer(marker);
-
-        var toolTip = 
-            "<dt>Number of milling machines:" + submission['number_milling_machines'] + "</dt>" 
-        toolTip += "<hr>"
-        counter = 0
-        for (machine_index in submission['machines']){
-            counter += 1
-            toolTip += "<dt> Machine: " + counter + "</dt>";
-            toolTip += "<div> ID: " + submission['machines'][machine_index]['__id'] + "</div>";
-            toolTip += "<div> Type of mill: ";
-            toolTip += submission['machines'][machine_index]['mill_type'] + "</div>";
-            toolTip += "<div> Operational: ";
-            toolTip += submission['machines'][machine_index]['operational_mill'] + "</div>";
-            toolTip += "<div> Energy source: ";
-            toolTip += submission['machines'][machine_index]['energy_source'] + "</div>";
-
-            //console.log(submission['machines'][machine_index]['energy_source'])
-            //console.log(submission['machines'][machine_index])
-        }
-        marker.bindTooltip(toolTip);
-
+    subs = JSON.parse(subs_json)
+    for (subindex in subs) {
+	var sub = subs[subindex]
+	try {
+	    var coords = sub['Location.mill_gps.coordinates']
+	}
+	catch(err) {
+	    console.log("No GPS coordinates found for this submission", sub)
+	}
+	color = 'blue'
+	var lon = coords[1]
+	var lat = coords[0]
+	var marker = L.circleMarker([lon, lat],{stroke: false, fillOpacity: 0.8});
+	marker.setStyle({fillColor: color});
+	markers.addLayer(marker)
     }
-    
-    map.isFullscreen() // Is the map fullscreen?
-    map.toggleFullscreen() // Either go fullscreen, or cancel the existing fullscreen.
-    L.Control.Fullscreen
-    map.fitBounds(markers.getBounds())
 });
+	    
+// promise = $.get('/mill_points')
+// promise.then(function(submissions_filtered) {
+//     var element = document.getElementById("spin");
+//     element.classList.toggle("hide");
+// 
+//     var submissions_filtered_json = JSON.parse(submissions_filtered)
+// 
+//     for (submission_index in submissions_filtered_json){
+//         var submission = submissions_filtered_json[submission_index]
+//         try {
+//             var coordinates = submission['coordinates']
+//         }
+//         catch(err) {
+//             console.log("No GPS coordinates found for the submission", submission)
+//         }
+//         color = 'blue'
+// 
+//         var lng = coordinates[1]
+//         var lat = coordinates[0]
+//         var marker = L.circleMarker([lng, lat],{stroke: false, fillOpacity: 0.8});
+//         marker.setStyle({fillColor: color});
+//         markers.addLayer(marker);
+// 
+//         var toolTip = 
+//             "<dt>Number of milling machines:" + submission['number_milling_machines'] + "</dt>" 
+//         toolTip += "<hr>"
+//         counter = 0
+//         for (machine_index in submission['machines']){
+//             counter += 1
+//             toolTip += "<dt> Machine: " + counter + "</dt>";
+//             toolTip += "<div> ID: " + submission['machines'][machine_index]['__id'] + "</div>";
+//             toolTip += "<div> Type of mill: ";
+//             toolTip += submission['machines'][machine_index]['mill_type'] + "</div>";
+//             toolTip += "<div> Operational: ";
+//             toolTip += submission['machines'][machine_index]['operational_mill'] + "</div>";
+//             toolTip += "<div> Energy source: ";
+//             toolTip += submission['machines'][machine_index]['energy_source'] + "</div>";
+// 
+//             //console.log(submission['machines'][machine_index]['energy_source'])
+//             //console.log(submission['machines'][machine_index])
+//         }
+//         marker.bindTooltip(toolTip);
+// 
+//     }
+//     
+//     map.isFullscreen() // Is the map fullscreen?
+//     map.toggleFullscreen() // Either go fullscreen, or cancel the existing fullscreen.
+//     L.Control.Fullscreen
+//     map.fitBounds(markers.getBounds())
+// });
 
  
 // // `fullscreenchange` Event that's fired when entering or exiting fullscreen.
