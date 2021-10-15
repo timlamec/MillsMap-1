@@ -13,6 +13,7 @@ from app.odk_requests import odata_submissions
 from app.odk_requests import export_submissions
 from app.odk_requests import odata_submissions_machine
 from app.odk_requests import number_submissions
+from app.odk_requests import get_newest_submissions
 from app.odk_requests import odata_submissions_table
 from app.helper_functions import get_filters, nested_dictionary_to_df
 from app.helper_functions import flatten_dict
@@ -55,14 +56,42 @@ projectId = form_details[0]['projectId']
 formId = form_details[0]['formId']
 lastNumberRecords = form_details[0]['lastNumberRecords']
 
-# Check it the files folder exist, if not, create one
+def readmills(base_url, aut, projectId, formId):
+    start_time = time.perf_counter()
+    submissions_response = odata_submissions(base_url, aut, projectId, formId)
+    mill_fetch_time = time.perf_counter()
+    submissions = submissions_response.json()['value']
+    flatsubs = [flatten_dict(sub) for sub in submissions]
+    print(f'Fetched mills in {mill_fetch_time - start_time}s')
+
+    #open a file for writing
+    data_file = open('app/submission_files/mills.csv', 'w')
+    # create the csv writer object
+    csv_writer = csv.writer(data_file)
+    # Counter variable used for writing
+    # headers to the CSV file
+    count = 0
+    for emp in flatsubs:
+        if count == 0:
+            # Writing headers of CSV file
+            header = emp.keys()
+            csv_writer.writerow(header)
+            count += 1
+        # Writing data of CSV file
+        csv_writer.writerow(emp.values())
+    data_file.close()
+
+# Check if the files folder exist, if not, create one and fetch the data from odk to fill it
 path = 'app/submission_files'
 isdir = os.path.isdir(path) 
 if isdir:
-	next
+    next
 else:
-	os.makedirs('app/submission_files')
-	os.makedirs('app/submission_files/figures')
+    os.makedirs('app/submission_files')
+    os.makedirs('app/submission_files/figures')
+    # fetch all the mills data from odk
+    readmills(base_url, aut, projectId, formId)
+
 
 session_info = requests.post(url = f'{base_url}/v1/sessions',
                              data=auth_values, headers=headers)
@@ -90,45 +119,29 @@ with open('app/static/form_config.csv', 'w', newline='') as file:
 new_records_flag = False
 if submission_count - int(lastNumberRecords) != 0:
     new_records_flag = True
+    new_records_count = submission_count - int(lastNumberRecords)
     print('New records!')
+    newest_submissions = get_newest_submissions(base_url, aut, projectId, formId, new_records_count).json()
+    print(len(newest_submissions))
 else:
     print('No new records.')
     new_records_flag = False
 
+
+
+
+
 @app.route('/mills')
 def mills():
-    start_time = time.perf_counter()
-    submissions_response = odata_submissions(base_url, aut, projectId, formId)
-    mill_fetch_time = time.perf_counter()
-    submissions = submissions_response.json()['value']
-    flatsubs = [flatten_dict(sub) for sub in submissions]
-    print(f'Fetched mills in {mill_fetch_time - start_time}s')
-
-    #open a file for writing
-    data_file = open('app/submission_files/mills.csv', 'w')
-    # create the csv writer object
-    csv_writer = csv.writer(data_file)
-    # Counter variable used for writing
-    # headers to the CSV file
-    count = 0
-    for emp in flatsubs:
-        if count == 0:
-            # Writing headers of CSV file
-            header = emp.keys()
-            csv_writer.writerow(header)
-            count += 1
-        # Writing data of CSV file
-        csv_writer.writerow(emp.values())
-    data_file.close()
-
     # Read the data
     mills = list()
     with open('app/submission_files/mills.csv', newline='') as file:
         mills_csv = csv.DictReader(file)
         for row in mills_csv:
+            # transform the coordinates from a string to a list
+            row['Location.mill_gps.coordinates'] = row['Location.mill_gps.coordinates'][1:-1].split(',')
             mills.append(row)
-    print(type(json.dumps(mills)))
-    return json.dumps(flatsubs)
+    return json.dumps(mills)
     
 @app.route('/machines')
 def machines():
