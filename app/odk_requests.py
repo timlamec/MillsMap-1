@@ -98,7 +98,7 @@ def get_newest_submissions(base_url, auth, projectId, formId, new_records_count)
     Fetch the number of submissions in a form
     Returns the number of submissions
     """
-    url = f'{base_url}/v1/projects/{projectId}/forms/{formId}/Submissions?%24top={new_records_count}'
+    url = f'{base_url}/v1/projects/{projectId}/forms/{formId}.svc/Submissions?$top={new_records_count}'
     return requests.get(url, auth = auth)
 
 def export_submissions(base_url, auth, projectId, formId):

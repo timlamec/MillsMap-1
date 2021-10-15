@@ -48,13 +48,12 @@ base_url = 'https://omdtz-data.org'
 # get the form configured data
 form_details = list()
 with open('app/static/form_config.csv', newline='') as file:
-	form_config = csv.DictReader(file)
-	for row in form_config:
-		form_details.append(row)
-
-projectId = form_details[0]['projectId']
-formId = form_details[0]['formId']
-lastNumberRecords = form_details[0]['lastNumberRecords']
+    form_config = csv.DictReader(file)
+    for row in form_config:
+        form_details.append(row)
+    projectId = form_details[0]['projectId']
+    formId = form_details[0]['formId']
+    lastNumberRecords = form_details[0]['lastNumberRecords']
 
 def readmills(base_url, aut, projectId, formId):
     start_time = time.perf_counter()
@@ -63,13 +62,10 @@ def readmills(base_url, aut, projectId, formId):
     submissions = submissions_response.json()['value']
     flatsubs = [flatten_dict(sub) for sub in submissions]
     print(f'Fetched mills in {mill_fetch_time - start_time}s')
-
     #open a file for writing
     data_file = open('app/submission_files/mills.csv', 'w')
-    # create the csv writer object
     csv_writer = csv.writer(data_file)
     # Counter variable used for writing
-    # headers to the CSV file
     count = 0
     for emp in flatsubs:
         if count == 0:
@@ -115,21 +111,41 @@ with open('app/static/form_config.csv', 'w', newline='') as file:
     for row in form_details:
         writer.writerow(row)
 
-# Check if there are any new submissions
+# Check if there are any new submissions, if there are, add them to the csv file
 new_records_flag = False
 if submission_count - int(lastNumberRecords) != 0:
     new_records_flag = True
     new_records_count = submission_count - int(lastNumberRecords)
     print('New records!')
-    newest_submissions = get_newest_submissions(base_url, aut, projectId, formId, new_records_count).json()
-    print(len(newest_submissions))
+    newest_submissions_response = get_newest_submissions(base_url, aut, projectId, formId, new_records_count).json()
+    print(len(newest_submissions_response['value']))
+
+    #Write the new records to the csv file
+    #transform the new submissions to flat
+    new_submissions = newest_submissions_response['value']
+    new_flatsubs = [flatten_dict(sub) for sub in new_submissions]
+    # read the old submissions
+    data_file = open('app/submission_files/mills.csv', 'r')
+    mills_csv = csv.DictReader(data_file)
+    mills = list()
+    # combine the new and old data (new_submissions and flatsubs)
+    for row in mills_csv:
+        # transform the coordinates from a string to a list
+        row['Location.mill_gps.coordinates'] = row['Location.mill_gps.coordinates'][1:-1].split(',')
+        row['Location.mill_gps.coordinates'] = [float(ele) for ele in row['Location.mill_gps.coordinates']]
+        mills.append(row)
+    for row in new_flatsubs:
+        mills.append(row)
+    data_file.close()
+    # write all the data to the csv
+    with open('app/submission_files/mills.csv', 'w', newline='') as file:
+        writer = csv.DictWriter(file, fieldnames=mills[0].keys())
+        writer.writeheader()
+        for row in mills:
+            writer.writerow(row)
 else:
     print('No new records.')
     new_records_flag = False
-
-
-
-
 
 @app.route('/mills')
 def mills():
