@@ -7,6 +7,7 @@ from werkzeug.wrappers import Response
 import json
 import pandas as pd
 from pandas.io.json import json_normalize
+from apscheduler.schedulers.background import BackgroundScheduler
 
 from app import app
 from app.odk_requests import odata_submissions
@@ -18,6 +19,7 @@ from app.odk_requests import odata_submissions_table
 from app.helper_functions import get_filters, nested_dictionary_to_df
 from app.helper_functions import flatten_dict
 from app.graphics import count_items, unique_key_counts, charts
+
 
 import csv
 
@@ -37,7 +39,7 @@ aut = (email, password)
 auth_values =json.dumps({
     "email": email,
     "password": password
-    })	
+    })
 
 headers = {
     'Content-Type': 'application/json'
@@ -67,6 +69,7 @@ def readmills(base_url, aut, projectId, formId):
     csv_writer = csv.writer(data_file)
     # Counter variable used for writing
     count = 0
+    flatsubs = sorted(flatsubs, key=lambda d: d['__id'])
     for emp in flatsubs:
         if count == 0:
             # Writing headers of CSV file
@@ -79,7 +82,7 @@ def readmills(base_url, aut, projectId, formId):
 
 # Check if the files folder exist, if not, create one and fetch the data from odk to fill it
 path = 'app/submission_files'
-isdir = os.path.isdir(path) 
+isdir = os.path.isdir(path)
 if isdir:
     next
 else:
@@ -111,41 +114,64 @@ with open('app/static/form_config.csv', 'w', newline='') as file:
     for row in form_details:
         writer.writerow(row)
 
+# ONLY FOR TESTING PURPOSES, REMOVE FROM FINAL VERSION
+lastNumberRecords = 14000
+
 # Check if there are any new submissions, if there are, add them to the csv file
 new_records_flag = False
-if submission_count - int(lastNumberRecords) != 0:
-    new_records_flag = True
-    new_records_count = submission_count - int(lastNumberRecords)
-    print('New records!')
-    newest_submissions_response = get_newest_submissions(base_url, aut, projectId, formId, new_records_count).json()
-    print(len(newest_submissions_response['value']))
+def check_new_submissions_odk(submission_count = submission_count, lastNumberRecords = lastNumberRecords):
+    if submission_count - int(lastNumberRecords) != 0:
+        new_records_flag = True
+        new_records_count = submission_count - int(lastNumberRecords)
+        print('New records!')
+        newest_submissions_response = get_newest_submissions(base_url, aut, projectId, formId, new_records_count).json()
+        print(len(newest_submissions_response['value']))
 
-    #Write the new records to the csv file
-    #transform the new submissions to flat
-    new_submissions = newest_submissions_response['value']
-    new_flatsubs = [flatten_dict(sub) for sub in new_submissions]
-    # read the old submissions
-    data_file = open('app/submission_files/mills.csv', 'r')
-    mills_csv = csv.DictReader(data_file)
-    mills = list()
-    # combine the new and old data (new_submissions and flatsubs)
-    for row in mills_csv:
-        # transform the coordinates from a string to a list
-        row['Location.mill_gps.coordinates'] = row['Location.mill_gps.coordinates'][1:-1].split(',')
-        row['Location.mill_gps.coordinates'] = [float(ele) for ele in row['Location.mill_gps.coordinates']]
-        mills.append(row)
-    for row in new_flatsubs:
-        mills.append(row)
-    data_file.close()
-    # write all the data to the csv
-    with open('app/submission_files/mills.csv', 'w', newline='') as file:
-        writer = csv.DictWriter(file, fieldnames=mills[0].keys())
-        writer.writeheader()
-        for row in mills:
-            writer.writerow(row)
-else:
-    print('No new records.')
-    new_records_flag = False
+        #Write the new records to the csv file
+        #transform the new submissions to flat
+        new_submissions = newest_submissions_response['value']
+        new_flatsubs = [flatten_dict(sub) for sub in new_submissions]
+        # read the old submissions
+        data_file = open('app/submission_files/mills.csv', 'r')
+        mills_csv = csv.DictReader(data_file)
+        mills = list()
+        # combine the new and old data (new_submissions and new_flatsubs)
+        for row in mills_csv:
+            # transform the coordinates from a string to a list
+            row['Location.mill_gps.coordinates'] = row['Location.mill_gps.coordinates'][1:-1].split(',')
+            row['Location.mill_gps.coordinates'] = [float(ele) for ele in row['Location.mill_gps.coordinates']]
+            mills.append(row)
+        for row in new_flatsubs:
+            mills.append(row)
+        data_file.close()
+        # write all the data to the csv
+        with open('app/submission_files/mills.csv', 'w', newline='') as file:
+            writer = csv.DictWriter(file, fieldnames=mills[0].keys())
+            writer.writeheader()
+            #sort the rows based on the id
+            mills = sorted(mills, key=lambda d: d['__id'])
+            for row in mills:
+                writer.writerow(row)
+        return(new_records_flag)
+    else:
+        print('No new records.')
+        new_records_flag = False
+        return(new_records_flag)
+
+new_records_flag = check_new_submissions_odk()
+
+
+def sensor():
+    """ Function for test purposes. """
+    print("Scheduler is alive!")
+
+sched = BackgroundScheduler(daemon=True)
+sched.add_job(check_new_submissions_odk,'interval',seconds=120)
+sched.start()
+# scheduler = BackgroundScheduler()
+# scheduler.add_job(func=check_new_submissions_odk(submission_count, lastNumberRecords), trigger="interval", seconds=60)
+# scheduler.start()
+# atexit.register(lambda: scheduler.shutdown())
 
 @app.route('/mills')
 def mills():
@@ -158,7 +184,7 @@ def mills():
             row['Location.mill_gps.coordinates'] = row['Location.mill_gps.coordinates'][1:-1].split(',')
             mills.append(row)
     return json.dumps(mills)
-    
+
 @app.route('/machines')
 def machines():
     start_time = time.perf_counter()
@@ -201,7 +227,7 @@ def sites():
         futures.append(machines)
         for future in concurrent.futures.as_completed(futures):
             results.append(future.result())
-    
+
 
 
 @app.route('/mill_points')
@@ -340,13 +366,13 @@ def filter_data():
                     submissions_table[dict_key] = \
                         list(map(str,list(submissions_table[dict_key])))
                     submissions_table = \
-                        submissions_table.loc[submissions_table[dict_key].isin(dict_values)]                      
+                        submissions_table.loc[submissions_table[dict_key].isin(dict_values)]
                 submissions_table.set_index('__id', inplace=True)
                 submissions_filtered_dict = \
                     submissions_table.to_dict(orient='index')
 		#submissions_table_filtered_dict = \
                 #    json.loads(submissions_table_filtered)
-                
+
 
 		# Make submissions_table_filtered into dictionary of
                 # dictionaries with machine information nested within
@@ -361,8 +387,8 @@ def filter_data():
                         if machine_submission_id == submission_id:
                             submissions_dict[submission_id]['machines'][machine_index] = \
                                 submissions_table_filtered_machine[machine_index]
-                            
-        submissions_filtered_json = json.dumps(submissions_dict)        
+
+        submissions_filtered_json = json.dumps(submissions_dict)
         return render_template('index.html',
                                submissions_filtered = submissions_filtered_json,
                                mill_filter_selection = mill_filter_selection,
@@ -375,7 +401,7 @@ def export_data():
     file_name = formId
     if not os.path.exists('files'):
         outdir = os.makedirs('files')
-        
+
 	#Saves the file also locally
         with open(f'files/{file_name}.zip', 'wb') as zip:
             zip.write(r.content)
