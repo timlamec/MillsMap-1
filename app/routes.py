@@ -8,6 +8,7 @@ import json
 import pandas as pd
 from pandas.io.json import json_normalize
 from apscheduler.schedulers.background import BackgroundScheduler
+from os.path import exists
 
 from app import app
 from app.odk_requests import odata_submissions
@@ -61,10 +62,15 @@ with open('app/static/form_config.csv', newline='') as file:
     form_config = csv.DictReader(file)
     for row in form_config:
         form_details.append(row)
-    projectId = form_details[form_index]['projectId']
+projectId = form_details[form_index]['projectId']
+formId = form_details[form_index]['formId']
+lastNumberRecordsMills = form_details[form_index]['lastNumberRecordsMills']
+lastNumberRecordsMachines = form_details[form_index]['lastNumberRecordsMachines']
+for i in 1,len(form_details):
+    form_index = i - 1
     formId = form_details[form_index]['formId']
-    lastNumberRecordsMills = form_details[form_index]['lastNumberRecordsMills']
-    lastNumberRecordsMachines = form_details[form_index]['lastNumberRecordsMachines']
+    print(form_index)
+
 
 # Functions for downloading attachments
 def get_submission_ids(mills_table):
@@ -90,20 +96,28 @@ def download_attachments(base_url, aut, projectId, formId, submission_ids):
 
 # Get all the mills from the ODK server, flatten them and save them a csv file
 def fetch_mills_csv(base_url, aut, projectId, formId):
-    start_time = time.perf_counter()
-    submissions_response = odata_submissions(base_url, aut, projectId, formId)
-    mill_fetch_time = time.perf_counter()
-    submissions = submissions_response.json()['value']
-    flatsubs = [flatten_dict(sub) for sub in submissions]
-    print(f'Fetched mills in {mill_fetch_time - start_time}s')
+    #Loop through the forms and combine them
+    form_data = list()
+    for i in 1, len(form_details):
+        form_index = i - 1
+        formId = form_details[form_index]['formId']
+        #Fetch the data
+        start_time = time.perf_counter()
+        submissions_response = odata_submissions(base_url, aut, projectId, formId)
+        mill_fetch_time = time.perf_counter()
+        submissions = submissions_response.json()['value']
+        flatsubs = [flatten_dict(sub) for sub in submissions]
+        print(f'Fetched mills in {mill_fetch_time - start_time}s')
+        # select only the wanted columns
+        flatsubs = [{key: row[key] for key in mills_columns} for row in flatsubs]
+        form_data.append(flatsubs)
+    flatsubs = [item for elem in form_data for item in elem]
     #open a file for writing
     data_file = open('app/submission_files/mills.csv', 'w')
     csv_writer = csv.writer(data_file)
     # Counter variable used for writing
     count = 0
     flatsubs = sorted(flatsubs, key=lambda d: d['__id'])
-    # select only the wanted column
-    flatsubs = [{key: row[key] for key in mills_columns} for row in flatsubs]
     # write the rows
     for emp in flatsubs:
         if count == 0:
@@ -123,9 +137,13 @@ if isdir:
 else:
     os.makedirs('app/submission_files')
     os.makedirs('app/submission_files/figures')
+
+# check if the mills file exists, if not, fetch the data from ODK
+if os.path.exists('app/submission_files/mills.csv'):
+    next
+else:
     # fetch all the mills data from odk
     fetch_mills_csv(base_url, aut, projectId, formId)
-
 
 
 
@@ -200,11 +218,6 @@ def check_new_submissions_odk(submission_count = submission_count, lastNumberRec
         return(new_records_flag)
 
 new_records_flag = check_new_submissions_odk()
-
-
-def sensor():
-    """ Function for test purposes. """
-    print("Scheduler is alive!")
 
 sched = BackgroundScheduler(daemon=True)
 sched.add_job(check_new_submissions_odk,'interval',seconds=120)
