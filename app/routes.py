@@ -56,14 +56,15 @@ mills_columns = ['__id', 'start','end', 'interviewee.mill_owner', 'mills.number_
 
 # get the form configured data
 form_details = list()
+form_index = 0
 with open('app/static/form_config.csv', newline='') as file:
     form_config = csv.DictReader(file)
     for row in form_config:
         form_details.append(row)
-    projectId = form_details[0]['projectId']
-    formId = form_details[0]['formId']
-    lastNumberRecordsMills = form_details[0]['lastNumberRecordsMills']
-    lastNumberRecordsMachines = form_details[0]['lastNumberRecordsMachines']
+    projectId = form_details[form_index]['projectId']
+    formId = form_details[form_index]['formId']
+    lastNumberRecordsMills = form_details[form_index]['lastNumberRecordsMills']
+    lastNumberRecordsMachines = form_details[form_index]['lastNumberRecordsMachines']
 
 # Functions for downloading attachments
 def get_submission_ids(mills_table):
@@ -101,6 +102,9 @@ def fetch_mills_csv(base_url, aut, projectId, formId):
     # Counter variable used for writing
     count = 0
     flatsubs = sorted(flatsubs, key=lambda d: d['__id'])
+    # select only the wanted column
+    flatsubs = [{key: row[key] for key in mills_columns} for row in flatsubs]
+    # write the rows
     for emp in flatsubs:
         if count == 0:
             # Writing headers of CSV file
@@ -137,12 +141,12 @@ r =requests.get(url, headers=headers)
 
 # Check if there is new data at the odk server,and save the new count to the config file
 submission_count = number_submissions(base_url, aut, projectId, formId)
-form_details[0]['lastNumberRecordsMills'] = submission_count
-form_details[0]['lastChecked'] = time.localtime(time.time())
+form_details[form_index]['lastNumberRecordsMills'] = submission_count
+form_details[form_index]['lastChecked'] = time.localtime(time.time())
 
 # Update the config file with the new number of submissions and the new current timestamp
 with open('app/static/form_config.csv', 'w', newline='') as file:
-    writer = csv.DictWriter(file, fieldnames=form_details[0].keys())
+    writer = csv.DictWriter(file, fieldnames=form_details[form_index].keys())
     writer.writeheader()
     for row in form_details:
         writer.writerow(row)
@@ -153,7 +157,7 @@ lastNumberRecordsMills = 14000
 # Check if there are any new submissions, if there are, add them to the csv file
 new_records_flag = False
 def check_new_submissions_odk(submission_count = submission_count, lastNumberRecordsMills = lastNumberRecordsMills):
-    if submission_count - int(lastNumberRecordsMills) != 0:
+    if submission_count - int(lastNumberRecordsMills) > 0:
         new_records_flag = True
         new_records_count = submission_count - int(lastNumberRecordsMills)
         print('New records!')
@@ -165,15 +169,19 @@ def check_new_submissions_odk(submission_count = submission_count, lastNumberRec
         new_submissions = newest_submissions_response['value']
         new_flatsubs = [flatten_dict(sub) for sub in new_submissions]
         # read the old submissions
-        data_file = open('app/submission_files/mills.csv', 'r')
-        mills_csv = csv.DictReader(data_file)
         mills = list()
-        # combine the new and old data (new_submissions and new_flatsubs)
-        for row in mills_csv:
-            # transform the coordinates from a string to a list
-            row['Location.mill_gps.coordinates'] = row['Location.mill_gps.coordinates'][1:-1].split(',')
-            row['Location.mill_gps.coordinates'] = [float(ele) for ele in row['Location.mill_gps.coordinates']]
-            mills.append(row)
+        with open('app/submission_files/mills.csv', newline='') as data_file:
+            mills_csv = csv.DictReader(data_file)
+            # combine the new and old data (new_submissions and new_flatsubs)
+            for row in mills_csv:
+                # transform the coordinates from a string to a list if they are not yet
+                try:
+                    row['Location.mill_gps.coordinates'] = row['Location.mill_gps.coordinates'][1:-1].split(',')
+                    row['Location.mill_gps.coordinates'] = [float(ele) for ele in row['Location.mill_gps.coordinates']]
+                except: print('already a list')
+                mills.append(row)
+        # select only the wanted column
+        new_flatsubs = [{key: row[key] for key in mills_columns} for row in new_flatsubs]
         for row in new_flatsubs:
             mills.append(row)
         data_file.close()
