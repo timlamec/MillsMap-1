@@ -85,6 +85,14 @@ def odata_attachments(base_url, auth, projectId, formId, instanceId):
     # download the file contents in binary format
     return requests.get(url, auth = auth)
 
+def list_attachments(base_url, auth, projectId, formId):
+    """
+    Fetch the details of the attachments
+    """
+    url = f'{base_url}/v1/projects/{projectId}/forms/{formId}/attachments'
+    # download the file contents in binary format
+    return requests.get(url, auth = auth)
+
 def number_submissions(base_url, auth, projectId, formId):
     """
     Fetch the number of submissions in a form

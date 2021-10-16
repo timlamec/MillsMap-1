@@ -16,6 +16,9 @@ from app.odk_requests import odata_submissions_machine
 from app.odk_requests import number_submissions
 from app.odk_requests import get_newest_submissions
 from app.odk_requests import odata_submissions_table
+from app.odk_requests import list_attachments
+from app.odk_requests import odata_attachments
+
 from app.helper_functions import get_filters, nested_dictionary_to_df
 from app.helper_functions import flatten_dict
 from app.graphics import count_items, unique_key_counts, charts
@@ -47,6 +50,10 @@ headers = {
 
 base_url = 'https://omdtz-data.org'
 
+mills_columns = ['__id', 'start','end', 'interviewee.mill_owner', 'mills.number_milling_machines', 'machines.machine_count', 'Packaging.flour_fortified',
+                 'Packaging.flour_fortified_standard', 'Packaging.flour_fortified_standard_other', 'safety_cleanliness.protective_gear',
+                 'safety_cleanliness.protective_gear_other', 'Location.mill_gps.coordinates']
+
 # get the form configured data
 form_details = list()
 with open('app/static/form_config.csv', newline='') as file:
@@ -55,9 +62,33 @@ with open('app/static/form_config.csv', newline='') as file:
         form_details.append(row)
     projectId = form_details[0]['projectId']
     formId = form_details[0]['formId']
-    lastNumberRecords = form_details[0]['lastNumberRecords']
+    lastNumberRecordsMills = form_details[0]['lastNumberRecordsMills']
+    lastNumberRecordsMachines = form_details[0]['lastNumberRecordsMachines']
 
-def readmills(base_url, aut, projectId, formId):
+# Functions for downloading attachments
+def get_submission_ids(mills_table):
+    submission_ids = [row['__id'] for row in mills_table]
+    return submission_ids
+
+def download_attachments(base_url, aut, projectId, formId, mills_table):
+    submission_ids = get_submission_ids(mills_table)
+    for instanceId in submission_ids:
+        odata_attachments(base_url, aut, projectId, formId, instanceId)
+
+def get_attachment_names(base_url, aut, projectId, formId):
+    attachments = list_attachments(base_url, aut, projectId, formId).json()
+    attachment_names = [row['name'] for row in attachments]
+    return attachment_names
+
+attachment_names = get_attachment_names(base_url, aut, projectId, formId)
+def download_attachments(base_url, aut, projectId, formId, submission_ids):
+    for instanceId in submission_ids:
+        odata_attachments(base_url, aut, projectId, formId, instanceId)
+
+
+
+# Get all the mills from the ODK server, flatten them and save them a csv file
+def fetch_mills_csv(base_url, aut, projectId, formId):
     start_time = time.perf_counter()
     submissions_response = odata_submissions(base_url, aut, projectId, formId)
     mill_fetch_time = time.perf_counter()
@@ -89,7 +120,9 @@ else:
     os.makedirs('app/submission_files')
     os.makedirs('app/submission_files/figures')
     # fetch all the mills data from odk
-    readmills(base_url, aut, projectId, formId)
+    fetch_mills_csv(base_url, aut, projectId, formId)
+
+
 
 
 session_info = requests.post(url = f'{base_url}/v1/sessions',
@@ -104,7 +137,7 @@ r =requests.get(url, headers=headers)
 
 # Check if there is new data at the odk server,and save the new count to the config file
 submission_count = number_submissions(base_url, aut, projectId, formId)
-form_details[0]['lastNumberRecords'] = submission_count
+form_details[0]['lastNumberRecordsMills'] = submission_count
 form_details[0]['lastChecked'] = time.localtime(time.time())
 
 # Update the config file with the new number of submissions and the new current timestamp
@@ -115,14 +148,14 @@ with open('app/static/form_config.csv', 'w', newline='') as file:
         writer.writerow(row)
 
 # ONLY FOR TESTING PURPOSES, REMOVE FROM FINAL VERSION
-lastNumberRecords = 14000
+lastNumberRecordsMills = 14000
 
 # Check if there are any new submissions, if there are, add them to the csv file
 new_records_flag = False
-def check_new_submissions_odk(submission_count = submission_count, lastNumberRecords = lastNumberRecords):
-    if submission_count - int(lastNumberRecords) != 0:
+def check_new_submissions_odk(submission_count = submission_count, lastNumberRecordsMills = lastNumberRecordsMills):
+    if submission_count - int(lastNumberRecordsMills) != 0:
         new_records_flag = True
-        new_records_count = submission_count - int(lastNumberRecords)
+        new_records_count = submission_count - int(lastNumberRecordsMills)
         print('New records!')
         newest_submissions_response = get_newest_submissions(base_url, aut, projectId, formId, new_records_count).json()
         print(len(newest_submissions_response['value']))
@@ -169,7 +202,7 @@ sched = BackgroundScheduler(daemon=True)
 sched.add_job(check_new_submissions_odk,'interval',seconds=120)
 sched.start()
 # scheduler = BackgroundScheduler()
-# scheduler.add_job(func=check_new_submissions_odk(submission_count, lastNumberRecords), trigger="interval", seconds=60)
+# scheduler.add_job(func=check_new_submissions_odk(submission_count, lastNumberRecordsMills), trigger="interval", seconds=60)
 # scheduler.start()
 # atexit.register(lambda: scheduler.shutdown())
 
