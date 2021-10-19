@@ -170,7 +170,7 @@ with open('app/static/form_config.csv', 'w', newline='') as file:
         writer.writerow(row)
 
 # ONLY FOR TESTING PURPOSES, REMOVE FROM FINAL VERSION
-lastNumberRecordsMills = 14000
+#lastNumberRecordsMills = 1400
 
 # Check if there are any new submissions, if there are, add them to the csv file
 new_records_flag = False
@@ -217,7 +217,7 @@ def check_new_submissions_odk(submission_count = submission_count, lastNumberRec
         new_records_flag = False
         return(new_records_flag)
 
-new_records_flag = check_new_submissions_odk()
+#new_records_flag = check_new_submissions_odk()
 
 sched = BackgroundScheduler(daemon=True)
 sched.add_job(check_new_submissions_odk,'interval',seconds=120)
