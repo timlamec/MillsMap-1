@@ -89,39 +89,37 @@ def download_attachments(base_url, aut, projectId, formId, submission_ids):
 
 # Get all the mills from the ODK server, flatten them and save them a csv file
 def fetch_mills_csv(base_url, aut, projectId, formId):
-    #Loop through the forms and combine them
-    form_data = list()
-    for i in range(1, len(form_details)):
-        form_index = i - 1
-        print(f'Form index is : {form_index}')
-        formId = form_details[form_index]['formId']
-        #Fetch the data
-        start_time = time.perf_counter()
-        submissions_response = odata_submissions(base_url, aut, projectId, formId)
-        mill_fetch_time = time.perf_counter()
-        submissions = submissions_response.json()['value']
-        flatsubs = [flatten_dict(sub) for sub in submissions]
-        print(f'Fetched mills in {mill_fetch_time - start_time}s')
-        # select only the wanted columns
-        flatsubs = [{key: row[key] for key in mills_columns} for row in flatsubs]
-        form_data.append(flatsubs)
-    flatsubs = [item for elem in form_data for item in elem]
+    #Fetch the data
+    start_time = time.perf_counter()
+    submissions_response = odata_submissions(base_url, aut, projectId, formId)
+    mill_fetch_time = time.perf_counter()
+    submissions = submissions_response.json()['value']
+    flatsubs = [flatten_dict(sub) for sub in submissions]
+    print(f'Fetched mills in {mill_fetch_time - start_time}s')
+    # select only the wanted columns
+    form_data = [{key: row[key] for key in mills_columns} for row in flatsubs]
+    #form_data.append(flatsubs)
+    #flatsubs = [item for elem in form_data for item in elem]
+    flatsubs = form_data
     #open a file for writing
-    data_file = open('app/submission_files/mills.csv', 'w')
-    csv_writer = csv.writer(data_file)
-    # Counter variable used for writing
-    count = 0
-    flatsubs = sorted(flatsubs, key=lambda d: d['__id'])
-    # write the rows
-    for emp in flatsubs:
-        if count == 0:
-            # Writing headers of CSV file
-            header = emp.keys()
-            csv_writer.writerow(header)
-            count += 1
-        # Writing data of CSV file
-        csv_writer.writerow(emp.values())
-    data_file.close()
+    file_name = ''.join([formId, '.csv'])
+    dir = 'app/submission_files/mills'
+    path = os.path.join(dir, file_name)
+    with open(path, 'w') as data_file:
+        csv_writer = csv.writer(data_file)
+        # Counter variable used for writing
+        count = 0
+        flatsubs = sorted(flatsubs, key=lambda d: d['__id'])
+        # write the rows
+        for emp in flatsubs:
+            if count == 0:
+                # Writing headers of CSV file
+                header = emp.keys()
+                csv_writer.writerow(header)
+                count += 1
+            # Writing data of CSV file
+            csv_writer.writerow(emp.values())
+        data_file.close()
 
 # Check if the files folder exist, if not, create one and fetch the data from odk to fill it
 path = 'app/submission_files'
@@ -131,13 +129,23 @@ if isdir:
 else:
     os.makedirs('app/submission_files')
     os.makedirs('app/submission_files/figures')
+    os.makedirs('app/submission_files/mills')
+    os.makedirs('app/submission_files/machines')
 
 # check if the mills file exists, if not, fetch the data from ODK
-if os.path.exists('app/submission_files/mills.csv'):
-    next
-else:
-    # fetch all the mills data from odk
-    fetch_mills_csv(base_url, aut, projectId, formId)
+formId_list = list()
+for i in range(1,len(form_details)):
+    form_index = i - 1
+    formId = form_details[form_index]['formId']
+    formId_list.append(formId)
+    file_name = ''.join([formId, '.csv'])
+    table_name = 'mills'
+    path = os.path.join('app/submission_files', table_name, file_name)
+    if exists(path):
+        next
+    else:
+        # fetch all the mills data from odk
+        fetch_mills_csv(base_url, aut, projectId, formId)
 
 # todo: finish this to get the list of submission ids that you have for each form
 # Check which submission ids each form has
@@ -228,16 +236,29 @@ sched.start()
 # scheduler.start()
 # atexit.register(lambda: scheduler.shutdown())
 
+def read_local_tables_together(table = 'mills'):
+    path = os.path.join('app/submission_files', table)
+    table_names = os.listdir(path)
+    # Combine the files together
+    form_data = list()
+    for table in table_names:
+        file = list()
+        table_path = os.path.join(path, table)
+        with open(table_path, newline='') as data_file:
+            csv_file = csv.DictReader(data_file)
+            for row in csv_file:
+                # transform the coordinates from a string to a list
+                row['Location.mill_gps.coordinates'] = row['Location.mill_gps.coordinates'][1:-1].split(',')
+                file.append(row)
+        data_file.close()
+        form_data.append(file)
+    flatsubs = [item for elem in form_data for item in elem]
+    return(flatsubs)
+
 @app.route('/mills')
 def mills():
     # Read the data
-    mills = list()
-    with open('app/submission_files/mills.csv', newline='') as file:
-        mills_csv = csv.DictReader(file)
-        for row in mills_csv:
-            # transform the coordinates from a string to a list
-            row['Location.mill_gps.coordinates'] = row['Location.mill_gps.coordinates'][1:-1].split(',')
-            mills.append(row)
+    mills = read_local_tables_together(table = 'mills')
     return json.dumps(mills)
 
 @app.route('/machines')

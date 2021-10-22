@@ -1,6 +1,4 @@
 projectId,formId,activeStatus,featureType,lastChecked,lastNumberRecordsMills,lastNumberRecordsMachines
-2,Tanzania_Mills_Mapping_Census_V_0.05,0,point,"time.struct_time(tm_year=2021, tm_mon=10, tm_mday=19, tm_hour=17, tm_min=42, tm_sec=7, tm_wday=1, tm_yday=292, tm_isdst=1)",14196,
-2,Tanzania_Mills_Mapping_Census_V_0.02,0,point,"time.struct_time(tm_year=2021, tm_mon=10, tm_mday=19, tm_hour=17, tm_min=42, tm_sec=8, tm_wday=1, tm_yday=292, tm_isdst=1)",1405,
-2,Tanzania_Mills_Mapping_Census_V_0.07,0,point,"time.struct_time(tm_year=2021, tm_mon=10, tm_mday=19, tm_hour=17, tm_min=42, tm_sec=8, tm_wday=1, tm_yday=292, tm_isdst=1)",4205,
-2,Tanzania_Mills_Mapping_Census_V_0.04,0,point,"time.struct_time(tm_year=2021, tm_mon=10, tm_mday=19, tm_hour=17, tm_min=42, tm_sec=9, tm_wday=1, tm_yday=292, tm_isdst=1)",0,
+2,Tanzania_Mills_Mapping_Census_V_0.02,0,point,"time.struct_time(tm_year=2021, tm_mon=10, tm_mday=22, tm_hour=11, tm_min=10, tm_sec=44, tm_wday=4, tm_yday=295, tm_isdst=1)",1405,
+2,Tanzania_Mills_Mapping_Census_V_0.04,0,point,"time.struct_time(tm_year=2021, tm_mon=10, tm_mday=22, tm_hour=11, tm_min=10, tm_sec=45, tm_wday=4, tm_yday=295, tm_isdst=1)",0,
 2,Tanzania_Mills_Mapping_Census_V_0.06,0,point,,,
