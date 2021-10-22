@@ -121,13 +121,13 @@ def fetch_mills_csv(base_url, aut, projectId, formId, table = 'Submissions'):
 
 # Check if the files folder exist, if not, create one and fetch the data from odk to fill it
 path = 'app/submission_files'
-isdir = os.path.isdir(path)
-if isdir:
-    next
-else:
+if not os.path.exists('app/submission_files'):
     os.makedirs('app/submission_files')
+if not os.path.exists('app/submission_files/figures'):
     os.makedirs('app/submission_files/figures')
+if not os.path.exists('app/submission_files/mills'):
     os.makedirs('app/submission_files/mills')
+if not os.path.exists('app/submission_files/machines'):
     os.makedirs('app/submission_files/machines')
 
 # check if the mills file exists, if not, fetch the data from ODK
