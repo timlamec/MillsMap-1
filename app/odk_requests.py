@@ -57,13 +57,13 @@ def odata_submissions_table(base_url, auth, projectId, formId, table):
     submissions = requests.get(url, auth = auth).json()
     return submissions
 
-def odata_submissions(base_url, auth, projectId, formId):
+def odata_submissions(base_url, auth, projectId, formId, table):
     """
     Fetch the submissions using the odata api. 
     use submissions.json()['value'] to get a list of dicts, wherein 
     each dict is a single submission with the form question names as keys.
     """    
-    url = f'{base_url}/v1/projects/{projectId}/forms/{formId}.svc/Submissions'
+    url = f'{base_url}/v1/projects/{projectId}/forms/{formId}.svc/{table}'
     submissions = requests.get(url, auth = auth)
     return submissions
 
@@ -100,6 +100,14 @@ def number_submissions(base_url, auth, projectId, formId):
     """
     url = f'{base_url}/v1/projects/{projectId}/forms/{formId}'
     return requests.get(url, auth = auth, headers={'X-Extended-Metadata': 'true'}).json()['submissions']
+
+def get_submission_details(base_url, auth, projectId, formId, table):
+    """
+    Fetch the number of submission details in a form
+    Returns the submission ids
+    """
+    url = f'{base_url}/v1/projects/{projectId}/forms/{formId}/{table}'
+    return requests.get(url, auth=auth).json()
 
 def get_newest_submissions(base_url, auth, projectId, formId, new_records_count):
     """
