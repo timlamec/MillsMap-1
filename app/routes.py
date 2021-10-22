@@ -66,11 +66,6 @@ projectId = form_details[form_index]['projectId']
 formId = form_details[form_index]['formId']
 lastNumberRecordsMills = form_details[form_index]['lastNumberRecordsMills']
 lastNumberRecordsMachines = form_details[form_index]['lastNumberRecordsMachines']
-for i in 1,len(form_details):
-    form_index = i - 1
-    formId = form_details[form_index]['formId']
-    print(form_index)
-
 
 # Functions for downloading attachments
 def get_submission_ids(mills_table):
@@ -92,14 +87,13 @@ def download_attachments(base_url, aut, projectId, formId, submission_ids):
     for instanceId in submission_ids:
         odata_attachments(base_url, aut, projectId, formId, instanceId)
 
-
-
 # Get all the mills from the ODK server, flatten them and save them a csv file
 def fetch_mills_csv(base_url, aut, projectId, formId):
     #Loop through the forms and combine them
     form_data = list()
-    for i in 1, len(form_details):
+    for i in range(1, len(form_details)):
         form_index = i - 1
+        print(f'Form index is : {form_index}')
         formId = form_details[form_index]['formId']
         #Fetch the data
         start_time = time.perf_counter()
@@ -145,7 +139,10 @@ else:
     # fetch all the mills data from odk
     fetch_mills_csv(base_url, aut, projectId, formId)
 
-
+# todo: finish this to get the list of submission ids that you have for each form
+# Check which submission ids each form has
+#submission_ids = submission_csv['__id']
+#form_details[form_index]['formId']
 
 session_info = requests.post(url = f'{base_url}/v1/sessions',
                              data=auth_values, headers=headers)
@@ -158,10 +155,12 @@ url = f'{base_url}/v1/projects/'
 r =requests.get(url, headers=headers)
 
 # Check if there is new data at the odk server,and save the new count to the config file
-submission_count = number_submissions(base_url, aut, projectId, formId)
-form_details[form_index]['lastNumberRecordsMills'] = submission_count
-form_details[form_index]['lastChecked'] = time.localtime(time.time())
-
+for i in range(1,len(form_details)):
+    form_index = i - 1
+    formId = form_details[form_index]['formId']
+    submission_count = number_submissions(base_url, aut, projectId, formId)
+    form_details[form_index]['lastNumberRecordsMills'] = submission_count
+    form_details[form_index]['lastChecked'] = time.localtime(time.time())
 # Update the config file with the new number of submissions and the new current timestamp
 with open('app/static/form_config.csv', 'w', newline='') as file:
     writer = csv.DictWriter(file, fieldnames=form_details[form_index].keys())
@@ -171,9 +170,11 @@ with open('app/static/form_config.csv', 'w', newline='') as file:
 
 # ONLY FOR TESTING PURPOSES, REMOVE FROM FINAL VERSION
 #lastNumberRecordsMills = 1400
+submission_count = 100
 
 # Check if there are any new submissions, if there are, add them to the csv file
 new_records_flag = False
+
 def check_new_submissions_odk(submission_count = submission_count, lastNumberRecordsMills = lastNumberRecordsMills):
     if submission_count - int(lastNumberRecordsMills) > 0:
         new_records_flag = True
