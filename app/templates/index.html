@@ -187,19 +187,21 @@ mills_promise.then(function(subs_json) {
     element.classList.toggle("hide");
     subs = JSON.parse(subs_json)
     for (subindex in subs) {
-	var sub = subs[subindex]
-	try {
-	    var coords = sub['Location.mill_gps.coordinates']
-	}
-	catch(err) {
-	    console.log("No GPS coordinates found for this submission", sub)
-	}
-	color = 'blue'
-	var lon = coords[1]
-	var lat = coords[0]
-	var marker = L.circleMarker([lon, lat],{stroke: false, fillOpacity: 0.8});
-	marker.setStyle({fillColor: color});
-	markers.addLayer(marker)
+        var sub = subs[subindex]
+        try {
+            var coords = sub['Location.mill_gps.coordinates']
+        }
+        catch(err) {
+            console.log("No GPS coordinates found for this submission", sub)
+        }
+        color = 'blue'
+        var lon = coords[1]
+        var lat = coords[0]
+        var marker = L.circleMarker([lon, lat],{stroke: false, fillOpacity: 0.8});
+        marker.setStyle({fillColor: color});
+        markers.addLayer(marker)
+        var toolTip = "<dt>Number of milling machines:" + sub['machines.machine_count'] + "</dt>"
+        marker.bindTooltip(toolTip);
     }
 });
 	    
