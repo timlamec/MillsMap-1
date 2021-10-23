@@ -67,16 +67,6 @@ def odata_submissions(base_url, auth, projectId, formId, table):
     submissions = requests.get(url, auth = auth)
     return submissions
 
-def odata_submissions_machine(base_url, auth, projectId, formId):
-    """
-    Fetch the submissions using the odata api. 
-    use submissions.json()['value'] to get a list of dicts, wherein 
-    each dict is a single submission with the form question names as keys.
-    """    
-    url = f'{base_url}/v1/projects/{projectId}/forms/{formId}.svc/Submissions.machines.machine'
-    submissions = requests.get(url, auth = auth)
-    return submissions
-
 def odata_attachments(base_url, auth, projectId, formId, instanceId):
     """
     Fetch the attachments 

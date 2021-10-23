@@ -1,59 +1,35 @@
-from flask import render_template, send_file, send_from_directory, request
-
-from flask_wtf import FlaskForm
-from wtforms import SubmitField
+from flask import render_template, send_from_directory, request
+import atexit
+import csv
 import requests, os
 from werkzeug.wrappers import Response
 import json
 import pandas as pd
-from pandas.io.json import json_normalize
 from apscheduler.schedulers.background import BackgroundScheduler
 from os.path import exists
-
+import time
+# Local imports
 from app import app
-from app.odk_requests import odata_submissions, get_submission_details
-from app.odk_requests import export_submissions
-from app.odk_requests import number_submissions
-from app.odk_requests import odata_submissions_table
-from app.odk_requests import list_attachments
-from app.odk_requests import odata_attachments
-
-from app.helper_functions import get_filters, nested_dictionary_to_df
-from app.helper_functions import flatten_dict
+from app.odk_requests import odata_submissions, get_submission_details, export_submissions, number_submissions, \
+    odata_submissions_table, list_attachments, odata_attachments
+from app.helper_functions import get_filters, nested_dictionary_to_df, flatten_dict
 from app.graphics import count_items, unique_key_counts, charts
 
-import atexit
-import csv
-
-#For time testing
-import time
-def timer(message, function):
-    tic = time.perf_counter()
-    tutorial = feed.get_article(0)
-    toc = time.perf_counter()
-    print(f"{message}' '{toc - tic:0.4f} seconds")
-
+# Configured values
+# todo: set these values to another config file that is read in the beginning
 secret_tokens = json.load(open('secret_tokens.json', 'r'))
 email = secret_tokens['email']
 password = secret_tokens['password']
 aut = (email, password)
-
-auth_values =json.dumps({
-    "email": email,
-    "password": password
-    })
-
-headers = {
-    'Content-Type': 'application/json'
-    }
-
 base_url = 'https://omdtz-data.org'
-
-mills_columns = ['__id', 'start','end', 'interviewee.mill_owner', 'mills.number_milling_machines', 'machines.machine_count', 'Packaging.flour_fortified',
-                 'Packaging.flour_fortified_standard', 'Packaging.flour_fortified_standard_other', 'safety_cleanliness.protective_gear',
+mills_columns = ['__id', 'start', 'end', 'interviewee.mill_owner', 'mills.number_milling_machines',
+                 'machines.machine_count', 'Packaging.flour_fortified',
+                 'Packaging.flour_fortified_standard', 'Packaging.flour_fortified_standard_other',
+                 'safety_cleanliness.protective_gear',
                  'safety_cleanliness.protective_gear_other', 'Location.mill_gps.coordinates']
 submission_files_path = 'app/submission_files'
-# get the form configured data
+
+# Get the form configured data
 form_details = list()
 form_index = 0
 with open('app/static/form_config.csv', newline='') as file:
@@ -64,6 +40,7 @@ projectId = form_details[form_index]['projectId']
 formId = form_details[form_index]['formId']
 lastNumberRecordsMills = form_details[form_index]['lastNumberRecordsMills']
 lastNumberRecordsMachines = form_details[form_index]['lastNumberRecordsMachines']
+
 
 # Functions for downloading attachments
 def get_submission_ids(mills_table):
@@ -79,15 +56,15 @@ def get_attachment_names(base_url, aut, projectId, formId):
     attachments = list_attachments(base_url, aut, projectId, formId).json()
     attachment_names = [row['name'] for row in attachments]
     return attachment_names
+#attachment_names = get_attachment_names(base_url, aut, projectId, formId)
 
-attachment_names = get_attachment_names(base_url, aut, projectId, formId)
 def download_attachments(base_url, aut, projectId, formId, submission_ids):
     for instanceId in submission_ids:
         odata_attachments(base_url, aut, projectId, formId, instanceId)
 
 # Get all the mills from the ODK server, flatten them and save them a csv file
-def fetch_mills_csv(base_url, aut, projectId, formId, table = 'Submissions'):
-    #Fetch the data
+def fetch_mills_csv(base_url, aut, projectId, formId, table='Submissions'):
+    # Fetch the data
     start_time = time.perf_counter()
     submissions_response = odata_submissions(base_url, aut, projectId, formId, table)
     mill_fetch_time = time.perf_counter()
@@ -96,10 +73,8 @@ def fetch_mills_csv(base_url, aut, projectId, formId, table = 'Submissions'):
     print(f'Fetched mills in {mill_fetch_time - start_time}s')
     # select only the wanted columns
     form_data = [{key: row[key] for key in mills_columns} for row in flatsubs]
-    #form_data.append(flatsubs)
-    #flatsubs = [item for elem in form_data for item in elem]
     flatsubs = form_data
-    #open a file for writing
+    # open a file for writing
     file_name = ''.join([formId, '.csv'])
     dir = 'app/submission_files/mills'
     path = os.path.join(dir, file_name)
@@ -119,6 +94,14 @@ def fetch_mills_csv(base_url, aut, projectId, formId, table = 'Submissions'):
             csv_writer.writerow(emp.values())
         data_file.close()
 
+# Update the config file with the new number of submissions and the new current timestamp
+def update_form_config_file(form_details):
+    with open('app/static/form_config.csv', 'w', newline='') as file:
+        writer = csv.DictWriter(file, fieldnames=form_details[form_index].keys())
+        writer.writeheader()
+        for row in form_details:
+            writer.writerow(row)
+
 # Check if the files folder exist, if not, create one and fetch the data from odk to fill it
 path = 'app/submission_files'
 if not os.path.exists('app/submission_files'):
@@ -132,7 +115,7 @@ if not os.path.exists('app/submission_files/machines'):
 
 # check if the mills file exists, if not, fetch the data from ODK
 formId_list = list()
-for i in range(0,len(form_details)):
+for i in range(0, len(form_details)):
     form_index = i
     formId = form_details[form_index]['formId']
     formId_list.append(formId)
@@ -145,45 +128,15 @@ for i in range(0,len(form_details)):
         # fetch all the mills data from odk
         fetch_mills_csv(base_url, aut, projectId, formId)
 
-# todo: finish this to get the list of submission ids that you have for each form
-# Check which submission ids each form has
-#submission_ids = submission_csv['__id']
-#form_details[form_index]['formId']
-
-session_info = requests.post(url = f'{base_url}/v1/sessions',
-                             data=auth_values, headers=headers)
-session_token = session_info.json()['token']
-
-headers = {
-    'Authorization': session_token
-    }
-url = f'{base_url}/v1/projects/'
-r =requests.get(url, headers=headers)
-
-# Check if there is new data at the odk server,and save the new count to the config file
-for i in range(0,len(form_details)):
-    form_index = i
-    formId = form_details[form_index]['formId']
-    submission_count = number_submissions(base_url, aut, projectId, formId)
-    form_details[form_index]['lastNumberRecordsMills'] = submission_count
-    form_details[form_index]['lastChecked'] = time.localtime(time.time())
-# Update the config file with the new number of submissions and the new current timestamp
-
-def update_form_config_file(form_details):
-    with open('app/static/form_config.csv', 'w', newline='') as file:
-        writer = csv.DictWriter(file, fieldnames=form_details[form_index].keys())
-        writer.writeheader()
-        for row in form_details:
-            writer.writerow(row)
-
 # ONLY FOR TESTING PURPOSES, REMOVE FROM FINAL VERSION
-#lastNumberRecordsMills = 1400
-submission_count = 100
+# lastNumberRecordsMills = 1400
+# submission_count = 100
 
-# Check if there are any new submissions, if there are, add them to the csv file
-new_records_flag = False
-
-def get_form_column(table, formId, column = '__id'):
+def get_form_column(table, formId, column='__id'):
+    """
+    Retrieve a specific column from a csv file
+    Return the column as a list
+    """
     # get the ids of the submissions csv form as a list
     file_name = ''.join([formId, '.csv'])
     path = os.path.join(submission_files_path, table, file_name)
@@ -196,94 +149,60 @@ def get_form_column(table, formId, column = '__id'):
     data_file.close()
     # select only the wanted column
     formId_list = [row[column] for row in file]
-    return(formId_list)
+    return formId_list
+
 
 def get_new_sub_ids(table, formId, column):
     submission_id_list = get_form_column(table, formId, column)
-    submission_details = get_submission_details(base_url, aut, projectId, formId, table)
-    submission_odk_ids = [row['instanceId'] for row in submission_details]
+    submission_odk_ids = get_submission_details(base_url, aut, projectId, formId, table)
     submission_odk_ids = sorted(submission_odk_ids)
     new_submission_ids = list(set(submission_odk_ids) - set(submission_id_list))
-    return(new_submission_ids)
-    #odk_id_filtered_submissions = get_filtered_submissions(base_url, aut, projectId, formId='Tanzania_Mills_Mapping_Census_V_0.02', table = 'mills', filter_column = '__id', filter_values=formId_list)
-    #     new_records_count = submission_count - int(lastNumberRecordsMills)
-    #     print('New records!')
-    #     newest_submissions_response = get_newest_submissions(base_url, aut, projectId, formId, new_records_count).json()
-    #     print(len(newest_submissions_response['value']))
-    #
-    #     #Write the new records to the csv file
-    #     #transform the new submissions to flat
-    #     new_submissions = newest_submissions_response['value']
-    #     new_flatsubs = [flatten_dict(sub) for sub in new_submissions]
-    #     # read the old submissions
-    #     mills = list()
-    #     with open('app/submission_files/mills.csv', newline='') as data_file:
-    #         mills_csv = csv.DictReader(data_file)
-    #         # combine the new and old data (new_submissions and new_flatsubs)
-    #         for row in mills_csv:
-    #             # transform the coordinates from a string to a list if they are not yet
-    #             try:
-    #                 row['Location.mill_gps.coordinates'] = row['Location.mill_gps.coordinates'][1:-1].split(',')
-    #                 row['Location.mill_gps.coordinates'] = [float(ele) for ele in row['Location.mill_gps.coordinates']]
-    #             except: print('already a list')
-    #             mills.append(row)
-    #     # select only the wanted column
-    #     new_flatsubs = [{key: row[key] for key in mills_columns} for row in new_flatsubs]
-    #     for row in new_flatsubs:
-    #         mills.append(row)
-    #     data_file.close()
-    #     # write all the data to the csv
-    #     with open('app/submission_files/mills.csv', 'w', newline='') as file:
-    #         writer = csv.DictWriter(file, fieldnames=mills[0].keys())
-    #         writer.writeheader()
-    #         #sort the rows based on the id
-    #         mills = sorted(mills, key=lambda d: d['__id'])
-    #         for row in mills:
-    #             writer.writerow(row)
-    #     return(new_records_flag)
-    # else:
-    #     print('No new records.')
-    #     new_records_flag = False
-    #     return(new_records_flag)
-def check_new_submissions_odk(form_details = form_details):
-    for form_index in range(0,len(form_details)):
+    return new_submission_ids
 
-        # Check whether the form is active or not
-        if form_details[form_index]['activityStatus']=='1':
+
+def check_new_submissions_odk(form_details=form_details):
+    """
+    Checks whether there are new submissions in the active forms and triggers fetching them if there are
+    Updates also the config file based on the latest updates
+    """
+    for form_index in range(0, len(form_details)):
+        # Check whether the form is active or not, or if it has not been checked before
+        if form_details[form_index]['activityStatus'] == '1'or form_details[form_index]['lastChecked']=='':
             # Check if there are new submissions in the form
-            if type(form_details[form_index]['lastNumberRecordsMills']) != int: #if it is not int double check the submissions
-                form_details[form_index]['lastNumberRecordsMills'] = 0
+            if type(form_details[form_index][
+                        'lastNumberRecordsMills']) != int:  # if it's not int, double check the submissions
+                try:
+                    form_details[form_index]['lastNumberRecordsMills'] = int(form_details[form_index]['lastNumberRecordsMills'])
+                except:
+                    form_details[form_index]['lastNumberRecordsMills'] = 0
             formId = form_details[form_index]['formId']
             old_submission_count = form_details[form_index]['lastNumberRecordsMills']
             new_submission_count = number_submissions(base_url, aut, projectId, formId)
-
             # If there are new submissions, get the submission ids that are missing
             if new_submission_count - old_submission_count > 0:
                 print('New Submissions!')
-                new_sub_ids = get_new_sub_ids(table = 'mills', formId = formId, column = '__id')
+                new_sub_ids = get_new_sub_ids(table='mills', formId=formId, column='__id')
                 if len(new_sub_ids) != new_submission_count:
                     print('Warning: the number of new submissions does not match')
-
                 # Retrieve the missing submissions by fetching the form
-                fetch_mills_csv(base_url, aut, projectId, formId, table = 'Submissions')
+                fetch_mills_csv(base_url, aut, projectId, formId, table='Submissions')
                 # todo: find out if it is possible to get the submissions based on ids, and append them to the existing csv
-
             # Update form_config file
             form_details[form_index]['lastNumberRecordsMills'] = new_submission_count
             form_details[form_index]['lastChecked'] = time.localtime(time.time())
             update_form_config_file(form_details)
 
 sched = BackgroundScheduler(daemon=True)
-sched.add_job(check_new_submissions_odk,'interval',seconds=120)
+sched.add_job(check_new_submissions_odk, 'interval', seconds=120)
 sched.start()
 atexit.register(lambda: sched.shutdown())
-# scheduler = BackgroundScheduler()
-# scheduler.add_job(func=check_new_submissions_odk(submission_count, lastNumberRecordsMills), trigger="interval", seconds=60)
-# scheduler.start()
-# atexit.register(lambda: scheduler.shutdown())
 
-def read_local_tables_together(table = 'mills'):
-    path = os.path.join(submission_files_path, table)
+def read_local_tables_together(folder='mills'):
+    """
+    Read all the csv files in a folder and combine them together
+    Returns a list a dictionaries
+    """
+    path = os.path.join(submission_files_path, folder)
     form_names = os.listdir(path)
     # Combine the files together
     form_data = list()
@@ -298,14 +217,14 @@ def read_local_tables_together(table = 'mills'):
                 file.append(row)
         data_file.close()
         form_data.append(file)
-    flatsubs = [item for elem in form_data for item in elem]
-    return(flatsubs)
+    return [item for elem in form_data for item in elem]
 
 @app.route('/mills')
 def mills():
     # Read the data
-    mills = read_local_tables_together(table = 'mills')
+    mills = read_local_tables_together(folder='mills')
     return json.dumps(mills)
+
 
 @app.route('/machines')
 def machines():
@@ -315,13 +234,13 @@ def machines():
                           aut,
                           projectId,
                           formId,
-                          table = 'Submissions.machines.machine')
+                          table='Submissions.machines.machine')
     machine_fetch_time = time.perf_counter()
     machines = machines_response.json()['value']
     flatmachines = [flatten_dict(mach) for mach in machines]
     print(f'Fetched machines in {machine_fetch_time - start_time}s')
 
-    #open a file for writing
+    # open a file for writing
     data_file = open('app/submission_files/machines.csv', 'w')
     # create the csv writer object
     csv_writer = csv.writer(data_file)
@@ -339,29 +258,26 @@ def machines():
     data_file.close()
     return json.dumps(flatmachines)
 
+
 @app.route('/sites')
 def sites():
     import concurrent.futures
-
     results = []
     with concurrent.futures.ThreadPoolExecutor() as ex:
-        futures = []
-        futures.append(mills)
-        futures.append(machines)
+        futures = [mills, machines]
         for future in concurrent.futures.as_completed(futures):
             results.append(future.result())
-
 
 
 @app.route('/mill_points')
 def mill_points():
     start_time = time.perf_counter()
-    submissions = odata_submissions(base_url, aut, projectId, formId, table = 'Submissions')
+    submissions = odata_submissions(base_url, aut, projectId, formId, table='Submissions')
     submissions_machine = odata_submissions(base_url,
-                                                    aut, projectId, formId, table='Submissions.machines.machine')
+                                            aut, projectId, formId, table='Submissions.machines.machine')
     requests_complete_time = time.perf_counter()
-    submissions_table =  pd.DataFrame(submissions.json()['value'])
-    submissions_machine_table =  \
+    submissions_table = pd.DataFrame(submissions.json()['value'])
+    submissions_machine_table = \
         pd.DataFrame(submissions_machine.json()['value'])
     pd_df_complete_time = time.perf_counter()
     charts(submissions_machine.json()['value'], submissions.json()['value'])
@@ -372,11 +288,11 @@ def mill_points():
     submissions_machine_table = \
         nested_dictionary_to_df(submissions_machine_table)
     submissions_all = submissions_table.merge(submissions_machine_table,
-                                              left_on = '__id',
-                                              right_on = '__Submissions-id')
+                                              left_on='__id',
+                                              right_on='__Submissions-id')
     tables_to_flat_complete_time = time.perf_counter()
 
-    mill_filter_list = ['mill_owner','flour_fortified', 'flour_fortified_standard']
+    mill_filter_list = ['mill_owner', 'flour_fortified', 'flour_fortified_standard']
     machine_filter_list = ['commodity_milled',
                            'mill_type', 'operational_mill',
                            'non_operational', 'energy_source']
@@ -385,9 +301,9 @@ def mill_points():
                                            submissions_all)
     get_filters_complete_time = time.perf_counter()
     submissions_table_filtered_machine = \
-        submissions_machine_table.to_dict(orient = 'index')
+        submissions_machine_table.to_dict(orient='index')
     submissions_filtered_dict = submissions_table.to_dict(orient='index')
-    #submissions_table_filtered_dict = json.loads(submissions_table_filtered)
+    # submissions_table_filtered_dict = json.loads(submissions_table_filtered)
     # Make submissions_table_filtered into dictionary of dictionaries
     # with machine information nested within
     submissions_dict = submissions_filtered_dict
@@ -395,8 +311,8 @@ def mill_points():
         submissions_dict[submission_id]['machines'] = {}
         for machine_index in submissions_table_filtered_machine:
             machine_submission_id = \
-                submissions_table_filtered_machine[machine_index]\
-                ['__Submissions-id']
+                submissions_table_filtered_machine[machine_index] \
+                    ['__Submissions-id']
             machine_id = \
                 submissions_table_filtered_machine[machine_index]['__id']
             if machine_submission_id == submission_id:
@@ -405,20 +321,22 @@ def mill_points():
     submissions_filtered_json = json.dumps(submissions_dict)
 
     to_json_complete_time = time.perf_counter()
-    print(f'Requests are complete at {requests_complete_time-start_time}s,'\
+    print(f'Requests are complete at {requests_complete_time - start_time}s,' \
           f'pandas dataframes are complete at '
-          f'{pd_df_complete_time-requests_complete_time}s, charts are complete'\
-          f'at {charts_complete_time-pd_df_complete_time}s, tables are flat '\
-          f'in {tables_to_flat_complete_time-charts_complete_time}s, got '\
-          f'filters in '\
-          f'{get_filters_complete_time-tables_to_flat_complete_time}s, '\
-          f'and to_json in {to_json_complete_time-get_filters_complete_time}s')
+          f'{pd_df_complete_time - requests_complete_time}s, charts are complete' \
+          f'at {charts_complete_time - pd_df_complete_time}s, tables are flat ' \
+          f'in {tables_to_flat_complete_time - charts_complete_time}s, got ' \
+          f'filters in ' \
+          f'{get_filters_complete_time - tables_to_flat_complete_time}s, ' \
+          f'and to_json in {to_json_complete_time - get_filters_complete_time}s')
     return submissions_filtered_json
+
 
 @app.route('/json_test')
 def json_test():
     test_submission = json.load(open('individual_test_submission.json', 'r'))
     return json.dumps(test_submission)
+
 
 @app.route('/')
 @app.route('/index')
@@ -426,7 +344,8 @@ def json_test():
 def index():
     return render_template('index.html', title='Map')
 
-@app.route('/filterform', methods = ['GET', 'POST'])
+
+@app.route('/filterform', methods=['GET', 'POST'])
 def filter_data():
     if request.method == 'POST':
         choices = request.form
@@ -438,16 +357,16 @@ def filter_data():
             choices_dict[choice_element].append(choice.split(", ")[1])
 
             submissions = odata_submissions(base_url, aut, projectId, formId, table='Submissions')
-            submissions_machine = odata_submissions(base_url,aut, projectId, formId,
+            submissions_machine = odata_submissions(base_url, aut, projectId, formId,
                                                     table='Submissions.machines.machine')
             # charts(submissions_machine.json()['value'],
             #       submissions.json()['value'])
-            submissions_table =  \
+            submissions_table = \
                 pd.DataFrame(odata_submissions_table(base_url, aut,
                                                      projectId, formId,
                                                      'Submissions')['value'])
-            submissions_machine_table =  \
-                pd.DataFrame(odata_submissions_table(base_url, aut,\
+            submissions_machine_table = \
+                pd.DataFrame(odata_submissions_table(base_url, aut, \
                                                      projectId, formId,
                                                      'Submissions.machines.machine')['value'])
             # Dataframe with nested dictionaries to flat dictionary
@@ -456,9 +375,9 @@ def filter_data():
                 nested_dictionary_to_df(submissions_machine_table)
             submissions_all = \
                 submissions_table.merge(submissions_machine_table,
-                                        left_on = '__id',
-                                        right_on = '__Submissions-id')
-            mill_filter_list = ['mill_owner','flour_fortified',
+                                        left_on='__id',
+                                        right_on='__Submissions-id')
+            mill_filter_list = ['mill_owner', 'flour_fortified',
                                 'flour_fortified_standard']
             machine_filter_list = ['commodity_milled', 'mill_type',
                                    'operational_mill', 'non_operational',
@@ -472,31 +391,30 @@ def filter_data():
                     submissions_machine_table = \
                         submissions_machine_table.loc[submissions_machine_table[dict_key].isin(dict_values)]
             submissions_table_filtered_machine = \
-                submissions_machine_table.to_dict(orient = 'index')
-            #submissions_table_filtered_machine_dict = \
+                submissions_machine_table.to_dict(orient='index')
+            # submissions_table_filtered_machine_dict = \
             #    json.loads(submissions_table_filtered_machine)
-		#{k: [d[k] for d in dicts] for k in dicts[0]}
+            # {k: [d[k] for d in dicts] for k in dicts[0]}
 
-	    # Filtering based on the form for the mill
-	    #if all the selections have been deselected from one category
+            # Filtering based on the form for the mill
+            # if all the selections have been deselected from one category
             for mill_key in mill_filter_selection:
                 if mill_key not in list(choices_dict.keys()):
                     submissions_table.drop(submissions_table.index, inplace=True)
-		#filter based on the choices
+            # filter based on the choices
             for dict_key, dict_values in zip(list(choices_dict.keys()), list(choices_dict.values())):
                 if dict_key in submissions_table.columns:
                     submissions_table[dict_key] = \
-                        list(map(str,list(submissions_table[dict_key])))
+                        list(map(str, list(submissions_table[dict_key])))
                     submissions_table = \
                         submissions_table.loc[submissions_table[dict_key].isin(dict_values)]
                 submissions_table.set_index('__id', inplace=True)
                 submissions_filtered_dict = \
                     submissions_table.to_dict(orient='index')
-		#submissions_table_filtered_dict = \
+                # submissions_table_filtered_dict = \
                 #    json.loads(submissions_table_filtered)
 
-
-		# Make submissions_table_filtered into dictionary of
+                # Make submissions_table_filtered into dictionary of
                 # dictionaries with machine information nested within
                 submissions_dict = submissions_filtered_dict
                 for submission_id in submissions_dict:
@@ -512,28 +430,28 @@ def filter_data():
 
         submissions_filtered_json = json.dumps(submissions_dict)
         return render_template('index.html',
-                               submissions_filtered = submissions_filtered_json,
-                               mill_filter_selection = mill_filter_selection,
-                               title='Map', choices_dict = choices_dict)
+                               submissions_filtered=submissions_filtered_json,
+                               mill_filter_selection=mill_filter_selection,
+                               title='Map', choices_dict=choices_dict)
+
 
 @app.route('/download_data/')
 def export_data():
-    #Export all the data from ODK form
+    # Export all the data from ODK form
     r = export_submissions(base_url, aut, projectId, formId)
     file_name = formId
     if not os.path.exists('files'):
         outdir = os.makedirs('files')
 
-	#Saves the file also locally
+        # Saves the file also locally
         with open(f'files/{file_name}.zip', 'wb') as zip:
             zip.write(r.content)
     basename = os.path.basename(f'files/{file_name}.zip')
     dirname = os.path.dirname(os.path.abspath(f'files/{file_name}.zip'))
     send_from_directory(dirname, basename, as_attachment=True)
 
-    #Stream the response as the data is generated
+    # Stream the response as the data is generated
     response = Response(r.content, content_type='zip')
     response.headers.set("Content-Disposition", "attachment",
                          filename=f"{file_name}.zip")
     return response
-
