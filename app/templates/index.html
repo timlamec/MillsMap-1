@@ -8,7 +8,6 @@
                 <div class="row">
                     <div class="col-11 " >
                         <div class="wrapper p-4">
-                        
                             <nav >
                                 <div class="row">
                                     <div class="col-8">
@@ -58,8 +57,7 @@
                 </span>
                 <div id="mapid" class="mb-3">
                 </div>
-
-
+                <p id="download-info" class="hide">Testing</p>
             </div>
 
 
@@ -112,7 +110,6 @@ $(document).ready(function () {
         $('#left-arrow').toggleClass('hide');
         $('#right-arrow').toggleClass('hide');
     });
-
 });
 </script>
 
@@ -178,31 +175,61 @@ markers.addTo(map);
 // machines after the mills download is complete
 var subs
 var machines
-mills_promise = $.get('/mills')
-machines_promise = $.get('/machines')  
+mills_promise = $.get('/get_merged_dictionaries')
+machines_promise = $.get('/machines')
+
+<!--$.ajax({-->
+<!--    type: "POST",-->
+<!--    url: '/file_names',-->
+<!--    contentType: 'application/json;charset:UTF-8',-->
+<!--    success: function (form_names) {-->
+<!--        console.log(form_names);-->
+<!--        $('#download-info').toggleClass('hide');-->
+<!--        var download_info = document.getElementById('download-info')-->
+<!--        download_info.innerHTML = form_names-->
+<!--        }-->
+<!--    });-->
 
 // Now the promise chain that uses the mills and machines
 mills_promise.then(function(subs_json) {
-    var element = document.getElementById("spin");
-    element.classList.toggle("hide");
-    subs = JSON.parse(subs_json)
-    for (subindex in subs) {
-        var sub = subs[subindex]
-        try {
-            var coords = sub['Location.mill_gps.coordinates']
+    machines_promise.then(function(machine_json) {
+        // Get the filenames for mills folder
+        var element = document.getElementById("spin");
+        element.classList.toggle("hide");
+        subs = JSON.parse(subs_json)
+        machine_index = 0
+        for (subindex in subs) {
+            //console.log(subindex)
+            var sub = subs[subindex]
+            try {
+                var coords = sub['Location.mill_gps.coordinates']
+            }
+            catch(err) {
+                console.log("No GPS coordinates found for this submission", sub)
+            }
+            color = 'blue'
+            var lon = coords[1]
+            var lat = coords[0]
+            var marker = L.circleMarker([lon, lat],{stroke: false, fillOpacity: 0.8});
+            marker.setStyle({fillColor: color});
+            markers.addLayer(marker)
+            var toolTip = "<dt>Number of milling machines:" + sub['machines.machine_count'] + "</dt>"
+            counter = 0
+            for (machine_index in sub['machines']){
+                counter += 1
+                toolTip += "<dt> Machine: " + counter + "</dt>";
+                toolTip += "<div> ID: " + sub['machines'][machine_index]['__id'] + "</div>";
+                toolTip += "<div> Type of mill: ";
+                toolTip += sub['machines'][machine_index]['mill_type'] + "</div>";
+                toolTip += "<div> Operational: ";
+                toolTip += sub['machines'][machine_index]['operational_mill'] + "</div>";
+                toolTip += "<div> Energy source: ";
+                toolTip += sub['machines'][machine_index]['energy_source'] + "</div>";
+            }
+            marker.bindTooltip(toolTip);
+
         }
-        catch(err) {
-            console.log("No GPS coordinates found for this submission", sub)
-        }
-        color = 'blue'
-        var lon = coords[1]
-        var lat = coords[0]
-        var marker = L.circleMarker([lon, lat],{stroke: false, fillOpacity: 0.8});
-        marker.setStyle({fillColor: color});
-        markers.addLayer(marker)
-        var toolTip = "<dt>Number of milling machines:" + sub['machines.machine_count'] + "</dt>"
-        marker.bindTooltip(toolTip);
-    }
+        });
 });
 	    
 // promise = $.get('/mill_points')

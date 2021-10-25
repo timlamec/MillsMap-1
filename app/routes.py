@@ -27,8 +27,9 @@ mills_columns = ['__id', 'start', 'end', 'interviewee.mill_owner', 'mills.number
                  'Packaging.flour_fortified_standard', 'Packaging.flour_fortified_standard_other',
                  'safety_cleanliness.protective_gear',
                  'safety_cleanliness.protective_gear_other', 'Location.mill_gps.coordinates']
+machine_columns = ['']
 submission_files_path = 'app/submission_files'
-
+id_columns = ['__id', '__Submissions-id']
 # Get the form configured data
 form_details = list()
 form_index = 0
@@ -63,26 +64,27 @@ def download_attachments(base_url, aut, projectId, formId, submission_ids):
         odata_attachments(base_url, aut, projectId, formId, instanceId)
 
 # Get all the mills from the ODK server, flatten them and save them a csv file
-def fetch_mills_csv(base_url, aut, projectId, formId, table='Submissions'):
+def fetch_odk_csv(base_url, aut, projectId, formId, table='Submissions', folder_name = 'mills', sort_column = '__id'):
     # Fetch the data
     start_time = time.perf_counter()
     submissions_response = odata_submissions(base_url, aut, projectId, formId, table)
     mill_fetch_time = time.perf_counter()
     submissions = submissions_response.json()['value']
     flatsubs = [flatten_dict(sub) for sub in submissions]
-    print(f'Fetched mills in {mill_fetch_time - start_time}s')
+    print(f'Fetched table {table} in {mill_fetch_time - start_time}s')
     # select only the wanted columns
-    form_data = [{key: row[key] for key in mills_columns} for row in flatsubs]
-    flatsubs = form_data
+    #form_data = [{key: row[key] for key in mills_columns} for row in flatsubs]
+    #flatsubs = form_data
+
     # open a file for writing
     file_name = ''.join([formId, '.csv'])
-    dir = 'app/submission_files/mills'
-    path = os.path.join(dir, file_name)
+    dir = 'app/submission_files'
+    path = os.path.join(dir, folder_name, file_name)
     with open(path, 'w') as data_file:
         csv_writer = csv.writer(data_file)
         # Counter variable used for writing
         count = 0
-        flatsubs = sorted(flatsubs, key=lambda d: d['__id'])
+        flatsubs = sorted(flatsubs, key=lambda d: d[sort_column])
         # write the rows
         for emp in flatsubs:
             if count == 0:
@@ -108,25 +110,30 @@ if not os.path.exists('app/submission_files'):
     os.makedirs('app/submission_files')
 if not os.path.exists('app/submission_files/figures'):
     os.makedirs('app/submission_files/figures')
-if not os.path.exists('app/submission_files/mills'):
-    os.makedirs('app/submission_files/mills')
-if not os.path.exists('app/submission_files/machines'):
-    os.makedirs('app/submission_files/machines')
 
-# check if the mills file exists, if not, fetch the data from ODK
+# check if the folders exists, if not, fetch the data from ODK
+table_names = ['Submissions', 'Submissions.machines.machine']
+for table_name in table_names:
+    path = os.path.join(submission_files_path, table_name)
+    if exists(path):
+        next
+    else:
+        os.makedirs(path)
+
+# check if the files exists, if not, fetch the data from ODK
 formId_list = list()
 for i in range(0, len(form_details)):
     form_index = i
     formId = form_details[form_index]['formId']
     formId_list.append(formId)
     file_name = ''.join([formId, '.csv'])
-    table_name = 'mills'
-    path = os.path.join(submission_files_path, table_name, file_name)
-    if exists(path):
-        next
-    else:
-        # fetch all the mills data from odk
-        fetch_mills_csv(base_url, aut, projectId, formId)
+    for (table_name, id) in zip(table_names, id_columns):
+        path = os.path.join(submission_files_path, table_name, file_name)
+        if exists(path):
+            next
+        else:
+            # fetch all the mills data from odk
+            fetch_odk_csv(base_url, aut, projectId, formId, table=table_name, folder_name=table_name, sort_column = id)
 
 # ONLY FOR TESTING PURPOSES, REMOVE FROM FINAL VERSION
 # lastNumberRecordsMills = 1400
@@ -152,9 +159,10 @@ def get_form_column(table, formId, column='__id'):
     return formId_list
 
 
-def get_new_sub_ids(table, formId, column):
-    submission_id_list = get_form_column(table, formId, column)
-    submission_odk_ids = get_submission_details(base_url, aut, projectId, formId, table)
+def get_new_sub_ids(table, formId, odk_details_column, local_column):
+    submission_id_list = get_form_column(table, formId, local_column)
+    submission_odk_details = get_submission_details(base_url, aut, projectId, formId, table)
+    submission_odk_ids = [row[odk_details_column] for row in submission_odk_details]
     submission_odk_ids = sorted(submission_odk_ids)
     new_submission_ids = list(set(submission_odk_ids) - set(submission_id_list))
     return new_submission_ids
@@ -181,11 +189,12 @@ def check_new_submissions_odk(form_details=form_details):
             # If there are new submissions, get the submission ids that are missing
             if new_submission_count - old_submission_count > 0:
                 print('New Submissions!')
-                new_sub_ids = get_new_sub_ids(table='mills', formId=formId, column='__id')
+                new_sub_ids = get_new_sub_ids(table='Submissions', formId=formId, odk_details_column='instanceId', local_column='__id')
                 if len(new_sub_ids) != new_submission_count:
                     print('Warning: the number of new submissions does not match')
                 # Retrieve the missing submissions by fetching the form
-                fetch_mills_csv(base_url, aut, projectId, formId, table='Submissions')
+                fetch_odk_csv(base_url, aut, projectId, formId, table='Submissions', folder_name='mills', sort_column = '__id')
+                fetch_odk_csv(base_url, aut, projectId, formId, table='Submissions.machines.machine', folder_name='machines', sort_column = '__Submissions-id')
                 # todo: find out if it is possible to get the submissions based on ids, and append them to the existing csv
             # Update form_config file
             form_details[form_index]['lastNumberRecordsMills'] = new_submission_count
@@ -213,50 +222,78 @@ def read_local_tables_together(folder='mills'):
             csv_file = csv.DictReader(data_file)
             for row in csv_file:
                 # transform the coordinates from a string to a list
-                row['Location.mill_gps.coordinates'] = row['Location.mill_gps.coordinates'][1:-1].split(',')
+                try:
+                    row['Location.mill_gps.coordinates'] = row['Location.mill_gps.coordinates'][1:-1].split(',')
+                except:
+                    next
                 file.append(row)
         data_file.close()
         form_data.append(file)
     return [item for elem in form_data for item in elem]
 
+@app.route('/file_names', methods=['POST'])
+def get_main_tables():
+    folder = 'mills'
+    path = os.path.join(submission_files_path, folder)
+    form_names = os.listdir(path)
+    return json.dumps(form_names)
+
 @app.route('/mills')
 def mills():
     # Read the data
-    mills = read_local_tables_together(folder='mills')
+    mills = read_local_tables_together(folder='Submissions')
     return json.dumps(mills)
 
 
 @app.route('/machines')
 def machines():
-    start_time = time.perf_counter()
-    machines_response = \
-        odata_submissions(base_url,
-                          aut,
-                          projectId,
-                          formId,
-                          table='Submissions.machines.machine')
-    machine_fetch_time = time.perf_counter()
-    machines = machines_response.json()['value']
-    flatmachines = [flatten_dict(mach) for mach in machines]
-    print(f'Fetched machines in {machine_fetch_time - start_time}s')
+    machines = read_local_tables_together(folder='Submissions.machines.machine')
+    print('Machines are done')
+    return json.dumps(machines)
 
-    # open a file for writing
-    data_file = open('app/submission_files/machines.csv', 'w')
-    # create the csv writer object
-    csv_writer = csv.writer(data_file)
-    # Counter variable used for writing
-    # headers to the CSV file
-    count = 0
-    for emp in flatmachines:
-        if count == 0:
-            # Writing headers of CSV file
-            header = emp.keys()
-            csv_writer.writerow(header)
-            count += 1
-        # Writing data of CSV file
-        csv_writer.writerow(emp.values())
-    data_file.close()
-    return json.dumps(flatmachines)
+@app.route('/get_merged_dictionaries')
+def get_merged_dictionaries():
+    machines = read_local_tables_together(folder='Submissions.machines.machine')
+    mills = read_local_tables_together(folder='Submissions')
+    machine_i = 0
+    for i in range(len(mills)):
+        number_machines = int(mills[i]['machines.machine_count'])
+        machine_list = list()
+        for j in range(number_machines):
+            machine_list.append(machines[machine_i])
+            machine_i += 1
+        mills[i]['machines'] = machine_list
+    return json.dumps(mills)
+    #
+    # start_time = time.perf_counter()
+    # machines_response = \
+    #     odata_submissions(base_url,
+    #                       aut,
+    #                       projectId,
+    #                       formId,
+    #                       table='Submissions.machines.machine')
+    # machine_fetch_time = time.perf_counter()
+    # machines = machines_response.json()['value']
+    # flatmachines = [flatten_dict(mach) for mach in machines]
+    # print(f'Fetched machines in {machine_fetch_time - start_time}s')
+    #
+    # # open a file for writing
+    # data_file = open('app/submission_files/machines.csv', 'w')
+    # # create the csv writer object
+    # csv_writer = csv.writer(data_file)
+    # # Counter variable used for writing
+    # # headers to the CSV file
+    # count = 0
+    # for emp in flatmachines:
+    #     if count == 0:
+    #         # Writing headers of CSV file
+    #         header = emp.keys()
+    #         csv_writer.writerow(header)
+    #         count += 1
+    #     # Writing data of CSV file
+    #     csv_writer.writerow(emp.values())
+    # data_file.close()
+    # return json.dumps(flatmachines)
 
 
 @app.route('/sites')
