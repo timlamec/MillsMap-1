@@ -64,7 +64,7 @@ def download_attachments(base_url, aut, projectId, formId, submission_ids):
         odata_attachments(base_url, aut, projectId, formId, instanceId)
 
 # Get all the mills from the ODK server, flatten them and save them a csv file
-def fetch_odk_csv(base_url, aut, projectId, formId, table='Submissions', folder_name = 'mills', sort_column = '__id'):
+def fetch_odk_csv(base_url, aut, projectId, formId, table='Submissions', sort_column = '__id'):
     # Fetch the data
     start_time = time.perf_counter()
     submissions_response = odata_submissions(base_url, aut, projectId, formId, table)
@@ -79,7 +79,7 @@ def fetch_odk_csv(base_url, aut, projectId, formId, table='Submissions', folder_
     # open a file for writing
     file_name = ''.join([formId, '.csv'])
     dir = 'app/submission_files'
-    path = os.path.join(dir, folder_name, file_name)
+    path = os.path.join(dir, table, file_name)
     with open(path, 'w') as data_file:
         csv_writer = csv.writer(data_file)
         # Counter variable used for writing
@@ -133,7 +133,7 @@ for i in range(0, len(form_details)):
             next
         else:
             # fetch all the mills data from odk
-            fetch_odk_csv(base_url, aut, projectId, formId, table=table_name, folder_name=table_name, sort_column = id)
+            fetch_odk_csv(base_url, aut, projectId, formId, table=table_name, sort_column = id)
 
 # ONLY FOR TESTING PURPOSES, REMOVE FROM FINAL VERSION
 # lastNumberRecordsMills = 1400
@@ -167,13 +167,32 @@ def get_new_sub_ids(table, formId, odk_details_column, local_column):
     new_submission_ids = list(set(submission_odk_ids) - set(submission_id_list))
     return new_submission_ids
 
+def check_removed_forms(form_details):
+    form_names = [form['formId'] for form in form_details]
+    main_table_name = 'Submissions'
+    path = os.path.join(submission_files_path, main_table_name)
+    sub_files = os.listdir(path)
+    for file in sub_files:
+        file_name = os.path.splitext(file)[0]
+        if file_name not in form_names:
+            mills_path = os.path.join(path, file)
+            os.remove(mills_path)
+            machine_path = os.path.join(submission_files_path, 'Submissions.machines.machine', file)
+            os.remove(machine_path)
+            # todo include also removing the figures automatically
+
+
 
 def check_new_submissions_odk(form_details=form_details):
     """
     Checks whether there are new submissions in the active forms and triggers fetching them if there are
-    Updates also the config file based on the latest updates
+    Checks if the config file has less forms and removes those
+    Updates the config file based on the latest updates
     """
     for form_index in range(0, len(form_details)):
+        # Check if there are files that are not in the config file and remove those
+        check_removed_forms(form_details)
+
         # Check whether the form is active or not, or if it has not been checked before
         if form_details[form_index]['activityStatus'] == '1'or form_details[form_index]['lastChecked']=='':
             # Check if there are new submissions in the form
@@ -190,11 +209,11 @@ def check_new_submissions_odk(form_details=form_details):
             if new_submission_count - old_submission_count > 0:
                 print('New Submissions!')
                 new_sub_ids = get_new_sub_ids(table='Submissions', formId=formId, odk_details_column='instanceId', local_column='__id')
-                if len(new_sub_ids) != new_submission_count:
+                if len(new_sub_ids) + old_submission_count != new_submission_count:
                     print('Warning: the number of new submissions does not match')
                 # Retrieve the missing submissions by fetching the form
-                fetch_odk_csv(base_url, aut, projectId, formId, table='Submissions', folder_name='mills', sort_column = '__id')
-                fetch_odk_csv(base_url, aut, projectId, formId, table='Submissions.machines.machine', folder_name='machines', sort_column = '__Submissions-id')
+                fetch_odk_csv(base_url, aut, projectId, formId, table='Submissions', sort_column = '__id')
+                fetch_odk_csv(base_url, aut, projectId, formId, table='Submissions.machines.machine', sort_column = '__Submissions-id')
                 # todo: find out if it is possible to get the submissions based on ids, and append them to the existing csv
             # Update form_config file
             form_details[form_index]['lastNumberRecordsMills'] = new_submission_count
@@ -202,11 +221,11 @@ def check_new_submissions_odk(form_details=form_details):
             update_form_config_file(form_details)
 
 sched = BackgroundScheduler(daemon=True)
-sched.add_job(check_new_submissions_odk, 'interval', seconds=120)
+sched.add_job(check_new_submissions_odk, 'interval', seconds=300)
 sched.start()
 atexit.register(lambda: sched.shutdown())
 
-def read_local_tables_together(folder='mills'):
+def read_local_tables_together(folder):
     """
     Read all the csv files in a folder and combine them together
     Returns a list a dictionaries
@@ -216,6 +235,7 @@ def read_local_tables_together(folder='mills'):
     # Combine the files together
     form_data = list()
     for form in form_names:
+        start_time = time.perf_counter()
         file = list()
         table_path = os.path.join(path, form)
         with open(table_path, newline='') as data_file:
@@ -229,6 +249,8 @@ def read_local_tables_together(folder='mills'):
                 file.append(row)
         data_file.close()
         form_data.append(file)
+        form_reader_time = time.perf_counter()
+        print(f'Fetched table {form} in {form_reader_time - start_time}s')
     return [item for elem in form_data for item in elem]
 
 @app.route('/file_names', methods=['POST'])
@@ -248,7 +270,6 @@ def mills():
 @app.route('/machines')
 def machines():
     machines = read_local_tables_together(folder='Submissions.machines.machine')
-    print('Machines are done')
     return json.dumps(machines)
 
 @app.route('/get_merged_dictionaries')
@@ -256,6 +277,7 @@ def get_merged_dictionaries():
     machines = read_local_tables_together(folder='Submissions.machines.machine')
     mills = read_local_tables_together(folder='Submissions')
     machine_i = 0
+    start_time = time.perf_counter()
     for i in range(len(mills)):
         number_machines = int(mills[i]['machines.machine_count'])
         machine_list = list()
@@ -263,6 +285,8 @@ def get_merged_dictionaries():
             machine_list.append(machines[machine_i])
             machine_i += 1
         mills[i]['machines'] = machine_list
+    merging_time = time.perf_counter()
+    print(f'Merged tables together in {merging_time - start_time}s')
     return json.dumps(mills)
     #
     # start_time = time.perf_counter()
