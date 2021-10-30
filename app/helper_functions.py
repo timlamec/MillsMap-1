@@ -71,7 +71,7 @@ def _flatten_dict_gen(d, parent_key, sep):
 
 def flatten_dict(d: MutableMapping,
                  parent_key: str = '',
-                 sep: str = '.'):
+                 sep: str = '_'):
     """Flatten dictionary using Python generators"""
     return dict(_flatten_dict_gen(d, parent_key, sep))
 

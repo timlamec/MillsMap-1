@@ -72,8 +72,10 @@ object-fit: cover;
 .expand-button-col{
     padding-left: 0px!important;
 }
-
-
+/*Figures*/
+.dc-chart{
+    text-align:center;
+}
 /*Loading giff*/
 .ouro {
     z-index: 500;

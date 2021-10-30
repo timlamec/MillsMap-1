@@ -22,11 +22,11 @@ email = secret_tokens['email']
 password = secret_tokens['password']
 aut = (email, password)
 base_url = 'https://omdtz-data.org'
-mills_columns = ['__id', 'start', 'end', 'interviewee.mill_owner', 'mills.number_milling_machines',
-                 'machines.machine_count', 'Packaging.flour_fortified',
-                 'Packaging.flour_fortified_standard', 'Packaging.flour_fortified_standard_other',
-                 'safety_cleanliness.protective_gear',
-                 'safety_cleanliness.protective_gear_other', 'Location.mill_gps.coordinates']
+mills_columns = ['__id', 'start', 'end', 'interviewee_mill_owner', 'mills_number_milling_machines',
+                 'machines_machine_count', 'Packaging_flour_fortified',
+                 'Packaging_flour_fortified_standard', 'Packaging_flour_fortified_standard_other',
+                 'safety_cleanliness_protective_gear',
+                 'safety_cleanliness_protective_gear_other', 'Location_mill_gps_coordinates']
 machine_columns = ['']
 submission_files_path = 'app/submission_files'
 id_columns = ['__id', '__Submissions-id']
@@ -243,7 +243,7 @@ def read_local_tables_together(folder):
             for row in csv_file:
                 # transform the coordinates from a string to a list
                 try:
-                    row['Location.mill_gps.coordinates'] = row['Location.mill_gps.coordinates'][1:-1].split(',')
+                    row['Location_mill_gps_coordinates'] = row['Location_mill_gps_coordinates'][1:-1].split(',')
                 except:
                     next
                 file.append(row)
@@ -274,12 +274,15 @@ def machines():
 
 @app.route('/get_merged_dictionaries')
 def get_merged_dictionaries():
+    start_time = time.perf_counter()
     machines = read_local_tables_together(folder='Submissions.machines.machine')
     mills = read_local_tables_together(folder='Submissions')
+    reading_local_tables_time = time.perf_counter()
+    print(f'Read local tables in {reading_local_tables_time - start_time}s')
     machine_i = 0
     start_time = time.perf_counter()
     for i in range(len(mills)):
-        number_machines = int(mills[i]['machines.machine_count'])
+        number_machines = int(mills[i]['machines_machine_count'])
         machine_list = list()
         for j in range(number_machines):
             machine_list.append(machines[machine_i])
