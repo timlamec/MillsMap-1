@@ -142,7 +142,7 @@ mills_promise.then(function(subs_json) {
     element.classList.toggle("hide");
     subs = JSON.parse(subs_json)
     subs = crossfilter(subs)
-    console.log(subs.all())
+//    console.log(subs.all())
     machine_index = 0
     let dimensionPackaging = subs.dimension(item => item.phonenumber)
     dimensionPackaging.filterExact("");
@@ -191,9 +191,9 @@ mills_promise.then(function(subs_json) {
 <!--        functionalMillsChart.render();-->
 <!--        console.log(subs.values())-->
 
-<!--    for (subindex in subs.all()) {-->
-    for (subindex in filtered){
-        var sub = filtered[subindex]
+for (subindex in subs.all()) {
+//    for (subindex in filtered){
+        var sub = subs.all()[subindex]
         try {
             var coords = sub['Location_mill_gps_coordinates']
         }
