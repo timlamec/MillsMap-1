@@ -1,2 +1,2 @@
 projectId,formId,activityStatus,featureType,lastChecked,lastNumberRecordsMills,lastNumberRecordsMachines
-2,Tanzania_Mills_Mapping_Census_V_0.07,1,point,"time.struct_time(tm_year=2021, tm_mon=10, tm_mday=30, tm_hour=14, tm_min=44, tm_sec=44, tm_wday=5, tm_yday=303, tm_isdst=1)",5239,
+2,Tanzania_Mills_Mapping_Census_V_0.07,1,point,"time.struct_time(tm_year=2021, tm_mon=11, tm_mday=1, tm_hour=10, tm_min=30, tm_sec=41, tm_wday=0, tm_yday=305, tm_isdst=0)",5255,
