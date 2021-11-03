@@ -73,6 +73,7 @@ var subs
 var machines
 mills_promise = $.get('/get_merged_dictionaries')
 machines_promise = $.get('/machines')
+filter_options_promise = $.get('/get_filter_options')
 
 <!--$.ajax({-->
 <!--    type: "POST",-->
@@ -141,34 +142,55 @@ mills_promise.then(function(subs_json) {
     var element = document.getElementById("spin");
     element.classList.toggle("hide");
     subs = JSON.parse(subs_json)
-    subs = crossfilter(subs)
 //    console.log(subs.all())
-    machine_index = 0
-    let dimensionPackaging = subs.dimension(item => item.phonenumber)
-    dimensionPackaging.filterExact("");
-    filtered = (dimensionPackaging.top(Infinity))
+//    machine_index = 0
+//    let dimensionPackaging = subs.dimension(item => item.phonenumber)
+//    dimensionPackaging.filterExact("");
+//    filtered = (dimensionPackaging.top(Infinity))
 
-<!--    fortifiedFlourChart chart   -->
+//  Charts
     var fortifiedFlourChart = new dc.PieChart('#fortifiedFlour');
+
+//  Making a crosssfilter instance
+    subs = crossfilter(subs)
+
+//   Fortified group and dimension
     var fortifiedDimension = subs.dimension(function(data) {
        return data.Packaging_flour_fortified;
     });
     var fortifiedGroup = fortifiedDimension.group().reduceCount();
-    fortifiedFlourChart
-        .slicesCap(4)
-        .innerRadius(50)
-       .dimension(fortifiedDimension)
-       .group(fortifiedGroup)
-      .legend(dc.legend().highlightSelected(true))
-        .on('pretransition', function(fortifiedFlourChart) {
-            fortifiedFlourChart.selectAll('text.pie-slice').text(function(d) {
-                return d.data.key + ' ' + dc.utils.printSingleValue((d.endAngle - d.startAngle) / (2*Math.PI) * 100) + '%';
-            })
-        });
-        fortifiedFlourChart.render();
+//   Owner group and dimension
+    var ownerDimension = subs.dimension(function(d) {
+       return d.interviewee_mill_owner;
+    });
+    var ownerGroup = ownerDimension.group().reduceCount();
 
-<!--    functionalMillsChart chart   -->
+    //    Filtering
+    var select = dc.selectMenu('#menuselect')
+                   .dimension(ownerDimension)
+                   .group(ownerGroup);
+    select.title(function (subs){
+        return subs.key;
+    })
+
+    console.log(ownerDimension)
+    fortifiedFlourChart.on("filtered",function(d){console.log(d.filters())})
+
+// Fortified flour pie chart
+    fortifiedFlourChart
+    .slicesCap(4)
+    .innerRadius(50)
+    .dimension(fortifiedDimension)
+    .group(fortifiedGroup)
+    .legend(dc.legend().highlightSelected(true))
+    .on('pretransition', function(fortifiedFlourChart) {
+    fortifiedFlourChart.selectAll('text.pie-slice').text(function(d) {
+            return d.data.key + ' ' + dc.utils.printSingleValue((d.endAngle - d.startAngle) / (2*Math.PI) * 100) + '%';
+        })
+    });
+
     // Now comes the work with the nested data:
+<!--    functionalMillsChart chart   -->
 <!--    var machines = subs.all().data(function(d) {-->
 <!--      return d.modules-->
 <!--    })-->
@@ -190,57 +212,86 @@ mills_promise.then(function(subs_json) {
 <!--        });-->
 <!--        functionalMillsChart.render();-->
 <!--        console.log(subs.values())-->
+    console.log(ownerGroup.top(Infinity))
+    for (subindex in ownerDimension.top(Infinity)) {
+    //    for (subindex in filtered){
+            var sub = ownerDimension.top(Infinity)[subindex]
+            try {
+                var coords = sub['Location_mill_gps_coordinates']
+            }
+            catch(err) {
+                console.log("No GPS coordinates found for this submission", sub)
+            }
+            color = 'blue'
+            var lon = coords[1]
+            var lat = coords[0]
+            var marker = L.circleMarker([lon, lat],{stroke: false, fillOpacity: 0.8});
+            marker.setStyle({fillColor: color});
+            markers.addLayer(marker)
+            markers.addLayer(marker)
+            var toolTip = "<dt>Number of milling machines:" + sub['machines_machine_count'] + "</dt>"
+            counter = 0
+            for (machine_index in sub['machines']){
+                counter += 1
+                toolTip += "<dt> Machine: " + counter + "</dt>";
+                toolTip += "<div> ID: " + sub['machines'][machine_index]['__id'] + "</div>";
+                toolTip += "<div> Type of mill: ";
+                toolTip += sub['machines'][machine_index]['mill_type'] + "</div>";
+                toolTip += "<div> Operational: ";
+                toolTip += sub['machines'][machine_index]['operational_mill'] + "</div>";
+                toolTip += "<div> Energy source: ";
+                toolTip += sub['machines'][machine_index]['energy_source'] + "</div>";
+            }
+            marker.bindTooltip(toolTip);
 
-for (subindex in subs.all()) {
-//    for (subindex in filtered){
-        var sub = subs.all()[subindex]
-        try {
-            var coords = sub['Location_mill_gps_coordinates']
+    <!--        Filtering-->
+    <!--        var ndx = crossfilter(subs_json);-->
+    <!--        var totalDim = ndx.dimension(function(d) { return d.interviewee.ownership; });-->
+    <!--        var ownership_yes = totalDim.filter('yes');-->
+    <!--        console.log("ownership_yes");-->
         }
-        catch(err) {
-            console.log("No GPS coordinates found for this submission", sub)
-        }
-        color = 'blue'
-        var lon = coords[1]
-        var lat = coords[0]
-        var marker = L.circleMarker([lon, lat],{stroke: false, fillOpacity: 0.8});
-        marker.setStyle({fillColor: color});
-        markers.addLayer(marker)
-        markers.addLayer(marker)
-        var toolTip = "<dt>Number of milling machines:" + sub['machines_machine_count'] + "</dt>"
-        counter = 0
-        for (machine_index in sub['machines']){
-            counter += 1
-            toolTip += "<dt> Machine: " + counter + "</dt>";
-            toolTip += "<div> ID: " + sub['machines'][machine_index]['__id'] + "</div>";
-            toolTip += "<div> Type of mill: ";
-            toolTip += sub['machines'][machine_index]['mill_type'] + "</div>";
-            toolTip += "<div> Operational: ";
-            toolTip += sub['machines'][machine_index]['operational_mill'] + "</div>";
-            toolTip += "<div> Energy source: ";
-            toolTip += sub['machines'][machine_index]['energy_source'] + "</div>";
-        }
-        marker.bindTooltip(toolTip);
-<!--        Filtering-->
-<!--        var ndx = crossfilter(subs_json);-->
-<!--        var totalDim = ndx.dimension(function(d) { return d.interviewee.ownership; });-->
-<!--        var ownership_yes = totalDim.filter('yes');-->
-<!--        console.log("ownership_yes");-->
-    }
-});
+//        var filter_form = document.getElementById('filter_form');
+//        filter_form.innerHTML = 'JEEEEEEEEEEEEEEE';
+//        var newNode = document.createElement('p');
+//        newNode.appendChild(document.createTextNode('html string'));
+//        filter_form.appendChild(newNode);
 
+//        var filter_label = document.createElement('label');
+//        filter_label.appendChild(document.createTextNode('Test label'));
+//        filter_form.appendChild(filter_label)
+//        filter_label.classList.add('form-label', 'btn', 'btn-info', 'btn-block')
+
+
+
+        var fortifiedGroupAll = fortifiedGroup.top(Infinity);
+        var fortified_keys = []
+        for(i in fortifiedGroupAll){
+            console.log(fortifiedGroupAll[i].key)
+            fortified_keys.push(fortifiedGroupAll[i].key)
+        }
+        console.log(fortified_keys)
+//        <label class="form-label btn btn-info btn-block" data-toggle="collapse" data-target="#{{ filterform_key }}">{{ filterform_key }}</label> <br>
+        console.log('juu8u')
+
+    dc.renderAll();
+
+    });
+// Test
 let supermarketItems = crossfilter([
   {name: "banana", category:"fruit", country:"Malta", outOfDateQuantity:3, quantity: 12},
   {name: "apple", category:"fruit", country:"Spain", outOfDateQuantity:1, quantity: 9},
   {name: "tomato", category:"vegetable", country:"Spain", outOfDateQuantity:2, quantity: 25}
 ])
-let dimensionCategory = supermarketItems.dimension(item => item.category)
-let quantityByCategory = dimensionCategory.group().reduceSum(item => item.quantity)
-console.log(quantityByCategory.all())
+//let dimensionCategory = supermarketItems.dimension(item => item.category)
+//let quantityByCategory = dimensionCategory.group().reduceSum(item => item.quantity)
+//console.log(quantityByCategory.all())
 
-let dimensionCountry = supermarketItems.dimension(item => item.country)
-dimensionCountry.filterExact("Spain");
-console.log(dimensionCountry.top(Infinity))
+//let dimensionCountry = supermarketItems.dimension(item => item.country)
+//let countryGroup = dimensionCountry.group().reduceSum(item => item.country)
+
+//dimensionCountry.filterExact("Spain");
+
+//console.log(dimensionCountry.top(Infinity))
 
 
 

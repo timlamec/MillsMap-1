@@ -250,7 +250,7 @@ def read_local_tables_together(folder):
         data_file.close()
         form_data.append(file)
         form_reader_time = time.perf_counter()
-        print(f'Fetched table {form} in {form_reader_time - start_time}s')
+        print(f'Read table {form} in {form_reader_time - start_time}s')
     return [item for elem in form_data for item in elem]
 
 @app.route('/file_names', methods=['POST'])
@@ -322,6 +322,9 @@ def get_merged_dictionaries():
     # data_file.close()
     # return json.dumps(flatmachines)
 
+@app.route('/get_filter_options')
+def get_filter_options():
+    return json.dumps([{'test':'jee'}])
 
 @app.route('/sites')
 def sites():
