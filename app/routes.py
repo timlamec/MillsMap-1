@@ -87,7 +87,7 @@ def fetch_odk_csv(base_url, aut, projectId, formId, table='Submissions', sort_co
         # write the rows
         for emp in flatsubs:
             try:
-                emp['geo'] = ','.join(str(l) for l in (emp['Location_mill_gps_coordinates'][0:2]))
+                emp['geo'] = ','.join(str(l) for l in (emp['Location_mill_gps_coordinates'][-2:-4:-1]))
             except:
                 print('No gps coordinates found')
             if count == 0:
@@ -255,17 +255,6 @@ def read_local_tables_together(folder):
         form_reader_time = time.perf_counter()
         print(f'Read table {form} in {form_reader_time - start_time}s')
     return [item for elem in form_data for item in elem]
-
-@app.route('/data_test')
-def data_test():
-    path = os.path.join(submission_files_path, 'data.csv')
-    with open(path, newline='') as data_file:
-        file = list()
-        csv_file = csv.DictReader(data_file)
-        for row in csv_file:
-            file.append(row)
-    data_file.close()
-    return json.dumps(file)
 
 @app.route('/file_names', methods=['POST'])
 def get_main_tables():

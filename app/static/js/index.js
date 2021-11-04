@@ -17,18 +17,18 @@ $(document).ready(function () {
     });
 });
 
-// center of the map
-var center = [-6.23, 34.9];
-// Create the map
-var map = new L.map('mapid', {
-    fullscreenControl: true
-    }).setView(center, 6);
+//// center of the map
+//var center = [-6.23, 34.9];
+//// Create the map
+//var map = new L.map('mapid', {
+//    fullscreenControl: true
+//    }).setView(center, 6);
 // Set up the OSM layer
-L.tileLayer(
-  'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: 'Data © <a href="http://osm.org/copyright">OpenStreetMap</a>',
-    maxZoom: 18,
-  }).addTo(map);
+//L.tileLayer(
+//  'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+//    attribution: 'Data © <a href="http://osm.org/copyright">OpenStreetMap</a>',
+//    maxZoom: 18,
+//  }).addTo(map);
 // L.tileLayer.bing(bing_key).addTo(map)
 //var bing = new L.BingLayer(bing_key);
 
@@ -57,14 +57,14 @@ var baseMaps = {
     "HOTOSM": hotLayer
 } //here more layers: https://www.tutorialspoint.com/leafletjs/leafletjs_getting_started.htm
 
-L.control.layers(baseMaps).addTo(map);
-osmLayer.addTo(map);
-
-// add a scale at at your map.
-var scale = L.control.scale().addTo(map);
-
-var markers = new L.MarkerClusterGroup();
-markers.addTo(map);
+//L.control.layers(baseMaps).addTo(map);
+//osmLayer.addTo(map);
+//
+//// add a scale at at your map.
+//var scale = L.control.scale().addTo(map);
+//
+//var markers = new L.MarkerClusterGroup();
+//markers.addTo(map);
 
 // Launch fetch of mills and machines
 // Note that this happens concurrently, but we'll only use the
@@ -148,151 +148,188 @@ filter_options_promise = $.get('/get_filter_options')
 // var returnObject = false;
 
 // Now the promise chain that uses the mills and machines
-mills_promise.then(function(subs_json) {
-    // Get the filenames for mills folder
+
+mills_promise.then(function(data) {
+    data = JSON.parse(data)
     var element = document.getElementById("spin");
     element.classList.toggle("hide");
-    subs = JSON.parse(subs_json)
-//    console.log(subs.all())
-//    machine_index = 0
-//    let dimensionPackaging = subs.dimension(item => item.phonenumber)
-//    dimensionPackaging.filterExact("");
-//    filtered = (dimensionPackaging.top(Infinity))
+    drawMarkers(data);
+});
 
-//  Charts
-    var fortifiedFlourChart = new dc.PieChart('#fortifiedFlour');
+function drawMarkers(data) {
+    var xf = crossfilter(data);
+    var groupname = "marker-select-test";
+    var facilities = xf.dimension(function(d) { return d.geo; });
+    var facilitiesGroup = facilities.group().reduceCount();
 
-//  Making a crosssfilter instance
-    subs = crossfilter(subs)
+    var marker = dc_leaflet.markerChart("#mapid",groupname)
+      .dimension(facilities)
+      .group(facilitiesGroup)
+      .center([42.69,25.42])
+      .zoom(7)
+      .cluster(true);
 
-//   Fortified group and dimension
-    var fortifiedDimension = subs.dimension(function(data) {
-       return data.Packaging_flour_fortified;
-    });
-    var fortifiedGroup = fortifiedDimension.group().reduceCount();
-//   Owner group and dimension
-    var ownerDimension = subs.dimension(function(d) {
-       return d.interviewee_mill_owner;
-    });
-    var ownerGroup = ownerDimension.group().reduceCount();
+    var types = xf.dimension(function(d) { return d.Packaging_flour_fortified; });
+    var typesGroup = types.group().reduceCount();
 
-    //    Filtering
-    var select = dc.selectMenu('#menuselect')
-                   .dimension(ownerDimension)
-                   .group(ownerGroup);
-    select.title(function (subs){
-        return subs.key;
-    })
+    var pie = dc.pieChart("#fortifiedFlour",groupname)
+      .dimension(types)
+      .group(typesGroup)
+      .width(200)
+      .height(200)
+      .renderLabel(true)
+      .renderTitle(true)
+      .ordering(function (p) {
+          return -p.value;
+      });
 
-    console.log(ownerDimension)
-    fortifiedFlourChart.on("filtered",function(d){console.log(d.filters())})
+    dc.renderAll(groupname);
+    return {marker: marker, pie: pie, map: map};
+}
+//mills_promise.then(function(subs_json) {
+//    // Get the filenames for mills folder
+//    var element = document.getElementById("spin");
+//    element.classList.toggle("hide");
+//    subs = JSON.parse(subs_json)
+////    console.log(subs.all())
+////    machine_index = 0
+////    let dimensionPackaging = subs.dimension(item => item.phonenumber)
+////    dimensionPackaging.filterExact("");
+////    filtered = (dimensionPackaging.top(Infinity))
+//
+////  Charts
+//    var fortifiedFlourChart = new dc.PieChart('#fortifiedFlour');
+//
+////  Making a crosssfilter instance
+//    subs = crossfilter(subs)
+//
+////   Fortified group and dimension
+//    var fortifiedDimension = subs.dimension(function(data) {
+//       return data.Packaging_flour_fortified;
+//    });
+//    var fortifiedGroup = fortifiedDimension.group().reduceCount();
+////   Owner group and dimension
+//    var ownerDimension = subs.dimension(function(d) {
+//       return d.interviewee_mill_owner;
+//    });
+//    var ownerGroup = ownerDimension.group().reduceCount();
+//
+//    //    Filtering
+//    var select = dc.selectMenu('#menuselect')
+//                   .dimension(ownerDimension)
+//                   .group(ownerGroup);
+//    select.title(function (subs){
+//        return subs.key;
+//    })
+//
+//    console.log(ownerDimension)
+//    fortifiedFlourChart.on("filtered",function(d){console.log(d.filters())})
+//
+//// Fortified flour pie chart
+//    fortifiedFlourChart
+//    .slicesCap(4)
+//    .innerRadius(50)
+//    .dimension(fortifiedDimension)
+//    .group(fortifiedGroup)
+//    .legend(dc.legend().highlightSelected(true))
+//    .on('pretransition', function(fortifiedFlourChart) {
+//    fortifiedFlourChart.selectAll('text.pie-slice').text(function(d) {
+//            return d.data.key + ' ' + dc.utils.printSingleValue((d.endAngle - d.startAngle) / (2*Math.PI) * 100) + '%';
+//        })
+//    });
+//
+//    // Now comes the work with the nested data:
+//<!--    functionalMillsChart chart   -->
+//<!--    var machines = subs.all().data(function(d) {-->
+//<!--      return d.modules-->
+//<!--    })-->
+//<!--    var functionalMillsChart = new dc.PieChart('#functionalMills');-->
+//<!--    var functionalMillsDimension = machines.dimension(function(data) {-->
+//<!--       return data.operational_mill;-->
+//<!--    });-->
+//<!--    var functionalMillsGroup = functionalMillsDimension.group().reduceCount();-->
+//<!--    functionalMillsChart-->
+//<!--        .slicesCap(4)-->
+//<!--        .innerRadius(50)-->
+//<!--       .dimension(functionalMillsDimension)-->
+//<!--       .group(functionalMillsGroup)-->
+//<!--      .legend(dc.legend().highlightSelected(true))-->
+//<!--        .on('pretransition', function(functionalMillsChart) {-->
+//<!--            functionalMillsChart.selectAll('text.pie-slice').text(function(d) {-->
+//<!--                return d.data.key + ' ' + dc.utils.printSingleValue((d.endAngle - d.startAngle) / (2*Math.PI) * 100) + '%';-->
+//<!--            })-->
+//<!--        });-->
+//<!--        functionalMillsChart.render();-->
+//<!--        console.log(subs.values())-->
+//    console.log(ownerGroup.top(Infinity))
+//    for (subindex in ownerDimension.top(Infinity)) {
+//    //    for (subindex in filtered){
+//            var sub = ownerDimension.top(Infinity)[subindex]
+//            try {
+//                var coords = sub['Location_mill_gps_coordinates']
+//            }
+//            catch(err) {
+//                console.log("No GPS coordinates found for this submission", sub)
+//            }
+//            color = 'blue'
+//            var lon = coords[1]
+//            var lat = coords[0]
+//            var marker = L.circleMarker([lon, lat],{stroke: false, fillOpacity: 0.8});
+//            marker.setStyle({fillColor: color});
+//            markers.addLayer(marker)
+//            markers.addLayer(marker)
+//            var toolTip = "<dt>Number of milling machines:" + sub['machines_machine_count'] + "</dt>"
+//            counter = 0
+//            for (machine_index in sub['machines']){
+//                counter += 1
+//                toolTip += "<dt> Machine: " + counter + "</dt>";
+//                toolTip += "<div> ID: " + sub['machines'][machine_index]['__id'] + "</div>";
+//                toolTip += "<div> Type of mill: ";
+//                toolTip += sub['machines'][machine_index]['mill_type'] + "</div>";
+//                toolTip += "<div> Operational: ";
+//                toolTip += sub['machines'][machine_index]['operational_mill'] + "</div>";
+//                toolTip += "<div> Energy source: ";
+//                toolTip += sub['machines'][machine_index]['energy_source'] + "</div>";
+//            }
+//            marker.bindTooltip(toolTip);
+//
+//    <!--        Filtering-->
+//    <!--        var ndx = crossfilter(subs_json);-->
+//    <!--        var totalDim = ndx.dimension(function(d) { return d.interviewee.ownership; });-->
+//    <!--        var ownership_yes = totalDim.filter('yes');-->
+//    <!--        console.log("ownership_yes");-->
+//        }
+////        var filter_form = document.getElementById('filter_form');
+////        filter_form.innerHTML = 'JEEEEEEEEEEEEEEE';
+////        var newNode = document.createElement('p');
+////        newNode.appendChild(document.createTextNode('html string'));
+////        filter_form.appendChild(newNode);
+//
+////        var filter_label = document.createElement('label');
+////        filter_label.appendChild(document.createTextNode('Test label'));
+////        filter_form.appendChild(filter_label)
+////        filter_label.classList.add('form-label', 'btn', 'btn-info', 'btn-block')
+//
+//
+//
+//        var fortifiedGroupAll = fortifiedGroup.top(Infinity);
+//        var fortified_keys = []
+//        for(i in fortifiedGroupAll){
+//            console.log(fortifiedGroupAll[i].key)
+//            fortified_keys.push(fortifiedGroupAll[i].key)
+//        }
+//        console.log(fortified_keys)
+////        <label class="form-label btn btn-info btn-block" data-toggle="collapse" data-target="#{{ filterform_key }}">{{ filterform_key }}</label> <br>
+//        console.log('juu8u')
+//
+//    dc.renderAll();
+//    });
 
-// Fortified flour pie chart
-    fortifiedFlourChart
-    .slicesCap(4)
-    .innerRadius(50)
-    .dimension(fortifiedDimension)
-    .group(fortifiedGroup)
-    .legend(dc.legend().highlightSelected(true))
-    .on('pretransition', function(fortifiedFlourChart) {
-    fortifiedFlourChart.selectAll('text.pie-slice').text(function(d) {
-            return d.data.key + ' ' + dc.utils.printSingleValue((d.endAngle - d.startAngle) / (2*Math.PI) * 100) + '%';
-        })
-    });
-
-    // Now comes the work with the nested data:
-<!--    functionalMillsChart chart   -->
-<!--    var machines = subs.all().data(function(d) {-->
-<!--      return d.modules-->
-<!--    })-->
-<!--    var functionalMillsChart = new dc.PieChart('#functionalMills');-->
-<!--    var functionalMillsDimension = machines.dimension(function(data) {-->
-<!--       return data.operational_mill;-->
-<!--    });-->
-<!--    var functionalMillsGroup = functionalMillsDimension.group().reduceCount();-->
-<!--    functionalMillsChart-->
-<!--        .slicesCap(4)-->
-<!--        .innerRadius(50)-->
-<!--       .dimension(functionalMillsDimension)-->
-<!--       .group(functionalMillsGroup)-->
-<!--      .legend(dc.legend().highlightSelected(true))-->
-<!--        .on('pretransition', function(functionalMillsChart) {-->
-<!--            functionalMillsChart.selectAll('text.pie-slice').text(function(d) {-->
-<!--                return d.data.key + ' ' + dc.utils.printSingleValue((d.endAngle - d.startAngle) / (2*Math.PI) * 100) + '%';-->
-<!--            })-->
-<!--        });-->
-<!--        functionalMillsChart.render();-->
-<!--        console.log(subs.values())-->
-    console.log(ownerGroup.top(Infinity))
-    for (subindex in ownerDimension.top(Infinity)) {
-    //    for (subindex in filtered){
-            var sub = ownerDimension.top(Infinity)[subindex]
-            try {
-                var coords = sub['Location_mill_gps_coordinates']
-            }
-            catch(err) {
-                console.log("No GPS coordinates found for this submission", sub)
-            }
-            color = 'blue'
-            var lon = coords[1]
-            var lat = coords[0]
-            var marker = L.circleMarker([lon, lat],{stroke: false, fillOpacity: 0.8});
-            marker.setStyle({fillColor: color});
-            markers.addLayer(marker)
-            markers.addLayer(marker)
-            var toolTip = "<dt>Number of milling machines:" + sub['machines_machine_count'] + "</dt>"
-            counter = 0
-            for (machine_index in sub['machines']){
-                counter += 1
-                toolTip += "<dt> Machine: " + counter + "</dt>";
-                toolTip += "<div> ID: " + sub['machines'][machine_index]['__id'] + "</div>";
-                toolTip += "<div> Type of mill: ";
-                toolTip += sub['machines'][machine_index]['mill_type'] + "</div>";
-                toolTip += "<div> Operational: ";
-                toolTip += sub['machines'][machine_index]['operational_mill'] + "</div>";
-                toolTip += "<div> Energy source: ";
-                toolTip += sub['machines'][machine_index]['energy_source'] + "</div>";
-            }
-            marker.bindTooltip(toolTip);
-
-    <!--        Filtering-->
-    <!--        var ndx = crossfilter(subs_json);-->
-    <!--        var totalDim = ndx.dimension(function(d) { return d.interviewee.ownership; });-->
-    <!--        var ownership_yes = totalDim.filter('yes');-->
-    <!--        console.log("ownership_yes");-->
-        }
-//        var filter_form = document.getElementById('filter_form');
-//        filter_form.innerHTML = 'JEEEEEEEEEEEEEEE';
-//        var newNode = document.createElement('p');
-//        newNode.appendChild(document.createTextNode('html string'));
-//        filter_form.appendChild(newNode);
-
-//        var filter_label = document.createElement('label');
-//        filter_label.appendChild(document.createTextNode('Test label'));
-//        filter_form.appendChild(filter_label)
-//        filter_label.classList.add('form-label', 'btn', 'btn-info', 'btn-block')
-
-
-
-        var fortifiedGroupAll = fortifiedGroup.top(Infinity);
-        var fortified_keys = []
-        for(i in fortifiedGroupAll){
-            console.log(fortifiedGroupAll[i].key)
-            fortified_keys.push(fortifiedGroupAll[i].key)
-        }
-        console.log(fortified_keys)
-//        <label class="form-label btn btn-info btn-block" data-toggle="collapse" data-target="#{{ filterform_key }}">{{ filterform_key }}</label> <br>
-        console.log('juu8u')
-
-    dc.renderAll();
 
 
 
 
 
-    });
-
-    
 // Test
 let supermarketItems = crossfilter([
   {name: "banana", category:"fruit", country:"Malta", outOfDateQuantity:3, quantity: 12},
@@ -380,48 +417,3 @@ console.log(supermarketItems)
 //         console.log('exited fullscreen');
 //     }
 // });
-
-
-data_test_promise = $.get('/data_test')
-
-data_test_promise.then(function(data) {
-    data = JSON.parse(data)
-    drawMarkerSelect(data);
-});
-
-
-function drawMarkerSelect(data) {
-  var xf = crossfilter(data);
-  var groupname = "marker-select-test";
-  var facilities = xf.dimension(function(d) { return d.geo; });
-  var facilitiesGroup = facilities.group().reduceCount();
-
-  var marker = dc_leaflet.markerChart("#demo1 #map",groupname)
-      .dimension(facilities)
-      .group(facilitiesGroup)
-      .center([42.69,25.42])
-      .zoom(7)
-      .cluster(true);
-
-  var types = xf.dimension(function(d) { return d.type; });
-  var typesGroup = types.group().reduceCount();
-
-  var pie = dc.pieChart("#demo1 .pie",groupname)
-      .dimension(types)
-      .group(typesGroup)
-      .width(200)
-      .height(200)
-      .renderLabel(true)
-      .renderTitle(true)
-      .ordering(function (p) {
-          return -p.value;
-      });
-
-  dc.renderAll(groupname);
-  return {marker: marker, pie: pie};
-}
-
-
-//data = d3.csv("app/submission_files/data.csv").then(function(data) {
-//  });
-//drawMarkerArea(data)
