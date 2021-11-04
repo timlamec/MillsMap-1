@@ -58,6 +58,10 @@
                 <div id="mapid" class="mb-3">
                 </div>
                 <p id="download-info" class="hide">Testing</p>
+                <div class="map" id='map-test'>MAP TEST</div>
+                <div class="map" id='cluster-map'></div>
+
+
             </div>
             <div class="col-3 form-inline mb-3" id="filterbar">
                 <h1>Filters</h1>
@@ -121,10 +125,19 @@
 
         </div>
     </div>
+    <div id="holder">
+      <div id="demo1">
+        <h2>Markers with clustering, popups and single selection</h2>
+        <i>Renewable energy plants in Bulgaria in 2012</i>
+        <div id="map"></div>
+        <div class="pie"></div>
+      </div>
+    </div>
+
+                </div>
 
     	<!--	Local javascript-->
 <script src="{{url_for('static', filename='js/index.js')}}"></script>
-<script src="{{url_for('static', filename='index.js')}}"></script>
 </body>
 </html>
 

@@ -136,6 +136,17 @@ filter_options_promise = $.get('/get_filter_options')
 <!--    pieChart.render();-->
 <!-- });-->
 
+//var clusterMap = L.map('cluster-map', {
+//		center: [42.69,25.42],
+//		zoom: 7
+//	});
+//L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+//            attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+//        }).addTo(clusterMap);
+//
+// var facilitiesGroup = false;
+// var returnObject = false;
+
 // Now the promise chain that uses the mills and machines
 mills_promise.then(function(subs_json) {
     // Get the filenames for mills folder
@@ -275,13 +286,20 @@ mills_promise.then(function(subs_json) {
 
     dc.renderAll();
 
+
+
+
+
     });
+
+    
 // Test
 let supermarketItems = crossfilter([
   {name: "banana", category:"fruit", country:"Malta", outOfDateQuantity:3, quantity: 12},
   {name: "apple", category:"fruit", country:"Spain", outOfDateQuantity:1, quantity: 9},
   {name: "tomato", category:"vegetable", country:"Spain", outOfDateQuantity:2, quantity: 25}
 ])
+console.log(supermarketItems)
 //let dimensionCategory = supermarketItems.dimension(item => item.category)
 //let quantityByCategory = dimensionCategory.group().reduceSum(item => item.quantity)
 //console.log(quantityByCategory.all())
@@ -293,6 +311,9 @@ let supermarketItems = crossfilter([
 
 //console.log(dimensionCountry.top(Infinity))
 
+
+
+  /*     Markers      */
 
 
 
@@ -359,3 +380,48 @@ let supermarketItems = crossfilter([
 //         console.log('exited fullscreen');
 //     }
 // });
+
+
+data_test_promise = $.get('/data_test')
+
+data_test_promise.then(function(data) {
+    data = JSON.parse(data)
+    drawMarkerSelect(data);
+});
+
+
+function drawMarkerSelect(data) {
+  var xf = crossfilter(data);
+  var groupname = "marker-select-test";
+  var facilities = xf.dimension(function(d) { return d.geo; });
+  var facilitiesGroup = facilities.group().reduceCount();
+
+  var marker = dc_leaflet.markerChart("#demo1 #map",groupname)
+      .dimension(facilities)
+      .group(facilitiesGroup)
+      .center([42.69,25.42])
+      .zoom(7)
+      .cluster(true);
+
+  var types = xf.dimension(function(d) { return d.type; });
+  var typesGroup = types.group().reduceCount();
+
+  var pie = dc.pieChart("#demo1 .pie",groupname)
+      .dimension(types)
+      .group(typesGroup)
+      .width(200)
+      .height(200)
+      .renderLabel(true)
+      .renderTitle(true)
+      .ordering(function (p) {
+          return -p.value;
+      });
+
+  dc.renderAll(groupname);
+  return {marker: marker, pie: pie};
+}
+
+
+//data = d3.csv("app/submission_files/data.csv").then(function(data) {
+//  });
+//drawMarkerArea(data)
