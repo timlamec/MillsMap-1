@@ -17,18 +17,18 @@ $(document).ready(function () {
     });
 });
 
-//// center of the map
-//var center = [-6.23, 34.9];
-//// Create the map
-//var map = new L.map('mapid', {
-//    fullscreenControl: true
-//    }).setView(center, 6);
+// center of the map
+var center = [-6.23, 34.9];
+// Create the map
+var map = new L.map('mapid', {
+    fullscreenControl: true
+    }).setView(center, 6);
 // Set up the OSM layer
-//L.tileLayer(
-//  'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-//    attribution: 'Data © <a href="http://osm.org/copyright">OpenStreetMap</a>',
-//    maxZoom: 18,
-//  }).addTo(map);
+L.tileLayer(
+  'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: 'Data © <a href="http://osm.org/copyright">OpenStreetMap</a>',
+    maxZoom: 18,
+  }).addTo(map);
 // L.tileLayer.bing(bing_key).addTo(map)
 //var bing = new L.BingLayer(bing_key);
 
@@ -57,11 +57,11 @@ var baseMaps = {
     "HOTOSM": hotLayer
 } //here more layers: https://www.tutorialspoint.com/leafletjs/leafletjs_getting_started.htm
 
-//L.control.layers(baseMaps).addTo(map);
-//osmLayer.addTo(map);
-//
-//// add a scale at at your map.
-//var scale = L.control.scale().addTo(map);
+L.control.layers(baseMaps).addTo(map);
+osmLayer.addTo(map);
+
+// add a scale at at your map.
+var scale = L.control.scale().addTo(map);
 //
 //var markers = new L.MarkerClusterGroup();
 //markers.addTo(map);
@@ -149,6 +149,8 @@ filter_options_promise = $.get('/get_filter_options')
 
 // Now the promise chain that uses the mills and machines
 
+
+
 mills_promise.then(function(data) {
     data = JSON.parse(data)
     var element = document.getElementById("spin");
@@ -158,21 +160,23 @@ mills_promise.then(function(data) {
 
 function drawMarkers(data) {
     var xf = crossfilter(data);
-    var groupname = "marker-select-test";
+    var groupname = "marker-select";
     var facilities = xf.dimension(function(d) { return d.geo; });
     var facilitiesGroup = facilities.group().reduceCount();
 
     var marker = dc_leaflet.markerChart("#mapid",groupname)
       .dimension(facilities)
       .group(facilitiesGroup)
-      .center([42.69,25.42])
-      .zoom(7)
-      .cluster(true);
+      .map(map)
+      .zoom(1)
+      .center([1.1,1.1])
+      .cluster(true)
+
 
     var types = xf.dimension(function(d) { return d.Packaging_flour_fortified; });
     var typesGroup = types.group().reduceCount();
 
-    var pie = dc.pieChart("#fortifiedFlour",groupname)
+    var fortifiedFlourPie = dc.pieChart("#fortifiedFlour",groupname)
       .dimension(types)
       .group(typesGroup)
       .width(200)
@@ -184,7 +188,7 @@ function drawMarkers(data) {
       });
 
     dc.renderAll(groupname);
-    return {marker: marker, pie: pie, map: map};
+    return {marker: marker, pie: fortifiedFlourPie};
 }
 //mills_promise.then(function(subs_json) {
 //    // Get the filenames for mills folder
