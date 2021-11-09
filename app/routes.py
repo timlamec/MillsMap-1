@@ -77,7 +77,7 @@ def fetch_odk_json(base_url, aut, projectId, formId):
         mill_fetch_time = time.perf_counter()
         submissions = submissions_response.json()['value']
         flatsubs = [flatten_dict(sub) for sub in submissions]
-        print(f'Fetched table {table} in {mill_fetch_time - start_time}s')
+        print(f'Fetched table {table} for the form {formId} in {mill_fetch_time - start_time}s')
         # select only the wanted columns
         wanted_columns = columns[table]
         form_data = [{key: row[key] for key in wanted_columns} for row in flatsubs]
@@ -106,9 +106,9 @@ def fetch_odk_json(base_url, aut, projectId, formId):
             all_tables.append(tables_data[0][mills_iterator])
             all_tables[machines_iterator].update(tables_data[1][machines_iterator])
     merging_tables_time = time.perf_counter()
-    print(f'Read json table in {merging_tables_time - start_time}s')
+    print(f'Merged the mills and machines in {merging_tables_time - start_time}s')
     # open a file for writing
-    file_name = ''.join(formId, '.csv')
+    file_name = ''.join([formId, '.csv'])
     dir = 'app/submission_files'
     path = os.path.join(dir, file_name)
     with open(path, 'w') as data_file:
@@ -222,13 +222,13 @@ for i in range(0, len(form_details)):
     formId_list.append(formId)
     file_name = ''.join([formId, '.csv'])
     for (table_name, id) in zip(table_names, id_columns):
-        path = os.path.join(submission_files_path, table_name, file_name)
+        path = os.path.join(submission_files_path, file_name)
         if exists(path):
             next
         else:
             # fetch all the mills data from odk
             fetch_odk_json(base_url, aut, projectId, formId)
-            fetch_odk_csv(base_url, aut, projectId, formId, table=table_name, sort_column = id)
+            # fetch_odk_csv(base_url, aut, projectId, formId, table=table_name, sort_column = id)
 
 # ONLY FOR TESTING PURPOSES, REMOVE FROM FINAL VERSION
 # lastNumberRecordsMills = 1400
@@ -307,8 +307,9 @@ def check_new_submissions_odk(form_details=form_details):
                 if len(new_sub_ids) + old_submission_count != new_submission_count:
                     print('Warning: the number of new submissions does not match')
                 # Retrieve the missing submissions by fetching the form
-                fetch_odk_csv(base_url, aut, projectId, formId, table='Submissions', sort_column = '__id')
-                fetch_odk_csv(base_url, aut, projectId, formId, table='Submissions.machines.machine', sort_column = '__Submissions-id')
+                fetch_odk_json(base_url, aut, projectId, formId)
+                # fetch_odk_csv(base_url, aut, projectId, formId, table='Submissions', sort_column = '__id')
+                # fetch_odk_csv(base_url, aut, projectId, formId, table='Submissions.machines.machine', sort_column = '__Submissions-id')
                 # todo: find out if it is possible to get the submissions based on ids, and append them to the existing csv
             # Update form_config file
             form_details[form_index]['lastNumberRecordsMills'] = new_submission_count
