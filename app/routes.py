@@ -66,7 +66,7 @@ def download_attachments(base_url, aut, projectId, formId, submission_ids):
         odata_attachments(base_url, aut, projectId, formId, instanceId)
 
 # Get all the data from the ODK server, merge them together and save them as a JSON file
-def fetch_odk_json(base_url, aut, projectId, formId):
+def fetch_odk_submissions(base_url, aut, projectId, formId):
     # Fetch the data
     tables_list = ['Submissions', 'Submissions.machines.machine']
     tables_data = []
@@ -130,29 +130,6 @@ def fetch_odk_json(base_url, aut, projectId, formId):
             csv_writer.writerow(emp.values())
         data_file.close()
 
-    # # open a file for writing
-    # file_name = ''.join([formId, '.csv'])
-    # dir = 'app/submission_files'
-    # path = os.path.join(dir, table, file_name)
-    # with open(path, 'w') as data_file:
-    #     csv_writer = csv.writer(data_file)
-    #     # Counter variable used for writing
-    #     count = 0
-    #     # write the rows
-    #     for emp in flatsubs:
-    #         try:
-    #             emp['geo'] = ','.join(str(l) for l in (emp['Location_mill_gps_coordinates'][-2:-4:-1]))
-    #         except:
-    #             print('No gps coordinates found')
-    #         if count == 0:
-    #             # Writing headers of CSV file
-    #             header = emp.keys()
-    #             csv_writer.writerow(header)
-    #             count += 1
-    #         # Writing data of CSV file
-    #         csv_writer.writerow(emp.values())
-    #     data_file.close()
-
 # Get all the mills from the ODK server, flatten them and save them a csv file
 def fetch_odk_csv(base_url, aut, projectId, formId, table='Submissions', sort_column = '__id'):
     # Fetch the data
@@ -205,15 +182,6 @@ if not os.path.exists('app/submission_files'):
 if not os.path.exists('app/submission_files/figures'):
     os.makedirs('app/submission_files/figures')
 
-# check if the folders exists, if not, fetch the data from ODK
-table_names = ['Submissions', 'Submissions.machines.machine']
-for table_name in table_names:
-    path = os.path.join(submission_files_path, table_name)
-    if exists(path):
-        next
-    else:
-        os.makedirs(path)
-
 # check if the files exists, if not, fetch the data from ODK
 formId_list = list()
 for i in range(0, len(form_details)):
@@ -221,27 +189,24 @@ for i in range(0, len(form_details)):
     formId = form_details[form_index]['formId']
     formId_list.append(formId)
     file_name = ''.join([formId, '.csv'])
-    for (table_name, id) in zip(table_names, id_columns):
+    for id in id_columns:
         path = os.path.join(submission_files_path, file_name)
         if exists(path):
             next
         else:
             # fetch all the mills data from odk
-            fetch_odk_json(base_url, aut, projectId, formId)
+            fetch_odk_submissions(base_url, aut, projectId, formId)
             # fetch_odk_csv(base_url, aut, projectId, formId, table=table_name, sort_column = id)
 
-# ONLY FOR TESTING PURPOSES, REMOVE FROM FINAL VERSION
-# lastNumberRecordsMills = 1400
-# submission_count = 100
 
-def get_form_column(table, formId, column='__id'):
+def get_form_column(formId, column='__id'):
     """
     Retrieve a specific column from a csv file
     Return the column as a list
     """
     # get the ids of the submissions csv form as a list
     file_name = ''.join([formId, '.csv'])
-    path = os.path.join(submission_files_path, table, file_name)
+    path = os.path.join(submission_files_path, file_name)
     with open(path, newline='') as data_file:
         csv_file = csv.DictReader(data_file)
         file = list()
@@ -255,7 +220,7 @@ def get_form_column(table, formId, column='__id'):
 
 
 def get_new_sub_ids(table, formId, odk_details_column, local_column):
-    submission_id_list = get_form_column(table, formId, local_column)
+    submission_id_list = get_form_column(formId, local_column)
     submission_odk_details = get_submission_details(base_url, aut, projectId, formId, table)
     submission_odk_ids = [row[odk_details_column] for row in submission_odk_details]
     submission_odk_ids = sorted(submission_odk_ids)
@@ -264,9 +229,9 @@ def get_new_sub_ids(table, formId, odk_details_column, local_column):
 
 def check_removed_forms(form_details):
     form_names = [form['formId'] for form in form_details]
-    main_table_name = 'Submissions'
-    path = os.path.join(submission_files_path, main_table_name)
+    path = submission_files_path
     sub_files = os.listdir(path)
+    sub_files = [file for file in sub_files if '.csv' in file]
     for file in sub_files:
         file_name = os.path.splitext(file)[0]
         if file_name not in form_names:
@@ -307,7 +272,7 @@ def check_new_submissions_odk(form_details=form_details):
                 if len(new_sub_ids) + old_submission_count != new_submission_count:
                     print('Warning: the number of new submissions does not match')
                 # Retrieve the missing submissions by fetching the form
-                fetch_odk_json(base_url, aut, projectId, formId)
+                fetch_odk_submissions(base_url, aut, projectId, formId)
                 # fetch_odk_csv(base_url, aut, projectId, formId, table='Submissions', sort_column = '__id')
                 # fetch_odk_csv(base_url, aut, projectId, formId, table='Submissions.machines.machine', sort_column = '__Submissions-id')
                 # todo: find out if it is possible to get the submissions based on ids, and append them to the existing csv
@@ -317,7 +282,7 @@ def check_new_submissions_odk(form_details=form_details):
             update_form_config_file(form_details)
 
 sched = BackgroundScheduler(daemon=True)
-sched.add_job(check_new_submissions_odk, 'interval', seconds=300)
+sched.add_job(check_new_submissions_odk, 'interval', seconds=120)
 sched.start()
 atexit.register(lambda: sched.shutdown())
 

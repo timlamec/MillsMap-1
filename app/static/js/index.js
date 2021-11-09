@@ -157,11 +157,9 @@ mills_promise = $.get('/read_submissions')
 
 mills_promise.then(function(data) {
     data = JSON.parse(data)
-    console.log(data)
     var element = document.getElementById("spin");
     element.classList.toggle("hide");
     drawMarkers(data);
-    console.log('JEEEEEE2')
 });
 
 function drawMarkers(data) {
