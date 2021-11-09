@@ -71,9 +71,13 @@ var scale = L.control.scale().addTo(map);
 // machines after the mills download is complete
 var subs
 var machines
-mills_promise = $.get('/get_merged_dictionaries')
-machines_promise = $.get('/machines')
-filter_options_promise = $.get('/get_filter_options')
+
+//json_promise = $.get('/read_json_file')
+
+//mills_promise = $.get('/get_merged_dictionaries')
+mills_promise = $.get('/read_submissions')
+//machines_promise = $.get('/machines')
+//filter_options_promise = $.get('/get_filter_options')
 
 <!--$.ajax({-->
 <!--    type: "POST",-->
@@ -153,24 +157,44 @@ filter_options_promise = $.get('/get_filter_options')
 
 mills_promise.then(function(data) {
     data = JSON.parse(data)
+    console.log(data)
     var element = document.getElementById("spin");
     element.classList.toggle("hide");
     drawMarkers(data);
+    console.log('JEEEEEE2')
 });
 
 function drawMarkers(data) {
     var xf = crossfilter(data);
     var groupname = "marker-select";
     var facilities = xf.dimension(function(d) { return d.geo; });
-    var facilitiesGroup = facilities.group().reduceCount();
+    var facilitiesGroup = facilities.group().reduceCount(
+        function(p, v) {
+            p.items = v.facilities;
+            p.geo = v.geo;
+            ++p.count;
+            return p;
+        },
+        function() { // init
+            return {count: 0};
+        }
+        );
 
     var marker = dc_leaflet.markerChart("#mapid",groupname)
-      .dimension(facilities)
-      .group(facilitiesGroup)
-      .map(map)
-      .zoom(1)
-      .center([1.1,1.1])
-      .cluster(true)
+        .dimension(facilities)
+        .group(facilitiesGroup)
+        .map(map)
+        .cluster(true)
+//        .valueAccessor(function(kv) {
+//            return kv.value.count;
+//        })
+//        .locationAccessor(function(kv) {
+//            return kv.value.geo;
+//        })
+        .popup(function(kv) {
+//            console.log(kv)
+            return kv.key + " : " + kv.value.items;
+        })
 
 
     var types = xf.dimension(function(d) { return d.Packaging_flour_fortified; });

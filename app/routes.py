@@ -22,12 +22,14 @@ email = secret_tokens['email']
 password = secret_tokens['password']
 aut = (email, password)
 base_url = 'https://omdtz-data.org'
-mills_columns = ['__id', 'start', 'end', 'interviewee_mill_owner', 'mills_number_milling_machines',
+
+mill_columns = ['__id', 'start', 'end', 'interviewee_mill_owner', 'mills_number_milling_machines',
                  'machines_machine_count', 'Packaging_flour_fortified',
-                 'Packaging_flour_fortified_standard', 'Packaging_flour_fortified_standard_other',
-                 'safety_cleanliness_protective_gear',
-                 'safety_cleanliness_protective_gear_other', 'Location_mill_gps_coordinates']
-machine_columns = ['']
+                 'Packaging_flour_fortified_standard', 'Location_mill_gps_coordinates']
+machine_columns = ['__id', '__Submissions-id', 'commodity_milled', 'mill_type', 'operational_mill',
+                   'energy_source']
+columns = {'Submissions': mill_columns, 'Submissions.machines.machine':machine_columns}
+
 submission_files_path = 'app/submission_files'
 id_columns = ['__id', '__Submissions-id']
 # Get the form configured data
@@ -63,6 +65,94 @@ def download_attachments(base_url, aut, projectId, formId, submission_ids):
     for instanceId in submission_ids:
         odata_attachments(base_url, aut, projectId, formId, instanceId)
 
+# Get all the data from the ODK server, merge them together and save them as a JSON file
+def fetch_odk_json(base_url, aut, projectId, formId):
+    # Fetch the data
+    tables_list = ['Submissions', 'Submissions.machines.machine']
+    tables_data = []
+    start_time = time.perf_counter()
+    for table, id in zip(tables_list, id_columns):
+        start_time = time.perf_counter()
+        submissions_response = odata_submissions(base_url, aut, projectId, formId, table)
+        mill_fetch_time = time.perf_counter()
+        submissions = submissions_response.json()['value']
+        flatsubs = [flatten_dict(sub) for sub in submissions]
+        print(f'Fetched table {table} in {mill_fetch_time - start_time}s')
+        # select only the wanted columns
+        wanted_columns = columns[table]
+        form_data = [{key: row[key] for key in wanted_columns} for row in flatsubs]
+        flatsubs = form_data
+        #if the id column is not __id then change the id column to the right column
+        if id != '__id':
+            for row in flatsubs:
+                row['machine_id'] = row['__id']
+                row['__id'] = row[id]
+                del row[id]
+
+        #sort the data base on the '__id' column
+        flatsubs = sorted(flatsubs, key=lambda d: d['__id'])
+        tables_data.append(flatsubs)
+
+    all_tables = []
+    # Merge the tables together iteratively
+    mills_iterator = 0
+    for i in range(0,len(tables_data[1])):
+        machines_iterator = i
+        if tables_data[0][mills_iterator]['__id'] == tables_data[1][machines_iterator]['__id']:
+            all_tables.append(tables_data[0][mills_iterator])
+            all_tables[machines_iterator].update(tables_data[1][machines_iterator])
+        else:
+            mills_iterator += 1
+            all_tables.append(tables_data[0][mills_iterator])
+            all_tables[machines_iterator].update(tables_data[1][machines_iterator])
+    merging_tables_time = time.perf_counter()
+    print(f'Read json table in {merging_tables_time - start_time}s')
+    # open a file for writing
+    file_name = ''.join(formId, '.csv')
+    dir = 'app/submission_files'
+    path = os.path.join(dir, file_name)
+    with open(path, 'w') as data_file:
+        csv_writer = csv.writer(data_file)
+        # Counter variable used for writing
+        count = 0
+        # write the rows
+        for emp in all_tables:
+            try:
+                emp['geo'] = ','.join(str(l) for l in (emp['Location_mill_gps_coordinates'][-2:-4:-1]))
+            except:
+                print('No gps coordinates found')
+            if count == 0:
+                # Writing headers of CSV file
+                header = emp.keys()
+                csv_writer.writerow(header)
+                count += 1
+            # Writing data of CSV file
+            csv_writer.writerow(emp.values())
+        data_file.close()
+
+    # # open a file for writing
+    # file_name = ''.join([formId, '.csv'])
+    # dir = 'app/submission_files'
+    # path = os.path.join(dir, table, file_name)
+    # with open(path, 'w') as data_file:
+    #     csv_writer = csv.writer(data_file)
+    #     # Counter variable used for writing
+    #     count = 0
+    #     # write the rows
+    #     for emp in flatsubs:
+    #         try:
+    #             emp['geo'] = ','.join(str(l) for l in (emp['Location_mill_gps_coordinates'][-2:-4:-1]))
+    #         except:
+    #             print('No gps coordinates found')
+    #         if count == 0:
+    #             # Writing headers of CSV file
+    #             header = emp.keys()
+    #             csv_writer.writerow(header)
+    #             count += 1
+    #         # Writing data of CSV file
+    #         csv_writer.writerow(emp.values())
+    #     data_file.close()
+
 # Get all the mills from the ODK server, flatten them and save them a csv file
 def fetch_odk_csv(base_url, aut, projectId, formId, table='Submissions', sort_column = '__id'):
     # Fetch the data
@@ -73,8 +163,9 @@ def fetch_odk_csv(base_url, aut, projectId, formId, table='Submissions', sort_co
     flatsubs = [flatten_dict(sub) for sub in submissions]
     print(f'Fetched table {table} in {mill_fetch_time - start_time}s')
     # select only the wanted columns
-    #form_data = [{key: row[key] for key in mills_columns} for row in flatsubs]
-    #flatsubs = form_data
+    wanted_columns = columns[table]
+    form_data = [{key: row[key] for key in wanted_columns} for row in flatsubs]
+    flatsubs = form_data
 
     # open a file for writing
     file_name = ''.join([formId, '.csv'])
@@ -89,7 +180,7 @@ def fetch_odk_csv(base_url, aut, projectId, formId, table='Submissions', sort_co
             try:
                 emp['geo'] = ','.join(str(l) for l in (emp['Location_mill_gps_coordinates'][-2:-4:-1]))
             except:
-                print('No gps coordinates found')
+                next
             if count == 0:
                 # Writing headers of CSV file
                 header = emp.keys()
@@ -136,6 +227,7 @@ for i in range(0, len(form_details)):
             next
         else:
             # fetch all the mills data from odk
+            fetch_odk_json(base_url, aut, projectId, formId)
             fetch_odk_csv(base_url, aut, projectId, formId, table=table_name, sort_column = id)
 
 # ONLY FOR TESTING PURPOSES, REMOVE FROM FINAL VERSION
@@ -235,9 +327,10 @@ def read_local_tables_together(folder):
     """
     path = os.path.join(submission_files_path, folder)
     form_names = os.listdir(path)
+    csv_files = [s for s in form_names if ".csv" in s]
     # Combine the files together
     form_data = list()
-    for form in form_names:
+    for form in csv_files:
         start_time = time.perf_counter()
         file = list()
         table_path = os.path.join(path, form)
@@ -274,6 +367,14 @@ def mills():
 def machines():
     machines = read_local_tables_together(folder='Submissions.machines.machine')
     return json.dumps(machines)
+
+@app.route('/read_submissions')
+def read_submissions():
+    start_time = time.perf_counter()
+    file = read_local_tables_together(folder='')
+    read_csv_time = time.perf_counter() - start_time
+    print(f'Read the merged csv table in {read_csv_time}')
+    return json.dumps(file)
 
 @app.route('/get_merged_dictionaries')
 def get_merged_dictionaries():
