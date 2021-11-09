@@ -4,7 +4,7 @@
 <body>
     <div class="container-fluid">
         <div class="row">
-            <div class="col-3" id="sidebar"> 
+            <div class="col-3" id="sidebar">
                 <div class="row">
                     <div class="col-11 " >
                         <div class="wrapper p-4">
@@ -55,67 +55,73 @@
                     <span class="left"><span class="anim"></span></span>
                     <span class="right"><span class="anim"></span></span>
                 </span>
-                <div id="mapid" class="mb-3">
+                <div id="mapid">
                 </div>
                 <p id="download-info" class="hide">Testing</p>
 
 
             </div>
-            <div class="col-3 form-inline mb-3" id="filterbar">
-                <h1>Filters</h1>
-                <h3 id="menutitle">Mill owner</h3>
-                    <div id="menuselect" class="block"></div>
-                    {% for filterform_key in filter_options %}
-                <label class="form-label btn btn-info btn-block" data-toggle="collapse" data-target="#{{ filterform_key }}">{{ filterform_key }}</label> <br>
-                    <div id="{{ filterform_key }}" class="collapse">
-                        {% for filterform_value in mill_filter_selection[filterform_key] %}
-                            <div class="mb-3">
-                                {% if choices_dict %}
-                                    {% if filterform_key in choices_dict.keys() %}
-                                        {% if filterform_value in choices_dict[filterform_key] %}
-                                        <input class="form-check-input" type="checkbox" checked = 'True' name="{{ filterform_key }}, {{filterform_value }}" ></input>
-                                        {% else %}
-                                        <input class="form-check-input" type="checkbox" name="{{ filterform_key }}, {{filterform_value }}" ></input>
-                                        {% endif %}
-                                    {% else %}
-                                        <input class="form-check-input" type="checkbox" name="{{ filterform_key }}, {{filterform_value }}" ></input>
-                                    {% endif %}
-                                {% else %}
-                                <input class="form-check-input" type="checkbox" checked = 'True' name="{{ filterform_key }}, {{filterform_value }}" ></input>
-                                {% endif %}
-                                <label class="form-check-label" name={{ filterform_value }}>{{ filterform_value }}</label>
-                            </div>
-                        {% endfor %}
-                    </div>
-                    {% endfor %}
-<!--                     <h3>Machine filters</h3>-->
-                    <br>
+<!--            <div class="col-3 form-inline mb-3" id="filterbar">-->
+<!--                <h1>Filters</h1>-->
+<!--                <h3 id="menutitle">Mill owner</h3>-->
+<!--                    <div id="menuselect" class="block"></div>-->
+<!--                    {% for filterform_key in filter_options %}-->
+<!--                <label class="form-label btn btn-info btn-block" data-toggle="collapse" data-target="#{{ filterform_key }}">{{ filterform_key }}</label> <br>-->
+<!--                    <div id="{{ filterform_key }}" class="collapse">-->
+<!--                        {% for filterform_value in mill_filter_selection[filterform_key] %}-->
+<!--                            <div class="mb-3">-->
+<!--                                {% if choices_dict %}-->
+<!--                                    {% if filterform_key in choices_dict.keys() %}-->
+<!--                                        {% if filterform_value in choices_dict[filterform_key] %}-->
+<!--                                        <input class="form-check-input" type="checkbox" checked = 'True' name="{{ filterform_key }}, {{filterform_value }}" ></input>-->
+<!--                                        {% else %}-->
+<!--                                        <input class="form-check-input" type="checkbox" name="{{ filterform_key }}, {{filterform_value }}" ></input>-->
+<!--                                        {% endif %}-->
+<!--                                    {% else %}-->
+<!--                                        <input class="form-check-input" type="checkbox" name="{{ filterform_key }}, {{filterform_value }}" ></input>-->
+<!--                                    {% endif %}-->
+<!--                                {% else %}-->
+<!--                                <input class="form-check-input" type="checkbox" checked = 'True' name="{{ filterform_key }}, {{filterform_value }}" ></input>-->
+<!--                                {% endif %}-->
+<!--                                <label class="form-check-label" name={{ filterform_value }}>{{ filterform_value }}</label>-->
+<!--                            </div>-->
+<!--                        {% endfor %}-->
+<!--                    </div>-->
+<!--                    {% endfor %}-->
+<!--&lt;!&ndash;                     <h3>Machine filters</h3>&ndash;&gt;-->
+<!--                    <br>-->
 
-            </div>
+<!--            </div>-->
         </div>
 
         </div>
 
     </div>
-    <div class="container">
+    <div class="container figures">
         <div class="row">
-<!--            <div class="col-6">-->
-<!--                <div class="card m-5 shadow p-3 mb-5 bg-white rounded">-->
-<!--                    <h3  class="card-title text-center">Functional mills</h3>-->
-<!--                    <div id="functionalMills"></div>-->
-<!--                </div>-->
-<!--                <div class="card m-5 shadow p-3 mb-5 bg-white rounded">-->
-<!--                    <h3  class="card-title text-center">Mill types</h3>-->
-<!--                    <div id="millTypes"></div>-->
-<!--                </div>-->
-<!--            </div>-->
-            
-            <div class="col-6">
-<!--                <div class="card m-5 shadow p-3 mb-5 bg-white rounded">-->
-<!--                    <h3  class="card-title text-center">Commodity milled</h3>-->
-<!--                    <div id="milledCommodity"></div>-->
-<!--                </div>-->
-                <div class="card m-5 shadow p-3 mb-5 bg-white rounded">
+            <div class="col">
+                <div class="p-3 mb-5 bg-white rounded">
+                    <h3  class="card-title text-center">Functional mills</h3>
+                    <div id="functionalMills"></div>
+                </div>
+                            </div>
+
+            <div class="col">
+                <div class="p-3 mb-5 bg-white rounded">
+                    <h3  class="card-title text-center">Mill types</h3>
+                    <div id="millTypes"></div>
+                </div>
+            </div>
+
+            <div class="col">
+                <div class="p-3 mb-5 bg-white rounded">
+                    <h3  class="card-title text-center">Energy source</h3>
+                    <div id="energySource"></div>
+                </div>
+                            </div>
+
+            <div class="col">
+                <div class="p-3 mb-5 bg-white rounded">
                     <h3  class="card-title text-center">Flour is fortified</h3>
                     <div id="fortifiedFlour"></div>
                 </div>

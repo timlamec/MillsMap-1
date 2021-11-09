@@ -1,7 +1,6 @@
-projectId,formId,activityStatus,featureType,lastChecked,lastNumberRecordsMills,lastNumberRecordsMachines
-2,Tanzania_Mills_Mapping_Census_V_0.07,1,point,"time.struct_time(tm_year=2021, tm_mon=11, tm_mday=9, tm_hour=11, tm_min=1, tm_sec=52, tm_wday=1, tm_yday=313, tm_isdst=0)",5265,
-2,Tanzania_Mills_Mapping_Census_V_0.02,1,point,"time.struct_time(tm_year=2021, tm_mon=11, tm_mday=9, tm_hour=11, tm_min=1, tm_sec=53, tm_wday=1, tm_yday=313, tm_isdst=0)",1405,
-2,Tanzania_Mills_Mapping_Census_V_0.04,1,point,"time.struct_time(tm_year=2021, tm_mon=11, tm_mday=9, tm_hour=11, tm_min=1, tm_sec=53, tm_wday=1, tm_yday=313, tm_isdst=0)",0,
-2,Tanzania_Mills_Mapping_Census_V_0.05,1,point,"time.struct_time(tm_year=2021, tm_mon=11, tm_mday=9, tm_hour=11, tm_min=1, tm_sec=54, tm_wday=1, tm_yday=313, tm_isdst=0)",14196,
-2,Tanzania_Mills_Mapping_Census_V_0.08,1,point,"time.struct_time(tm_year=2021, tm_mon=11, tm_mday=9, tm_hour=11, tm_min=1, tm_sec=55, tm_wday=1, tm_yday=313, tm_isdst=0)",350,
-2,Tanzania_Mills_Mapping_Census_V_0.06,1,point,"time.struct_time(tm_year=2021, tm_mon=11, tm_mday=9, tm_hour=11, tm_min=1, tm_sec=55, tm_wday=1, tm_yday=313, tm_isdst=0)",11691,
+projectId,formId,activityStatus,featureType,lastChecked,lastNumberRecordsMills
+2,Tanzania_Mills_Mapping_Census_V_0.05,0,point,"time.struct_time(tm_year=2021, tm_mon=11, tm_mday=9, tm_hour=15, tm_min=17, tm_sec=4, tm_wday=1, tm_yday=313, tm_isdst=0)",14196
+2,Tanzania_Mills_Mapping_Census_V_0.08,1,point,"time.struct_time(tm_year=2021, tm_mon=11, tm_mday=9, tm_hour=15, tm_min=17, tm_sec=8, tm_wday=1, tm_yday=313, tm_isdst=0)",350
+2,Tanzania_Mills_Mapping_Census_V_0.02,0,point,"time.struct_time(tm_year=2021, tm_mon=11, tm_mday=9, tm_hour=15, tm_min=17, tm_sec=15, tm_wday=1, tm_yday=313, tm_isdst=0)",1405
+2,Tanzania_Mills_Mapping_Census_V_0.06,0,point,"time.struct_time(tm_year=2021, tm_mon=11, tm_mday=9, tm_hour=15, tm_min=18, tm_sec=7, tm_wday=1, tm_yday=313, tm_isdst=0)",11691
+2,Tanzania_Mills_Mapping_Census_V_0.07,0,point,"time.struct_time(tm_year=2021, tm_mon=11, tm_mday=9, tm_hour=15, tm_min=18, tm_sec=31, tm_wday=1, tm_yday=313, tm_isdst=0)",5265

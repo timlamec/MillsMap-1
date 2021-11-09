@@ -165,49 +165,84 @@ mills_promise.then(function(data) {
 function drawMarkers(data) {
     var xf = crossfilter(data);
     var groupname = "marker-select";
-    var facilities = xf.dimension(function(d) { return d.geo; });
-    var facilitiesGroup = facilities.group().reduceCount(
-        function(p, v) {
-            p.items = v.facilities;
+    var facilities = xf.dimension(function(d) { return d.__id; });
+    var facilitiesGroup = facilities.group().reduce(
+        function(p, v) { // add
+            p.Packaging_flour_fortified = v.Packaging_flour_fortified;
             p.geo = v.geo;
             ++p.count;
+            return p;
+        },
+        function(p, v) { // remove
+            --p.count;
             return p;
         },
         function() { // init
             return {count: 0};
         }
-        );
+    );
 
     var marker = dc_leaflet.markerChart("#mapid",groupname)
         .dimension(facilities)
         .group(facilitiesGroup)
         .map(map)
         .cluster(true)
-//        .valueAccessor(function(kv) {
-//            return kv.value.count;
-//        })
-//        .locationAccessor(function(kv) {
-//            return kv.value.geo;
-//        })
-        .popup(function(kv) {
-//            console.log(kv)
-            return kv.key + " : " + kv.value.items;
+        .valueAccessor(function(kv) {
+            return kv.value.count;
         })
+        .locationAccessor(function(kv) {
+            return kv.value.geo;
+        })
+        .popup(function(kv) {
+            console.log(kv)
+            return 'Number of mills: ' + kv.value.count;
+        })
+        .filterByArea(true)
+
+//  Groups and dimensions for the graphs
+    var Packaging_flour_fortified = xf.dimension(function(d) { return d.Packaging_flour_fortified; });
+    var Packaging_flour_fortifiedGroup = Packaging_flour_fortified.group().reduceCount();
 
 
-    var types = xf.dimension(function(d) { return d.Packaging_flour_fortified; });
-    var typesGroup = types.group().reduceCount();
 
     var fortifiedFlourPie = dc.pieChart("#fortifiedFlour",groupname)
-      .dimension(types)
-      .group(typesGroup)
-      .width(200)
-      .height(200)
-      .renderLabel(true)
-      .renderTitle(true)
-      .ordering(function (p) {
-          return -p.value;
-      });
+      .dimension(Packaging_flour_fortified)
+      .group(Packaging_flour_fortifiedGroup)
+      fortifiedFlourPie
+      .legend(dc.legend().highlightSelected(true))
+      .width(450)
+      .on('pretransition', function(chart) {
+        chart.selectAll('text.pie-slice').text(function(d) {
+            return d.data.key + ' ' + dc.utils.printSingleValue((d.endAngle - d.startAngle) / (2*Math.PI) * 100) + '%';
+          })
+        })
+
+    var mill_type = xf.dimension(function(d) { return d.mill_type; });
+    var mill_typeGroup = mill_type.group().reduceCount();
+    var mill_typePie = dc.pieChart("#millTypes",groupname)
+      .dimension(mill_type)
+      .group(mill_typeGroup)
+      mill_typePie
+      .legend(dc.legend().highlightSelected(true))
+      .width(450)
+
+    var operational_mill = xf.dimension(function(d) { return d.operational_mill; });
+    var operational_millGroup = operational_mill.group().reduceCount();
+    var operational_millPie = dc.pieChart("#functionalMills",groupname)
+      .dimension(operational_mill)
+      .group(operational_millGroup)
+      operational_millPie
+      .legend(dc.legend().highlightSelected(true))
+        .width(450)
+
+    var energy_source = xf.dimension(function(d) { return d.energy_source; });
+    var energy_sourceGroup = energy_source.group().reduceCount();
+    var energy_sourcePie = dc.pieChart("#energySource",groupname)
+      .dimension(energy_source)
+      .group(energy_sourceGroup)
+      energy_sourcePie
+      .legend(dc.legend().highlightSelected(true))
+      .width(450)
 
     dc.renderAll(groupname);
     return {marker: marker, pie: fortifiedFlourPie};

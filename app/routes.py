@@ -42,8 +42,6 @@ with open('app/static/form_config.csv', newline='') as file:
 projectId = form_details[form_index]['projectId']
 formId = form_details[form_index]['formId']
 lastNumberRecordsMills = form_details[form_index]['lastNumberRecordsMills']
-lastNumberRecordsMachines = form_details[form_index]['lastNumberRecordsMachines']
-
 
 # Functions for downloading attachments
 def get_submission_ids(mills_table):
@@ -129,6 +127,12 @@ def fetch_odk_submissions(base_url, aut, projectId, formId):
             # Writing data of CSV file
             csv_writer.writerow(emp.values())
         data_file.close()
+
+        #Update the config file
+        new_submission_count = number_submissions(base_url, aut, projectId, formId)
+        form_details[form_index]['lastNumberRecordsMills'] = new_submission_count
+        form_details[form_index]['lastChecked'] = time.localtime(time.time())
+        update_form_config_file(form_details)
 
 # Get all the mills from the ODK server, flatten them and save them a csv file
 def fetch_odk_csv(base_url, aut, projectId, formId, table='Submissions', sort_column = '__id'):
@@ -237,8 +241,7 @@ def check_removed_forms(form_details):
         if file_name not in form_names:
             mills_path = os.path.join(path, file)
             os.remove(mills_path)
-            machine_path = os.path.join(submission_files_path, 'Submissions.machines.machine', file)
-            os.remove(machine_path)
+            print(f'Removed {mills_path}')
             # todo include also removing the figures automatically
 
 
@@ -249,10 +252,9 @@ def check_new_submissions_odk(form_details=form_details):
     Checks if the config file has less forms and removes those
     Updates the config file based on the latest updates
     """
+    # Check if there are files that are not in the config file and remove those
+    check_removed_forms(form_details)
     for form_index in range(0, len(form_details)):
-        # Check if there are files that are not in the config file and remove those
-        check_removed_forms(form_details)
-
         # Check whether the form is active or not, or if it has not been checked before
         if form_details[form_index]['activityStatus'] == '1'or form_details[form_index]['lastChecked']=='':
             # Check if there are new submissions in the form
@@ -269,8 +271,6 @@ def check_new_submissions_odk(form_details=form_details):
             if new_submission_count - old_submission_count > 0:
                 print('New Submissions!')
                 new_sub_ids = get_new_sub_ids(table='Submissions', formId=formId, odk_details_column='instanceId', local_column='__id')
-                if len(new_sub_ids) + old_submission_count != new_submission_count:
-                    print('Warning: the number of new submissions does not match')
                 # Retrieve the missing submissions by fetching the form
                 fetch_odk_submissions(base_url, aut, projectId, formId)
                 # fetch_odk_csv(base_url, aut, projectId, formId, table='Submissions', sort_column = '__id')
@@ -282,7 +282,7 @@ def check_new_submissions_odk(form_details=form_details):
             update_form_config_file(form_details)
 
 sched = BackgroundScheduler(daemon=True)
-sched.add_job(check_new_submissions_odk, 'interval', seconds=120)
+sched.add_job(check_new_submissions_odk, 'interval', seconds=300)
 sched.start()
 atexit.register(lambda: sched.shutdown())
 
