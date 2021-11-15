@@ -141,7 +141,7 @@ def update_form_config_file(form_details):
             writer.writerow(row)
 
 
-def fetch_odk_submissions(base_url, aut, projectId, formId):
+def fetch_odk_submissions(base_url: str, aut: object, projectId: int, formId: str):
     """
     Get all the data from the ODK server, merge them together and save them as a csv file
     """

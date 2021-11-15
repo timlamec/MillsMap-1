@@ -163,9 +163,9 @@ mills_promise.then(function(data) {
 });
 
 function drawMarkers(data) {
-    var xf = crossfilter(data);
+    var cross_data = crossfilter(data);
     var groupname = "marker-select";
-    var facilities = xf.dimension(function(d) { return d.__id; });
+    var facilities = cross_data.dimension(function(d) { return d.__id; });
     var facilitiesGroup = facilities.group().reduce(
         function(p, v) { // add
             p.Packaging_flour_fortified = v.Packaging_flour_fortified;
@@ -194,17 +194,37 @@ function drawMarkers(data) {
             return kv.value.geo;
         })
         .popup(function(kv) {
-            console.log(kv)
+//            console.log(kv)
             return 'Number of mills: ' + kv.value.count;
         })
         .filterByArea(true)
 
-//  Groups and dimensions for the graphs
-    var Packaging_flour_fortified = xf.dimension(function(d) { return d.Packaging_flour_fortified; });
+//  The mill and machine numbers
+//  machines are just the length of the data
+    document.getElementById('machineNumber').innerHTML = data.length;
+//  mills are the unique ids in the data
+    totalMills(cross_data);
+    function unique_count_groupall(group) {
+      return {
+        value: function() {
+          return group.all().filter(kv => kv.key).length;
+        }
+      };
+    }
+    function totalMills(cross_data) {
+        // Select the Mills
+        var totalMillsND = dc.numberDisplay("#millNumber")
+        .formatNumber(d3.format("")); //change to ".2s" if want to have only the first two digits
+        // Count them
+        var dim = cross_data.dimension(dc.pluck("__id"));
+        var uniqueMills = unique_count_groupall(facilities.group());
+        totalMillsND.group(uniqueMills).valueAccessor(x => x);
+        totalMillsND.render();
+    };
+
+//  Graphs
+    var Packaging_flour_fortified = cross_data.dimension(function(d) { return d.Packaging_flour_fortified; });
     var Packaging_flour_fortifiedGroup = Packaging_flour_fortified.group().reduceCount();
-
-
-
     var fortifiedFlourPie = dc.pieChart("#fortifiedFlour",groupname)
       .dimension(Packaging_flour_fortified)
       .group(Packaging_flour_fortifiedGroup)
@@ -217,7 +237,7 @@ function drawMarkers(data) {
           })
         })
 
-    var mill_type = xf.dimension(function(d) { return d.mill_type; });
+    var mill_type = cross_data.dimension(function(d) { return d.mill_type; });
     var mill_typeGroup = mill_type.group().reduceCount();
     var mill_typePie = dc.pieChart("#millTypes",groupname)
       .dimension(mill_type)
@@ -226,7 +246,7 @@ function drawMarkers(data) {
       .legend(dc.legend().highlightSelected(true))
       .width(450)
 
-    var operational_mill = xf.dimension(function(d) { return d.operational_mill; });
+    var operational_mill = cross_data.dimension(function(d) { return d.operational_mill; });
     var operational_millGroup = operational_mill.group().reduceCount();
     var operational_millPie = dc.pieChart("#functionalMills",groupname)
       .dimension(operational_mill)
@@ -235,7 +255,7 @@ function drawMarkers(data) {
       .legend(dc.legend().highlightSelected(true))
         .width(450)
 
-    var energy_source = xf.dimension(function(d) { return d.energy_source; });
+    var energy_source = cross_data.dimension(function(d) { return d.energy_source; });
     var energy_sourceGroup = energy_source.group().reduceCount();
     var energy_sourcePie = dc.pieChart("#energySource",groupname)
       .dimension(energy_source)
@@ -244,9 +264,36 @@ function drawMarkers(data) {
       .legend(dc.legend().highlightSelected(true))
       .width(450)
 
+    var mill_owner = cross_data.dimension(function(d) { return d.interviewee_mill_owner; });
+    var mill_ownerGroup = mill_owner.group().reduceCount();
+    var mill_ownerPie = dc.pieChart("#millOwner",groupname)
+      .dimension(mill_owner)
+      .group(mill_ownerGroup)
+      mill_ownerPie
+      .legend(dc.legend().highlightSelected(true))
+      .width(450)
+
+    var fortified_standard = cross_data.dimension(function(d) { return d.Packaging_flour_fortified_standard; });
+    var fortified_standardGroup = fortified_standard.group().reduceCount();
+    var fortified_standardPie = dc.pieChart("#fortifiedStandard",groupname)
+      .dimension(fortified_standard)
+      .group(fortified_standardGroup)
+      fortified_standardPie
+      .legend(dc.legend().highlightSelected(true))
+      .width(450)
+
+
     dc.renderAll(groupname);
-    return {marker: marker, pie: fortifiedFlourPie};
+
+    d3.select('#resetFilters')
+       .on('click', function() {
+         dc.filterAll(groupname);
+         dc.redrawAll(groupname);
+    });
 }
+
+
+
 //mills_promise.then(function(subs_json) {
 //    // Get the filenames for mills folder
 //    var element = document.getElementById("spin");
