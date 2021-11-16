@@ -39,13 +39,43 @@ r.json()[0]['name']
 
 """
 
-import sys, os
+import sys, os, io
 import requests
 import json
 import zlib
 import codecs
 import urllib
+from PIL import Image
 
+
+def submissions(base_url, aut, projectId, formId):
+    """Fetch a list of submission instances for a given form."""
+    url = f'{base_url}/v1/projects/{projectId}/forms/{formId}/submissions'
+    return requests.get(url, auth = aut)
+
+def get_attachment(base_url, aut, projectId, formId, instanceId, filename):
+    """Fetch a specific attachment by filename from a submission to a form."""
+    url = f'{base_url}/v1/projects/{projectId}/forms/{formId}/submissions/{instanceId}/attachments/{filename}'
+    return requests.get(url, auth = aut)
+
+def all_attachments_from_form(base_url, aut, projectId, formId, outdir):
+    """Downloads all available attachments from a given form"""
+    submission_values = submissions(base_url, aut, projectId, formId)
+    for submission in submission_values.json():
+        sub_id = submission['instanceId']
+        attachments = attachment_list(base_url, aut, projectId, formId, sub_id)
+        for attachment in attachments.json():
+            fn = attachment['name']
+            outfilepath = os.path.join(outdir, fn)
+            if os.path.isfile(outfilepath):
+                print(f'Apparently {fn} has already been downloaded')
+            else:
+                attresp = get_attachment(base_url, aut, projectId, formId, sub_id, fn)
+                im = Image.open(io.BytesIO(attresp.content))
+                #resize the image
+                percentage = 0.4
+                resized_im = im.resize((round(im.size[0]*percentage), round(im.size[1]*percentage)))
+                resized_im.save(outfilepath)
 
 def odata_submissions_table(base_url, auth, projectId, formId, table):
     """
@@ -116,7 +146,6 @@ def export_submissions(base_url, auth, projectId, formId):
     # download the file contents in binary format
     return requests.get(url, auth = auth)
 
-
 # ---------------------------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -137,10 +166,6 @@ def forms(base_url, aut, projectId):
     url = f'{base_url}/v1/projects/{projectId}/forms'
     return requests.get(url, auth = aut)
 
-def submissions(base_url, aut, projectId, formId):
-    """Fetch a list of submission instances for a given form."""
-    url = f'{base_url}/v1/projects/{projectId}/forms/{formId}/submissions'
-    return requests.get(url, auth = aut)
 
 def users(base_url, aut):
     """Fetch a list of users."""
@@ -164,13 +189,6 @@ def attachment_list(base_url, aut, projectId, formId, instanceId):
     """Fetch an individual media file attachment."""
     url = f'{base_url}/v1/projects/{projectId}/forms/{formId}/submissions/'\
         f'{instanceId}/attachments'
-    return requests.get(url, auth = aut)
-
-
-def attachment(base_url, aut, projectId, formId, instanceId, filename):
-    """Fetch a specific attachment by filename from a submission to a form."""
-    url = f'{base_url}/v1/projects/{projectId}/forms/{formId}/submissions/'\
-        f'{instanceId}/attachments/{filename}'
     return requests.get(url, auth = aut)
 
 # POST 

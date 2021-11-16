@@ -169,16 +169,20 @@ function drawMarkers(data) {
     var facilitiesGroup = facilities.group().reduce(
         function(p, v) { // add
             p.Packaging_flour_fortified = v.Packaging_flour_fortified;
+            p.mill_type.push(v.mill_type);
+            p.operational_mill = v.operational_mill;
             p.geo = v.geo;
             ++p.count;
             return p;
         },
         function(p, v) { // remove
             --p.count;
+            var last = p.mill_type[p.mill_type.length - 1];
+            last.parentNode.removeChild(last);
             return p;
         },
         function() { // init
-            return {count: 0};
+            return {count: 0, mill_type: new Array()};
         }
     );
 
@@ -194,8 +198,8 @@ function drawMarkers(data) {
             return kv.value.geo;
         })
         .popup(function(kv) {
-//            console.log(kv)
-            return 'Number of mills: ' + kv.value.count;
+            console.log(kv)
+            return 'Number of mills: ' + kv.value.count + ' Type of mills: ' + kv.value.mill_type + ' id: ' + kv.key;
         })
         .filterByArea(true)
 

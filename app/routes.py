@@ -11,7 +11,8 @@ import time
 # Local imports
 from app import app
 from app.odk_requests import odata_submissions, export_submissions, \
-    odata_submissions_table, list_attachments, odata_attachments
+    odata_submissions_table, list_attachments, odata_attachments, \
+    all_attachments_from_form
 from app.helper_functions import get_filters, nested_dictionary_to_df, flatten_dict
 from app.graphics import count_items, unique_key_counts, charts
 from app.update_submission_files import fetch_odk_submissions, update_form_config_file, get_form_column, \
@@ -47,8 +48,6 @@ def download_attachments(base_url, aut, projectId, formId, submission_ids):
 path = 'app/submission_files'
 if not os.path.exists('app/submission_files'):
     os.makedirs('app/submission_files')
-if not os.path.exists('app/submission_files/figures'):
-    os.makedirs('app/submission_files/figures')
 
 # check if the files exists, if not, fetch the data from ODK
 formId_list = list()
@@ -66,6 +65,10 @@ for i in range(0, len(form_details)):
             fetch_odk_submissions(base_url, aut, projectId, formId)
             # fetch_odk_csv(base_url, aut, projectId, formId, table=table_name, sort_column = id)
 
+if not os.path.exists(figures_path):
+    os.makedirs(figures_path)
+    for formId in formId_list:
+        all_attachments_from_form(base_url, aut, projectId, formId, figures_path)
 
 sched = BackgroundScheduler(daemon=True)
 sched.add_job(check_new_submissions_odk, 'interval', seconds=300)
