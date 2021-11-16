@@ -153,7 +153,14 @@ mills_promise = $.get('/read_submissions')
 
 // Now the promise chain that uses the mills and machines
 
-
+function onClick(e) {
+    alert(this.getLatLng());
+}
+customMarker = L.Marker.extend({
+    options: {
+        Id: 'Custom data!'
+    }
+});
 
 mills_promise.then(function(data) {
     data = JSON.parse(data)
@@ -169,7 +176,9 @@ function drawMarkers(data) {
     var facilitiesGroup = facilities.group().reduce(
         function(p, v) { // add
             p.Packaging_flour_fortified = v.Packaging_flour_fortified;
+            p.Location_mill_gps_coordinates = v.Location_mill_gps_coordinates;
             p.mill_type.push(v.mill_type);
+            p.image_fns.push(v.img_machines);
             p.operational_mill = v.operational_mill;
             p.geo = v.geo;
             ++p.count;
@@ -177,16 +186,15 @@ function drawMarkers(data) {
         },
         function(p, v) { // remove
             --p.count;
-            var last = p.mill_type[p.mill_type.length - 1];
-            last.parentNode.removeChild(last);
             return p;
         },
         function() { // init
-            return {count: 0, mill_type: new Array()};
+            return {count: 0, mill_type: new Array(), image_fns: new Array()};
         }
     );
 
-    var marker = dc_leaflet.markerChart("#mapid",groupname)
+    var mapChart = dc_leaflet.markerChart("#mapid",groupname);
+    mapChart
         .dimension(facilities)
         .group(facilitiesGroup)
         .map(map)
@@ -198,10 +206,27 @@ function drawMarkers(data) {
             return kv.value.geo;
         })
         .popup(function(kv) {
-            console.log(kv)
+//            console.log(kv)
             return 'Number of mills: ' + kv.value.count + ' Type of mills: ' + kv.value.mill_type + ' id: ' + kv.key;
         })
         .filterByArea(true)
+      .marker(function(kv) {
+            marker = new customMarker([kv.value.Location_mill_gps_coordinates[1], kv.value.Location_mill_gps_coordinates[0]], {Id: (kv.key).toString()});
+            marker.on('click', function(e) {
+                console.log(kv);
+                var details_container = document.getElementById('details_container')
+                details_container.innerHTML = '';
+                document.getElementById('machine_details').innerHTML = kv.value.mill_type
+                for(i in kv.value.image_fns){
+                    var fn = kv.value.image_fns[i]
+                        console.log(fn)
+                        var img = document.createElement("img");
+                        details_container.appendChild(img);
+                        img.src = "static/figures/" + fn;
+                    }
+                })
+            return marker;
+    });
 
 //  The mill and machine numbers
 //  machines are just the length of the data

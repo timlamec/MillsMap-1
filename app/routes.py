@@ -71,7 +71,7 @@ if not os.path.exists(figures_path):
         all_attachments_from_form(base_url, aut, projectId, formId, figures_path)
 
 sched = BackgroundScheduler(daemon=True)
-sched.add_job(check_new_submissions_odk, 'interval', seconds=300)
+sched.add_job(check_new_submissions_odk, 'interval', seconds=update_time)
 sched.start()
 atexit.register(lambda: sched.shutdown())
 

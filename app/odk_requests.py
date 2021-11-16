@@ -77,6 +77,30 @@ def all_attachments_from_form(base_url, aut, projectId, formId, outdir):
                 resized_im = im.resize((round(im.size[0]*percentage), round(im.size[1]*percentage)))
                 resized_im.save(outfilepath)
 
+def update_attachments_from_form(submission_table, attachment_folder, base_url, aut, projectId, formId):
+    """Update the attachments that do not exist yet from a given form"""
+    current_attachments = os.listdir(attachment_folder)
+    # Compare to the list in the new form
+    #get the image file names
+    image_fns = [row['img_machines'] for row in submission_table]
+    #get the sorted list of new image files
+    new_image_fns = sorted(list(set(image_fns) - set(current_attachments)))
+    #sort the submission table also on the file names, so that they match
+    submission_table = sorted(submission_table, key=lambda d: d['img_machines'])
+    ids = [row['__id'] for row in submission_table if row['img_machines'] in new_image_fns]
+    for (sub_id, attachment) in zip(ids,new_image_fns):
+            fn = attachment
+            outfilepath = os.path.join(attachment_folder, fn)
+            if os.path.isfile(outfilepath):
+                print(f'Apparently {fn} has already been downloaded')
+            else:
+                attresp = get_attachment(base_url, aut, projectId, formId, sub_id, fn)
+                im = Image.open(io.BytesIO(attresp.content))
+                #resize the image
+                percentage = 0.4
+                resized_im = im.resize((round(im.size[0]*percentage), round(im.size[1]*percentage)))
+                resized_im.save(outfilepath)
+
 def odata_submissions_table(base_url, auth, projectId, formId, table):
     """
     Fetch the submissions using the odata api. 

@@ -1,7 +1,7 @@
 import os, json, time
 
 from app.odk_requests import number_submissions, odata_submissions, \
-    get_submission_details
+    get_submission_details, update_attachments_from_form
 from app.helper_functions import flatten_dict
 from app.config import *
 
@@ -61,15 +61,16 @@ def check_new_submissions_odk():
             # If there are new submissions, get the submission ids that are missing
             if new_submission_count - old_submission_count > 0:
                 print('New Submissions!')
-                new_sub_ids = get_new_sub_ids(table='Submissions', formId=formId, odk_details_column='instanceId',
-                                              local_column='__id')
+                # new_sub_ids = get_new_sub_ids(table='Submissions', formId=formId, odk_details_column='instanceId',
+                #                               local_column='__id')
                 # Retrieve the missing submissions by fetching the form
-                fetch_odk_submissions(base_url, aut, projectId, formId)
+                table = fetch_odk_submissions(base_url, aut, projectId, formId)
+                # Update the figures
+                update_attachments_from_form(table, figures_path, base_url, aut, projectId, formId)
+
                 # fetch_odk_csv(base_url, aut, projectId, formId, table='Submissions', sort_column = '__id')
                 # fetch_odk_csv(base_url, aut, projectId, formId, table='Submissions.machines.machine', sort_column = '__Submissions-id')
                 # todo: find out if it is possible to get the submissions based on ids, and append them to the existing csv
-            # Update the figures
-            all_attachments_from_form(base_url, aut, projectId, formId, figures_path)
             # Update form_config file
             form_details[form_index]['lastNumberRecordsMills'] = new_submission_count
             form_details[form_index]['lastChecked'] = time.localtime(time.time())
@@ -213,8 +214,9 @@ def fetch_odk_submissions(base_url: str, aut: object, projectId: int, formId: st
             csv_writer.writerow(emp.values())
         data_file.close()
 
-        # Update the config file
-        new_submission_count = number_submissions(base_url, aut, projectId, formId)
-        form_details[form_index]['lastNumberRecordsMills'] = new_submission_count
-        form_details[form_index]['lastChecked'] = time.localtime(time.time())
-        update_form_config_file(form_details)
+    # Update the config file
+    new_submission_count = number_submissions(base_url, aut, projectId, formId)
+    form_details[form_index]['lastNumberRecordsMills'] = new_submission_count
+    form_details[form_index]['lastChecked'] = time.localtime(time.time())
+    update_form_config_file(form_details)
+    return all_tables

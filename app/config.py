@@ -14,8 +14,8 @@ machine_columns = ['__id', '__Submissions-id', 'commodity_milled', 'mill_type', 
 columns = {'Submissions': mill_columns, 'Submissions.machines.machine':machine_columns}
 
 submission_files_path = 'app/submission_files'
-figures_path = 'app/submission_files/figures'
-
+figures_path = 'app/static/figures'
+update_time = 60 #time in seconds to check and update new submissions
 id_columns = ['__id', '__Submissions-id']
 # Get the form configured data
 form_details = list()
