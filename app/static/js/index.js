@@ -284,14 +284,7 @@ function drawMarkers(data) {
       .legend(dc.legend().highlightSelected(true))
         .width(450)
 
-    var energy_source = cross_data.dimension(function(d) { return d.energy_source; });
-    var energy_sourceGroup = energy_source.group().reduceCount();
-    var energy_sourcePie = dc.pieChart("#energySource",groupname)
-      .dimension(energy_source)
-      .group(energy_sourceGroup)
-      energy_sourcePie
-      .legend(dc.legend().highlightSelected(true))
-      .width(450)
+
 
     var mill_owner = cross_data.dimension(function(d) { return d.interviewee_mill_owner; });
     var mill_ownerGroup = mill_owner.group().reduceCount();
@@ -311,6 +304,124 @@ function drawMarkers(data) {
       .legend(dc.legend().highlightSelected(true))
       .width(450)
 
+    var commodity_milled = cross_data.dimension(function(d) { return d.commodity_milled;}, true);
+    var commodity_milledGroup = commodity_milled.group().reduceCount();
+    var commodity_milledChart = dc.pieChart("#grainType",groupname)
+      .dimension(commodity_milled)
+      .group(commodity_milledGroup)
+      commodity_milledChart
+      .legend(dc.legend().highlightSelected(true))
+      .width(450)
+
+//    var non_operational = cross_data.dimension(function(d){ return d.non_operational;}, true);
+//    var non_operationalGroup = non_operational.group();
+//    var non_operationalPie = dc.pieChart("#nonOperational",groupname)
+//      .dimension(non_operational)
+//      .group(non_operationalGroup)
+//      non_operationalPie
+//      .legend(dc.legend().highlightSelected(true))
+//      .width(450)
+
+//    var energy_source = cross_data.dimension(function(d) { return d.energy_source; });
+//    var energy_sourceGroup = energy_source.group().reduceCount();
+//    var energy_sourcePie = dc.pieChart("#energySource",groupname)
+//      .dimension(energy_source)
+//      .group(energy_sourceGroup)
+//      energy_sourcePie
+//      .legend(dc.legend().highlightSelected(true))
+//      .width(450)
+
+//    var chart = new dc.BarChart("#peopleBar");
+//    d3.csv("static/people.csv").then(function(people) {
+//        var mycrossfilter = crossfilter(people);
+//        var ageDimension = mycrossfilter.dimension(function(data) {
+//           return ~~((Date.now() - new Date(data.DOB)) / (31557600000))
+//        });
+//        var ageGroup = ageDimension.group().reduceCount();
+//        chart
+//           .x(d3.scaleLinear().domain([15,70]))
+//           .dimension(ageDimension)
+//           .group(ageGroup)
+//        chart.render();
+//     });
+
+    var energy_source = cross_data.dimension(function(d) { return d.energy_source; }, true);
+    var energy_sourceGroup = energy_source.group().reduceCount();
+    var energy_sourceChart = dc.barChart("#energySource",groupname)
+      energy_sourceChart
+      .dimension(energy_source)
+      .group(energy_sourceGroup)
+       .height(300)
+       .brushOn(false)
+       .yAxisLabel("Count")
+       .xAxisLabel("Age")
+       .x(d3.scaleLinear().domain([0,300]))
+       .render();
+//      .legend(dc.legend().highlightSelected(true))
+//      .renderLabel(true)
+//      .width(450)
+
+<!--    var ageDimension = mycrossfilter.dimension(function(data) {-->
+<!--       return ~~((Date.now() - new Date(data.DOB)) / (31557600000))-->
+<!--    });-->
+<!--    var ageGroup = ageDimension.group().reduceCount();-->
+<!--    chart-->
+<!--       .width(800)-->
+<!--       .height(300)-->
+<!--       .brushOn(false)-->
+<!--       .yAxisLabel("Count")-->
+<!--       .xAxisLabel("Age")-->
+<!--       .x(d3.scaleLinear().domain([15,70]))-->
+<!--       .dimension(ageDimension)-->
+<!--       .group(ageGroup)-->
+<!--       .yAxisLabel("This is the Y Axis!")-->
+<!--       .on('renderlet', function(chart) {-->
+<!--          chart.selectAll('rect').on('click', function(d) {-->
+<!--             console.log('click!', d);-->
+<!--          });-->
+<!--       });-->
+<!--    chart.render();-->
+<!-- });-->
+
+    var topicsDim = cross_data.dimension(function(d){ return d.non_operational;}, true);
+    var topicsGroup = topicsDim.group();
+    var topicsArrayRowChart = dc.rowChart("#nonOperational", groupname)
+        .renderLabel(true)
+        .dimension(topicsDim)
+        .group(topicsGroup)
+        .cap(6)
+        .elasticX(true)
+        .xAxis().ticks(4)
+
+
+    var chart = new dc.BarChart("#peopleBar");
+    d3.csv("static/people.csv").then(function(people) {
+        var mycrossfilter = crossfilter(people);
+        var ageDimension = mycrossfilter.dimension(function(data) {
+           return ~~((Date.now() - new Date(data.DOB)) / (31557600000))
+        });
+        var ageGroup = ageDimension.group().reduceCount();
+        chart
+           .x(d3.scaleLinear().domain([15,70]))
+           .dimension(ageDimension)
+           .group(ageGroup)
+        chart.render();
+     });
+
+//    var chart = new dc.RowChart("#peopleBar");
+//    d3.csv("static/people.csv").then(function(people) {
+//        var mycrossfilter = crossfilter(people);
+//        var ageDimension = mycrossfilter.dimension(function(data) {
+//           return ~~((Date.now() - new Date(data.DOB)) / (31557600000))
+//        });
+//        var ageGroup = ageDimension.group();
+//        chart
+//           .dimension(ageDimension)
+//           .group(ageGroup)
+//           .cap(6)
+//        .elasticX(true)
+//        chart.render();
+//     });
 
     dc.renderAll(groupname);
 

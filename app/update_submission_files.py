@@ -24,8 +24,15 @@ def read_local_tables_together(folder):
         with open(table_path, newline='') as data_file:
             csv_file = csv.DictReader(data_file)
             for row in csv_file:
-                # transform the coordinates from a string to a list
+                row['non_operational'] = row['non_operational'].split(' ')
+                row['energy_source'] = row['energy_source'].split(' ')
+                row['commodity_milled'] = row['commodity_milled'].split(' ')
+                for column in array_columns:
+                    row[column] = [item.capitalize().replace('_', ' ') for item in row[column]]
+                for column in single_columns:
+                    row[column] = row[column].capitalize().replace('_', ' ')
                 try:
+                    # transform the coordinates from a string to a list
                     row['Location_mill_gps_coordinates'] = row['Location_mill_gps_coordinates'][1:-1].split(',')
                 except:
                     next
@@ -195,6 +202,11 @@ def fetch_odk_submissions(base_url: str, aut: object, projectId: int, formId: st
     file_name = ''.join([formId, '.csv'])
     dir = 'app/submission_files'
     path = os.path.join(dir, file_name)
+    for row in all_tables:
+        # transform the columns to have capitals and no underscores
+        row['interviewee_mill_owner'] = row['interviewee_mill_owner'].capitalize()
+        row['interviewee_mill_owner'] = row['interviewee_mill_owner'].replace('_', ' ')
+
     with open(path, 'w') as data_file:
         csv_writer = csv.writer(data_file)
         # Counter variable used for writing
