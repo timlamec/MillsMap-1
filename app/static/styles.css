@@ -79,6 +79,13 @@ object-fit: cover;
 .dc-chart.infographics{
     width:345px;
 }
+#nonOperational g.axis.x text {
+    text-anchor: end !important;
+    transform: rotate(-20deg)!important;
+}
+svg:not(:root) {
+    overflow: visible!important;
+}
 /*Loading giff*/
 .ouro {
     z-index: 500;
