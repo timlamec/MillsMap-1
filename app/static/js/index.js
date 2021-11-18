@@ -187,6 +187,8 @@ function drawMarkers(data) {
         },
         function(p, v) { // remove
             --p.count;
+            p.mill_type.pop();
+            p.image_fns.pop();
             return p;
         },
         function() { // init
