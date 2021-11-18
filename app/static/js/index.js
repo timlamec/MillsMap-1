@@ -187,8 +187,14 @@ function drawMarkers(data) {
         },
         function(p, v) { // remove
             --p.count;
-            p.mill_type.pop();
-            p.image_fns.pop();
+            var index = p.image_fns.indexOf(v.img_machines);
+            if (index > -1) {
+              p.image_fns.splice(index, 1);
+            }
+            var index = p.mill_type.indexOf(v.mill_type);
+            if (index > -1) {
+              p.mill_type.splice(index, 1);
+            }
             return p;
         },
         function() { // init
