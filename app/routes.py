@@ -72,7 +72,6 @@ atexit.register(lambda: sched.shutdown())
 
 @app.route('/download_attachments')
 def download_attachments():
-    print('download_attachments() WORKS!')
     if not os.path.exists(figures_path):
         os.makedirs(figures_path)
         for formId in formId_list:
