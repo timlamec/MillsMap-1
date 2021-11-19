@@ -12,7 +12,7 @@ import time
 from app import app
 from app.odk_requests import odata_submissions, export_submissions, \
     odata_submissions_table, list_attachments, odata_attachments, \
-    all_attachments_from_form
+    all_attachments_from_form, update_attachments_from_form
 from app.helper_functions import get_filters, nested_dictionary_to_df, flatten_dict
 from app.graphics import count_items, unique_key_counts, charts
 from app.update_submission_files import fetch_odk_submissions, update_form_config_file, get_form_column, \
@@ -62,18 +62,41 @@ for i in range(0, len(form_details)):
             next
         else:
             # fetch all the mills data from odk
-            fetch_odk_submissions(base_url, aut, projectId, formId)
-            # fetch_odk_csv(base_url, aut, projectId, formId, table=table_name, sort_column = id)
-
-if not os.path.exists(figures_path):
-    os.makedirs(figures_path)
-    for formId in formId_list:
-        all_attachments_from_form(base_url, aut, projectId, formId, figures_path)
+            all_tables = fetch_odk_submissions(form_index, base_url, aut, projectId, formId)
+            update_form_config_file(form_details)
 
 sched = BackgroundScheduler(daemon=True)
 sched.add_job(check_new_submissions_odk, 'interval', seconds=update_time)
 sched.start()
 atexit.register(lambda: sched.shutdown())
+
+@app.route('/download_attachments')
+def download_attachments():
+    print('download_attachments() WORKS!')
+    if not os.path.exists(figures_path):
+        os.makedirs(figures_path)
+        for formId in formId_list:
+            all_attachments_from_form(base_url, aut, projectId, formId, figures_path)
+    else:
+        # check how many machines in the config file and how many in the folder
+        last_record_machines = 0
+        for row in form_details:
+            try:
+                last_record_machines += int(row['lastNumberRecordsMachines'])
+            except:
+                last_record_machines += 0
+        attachment_figures_in_folder = len(os.listdir('app/static/figures'))
+        if attachment_figures_in_folder < last_record_machines:
+            for formId in formId_list:
+                file_name = ''.join([formId, '.csv'])
+                path = os.path.join(submission_files_path, file_name)
+                with open(path, newline='') as data_file:
+                    csv_file = csv.DictReader(data_file)
+                    file = list()
+                    for row in csv_file:
+                        file.append(row)
+                data_file.close()
+                update_attachments_from_form(file, figures_path, base_url, aut, projectId, formId)
 
 @app.route('/file_names', methods=['POST'])
 def get_main_tables():

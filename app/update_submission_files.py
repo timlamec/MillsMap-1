@@ -72,13 +72,13 @@ def check_new_submissions_odk():
                 #                               local_column='__id')
                 # Retrieve the missing submissions by fetching the form
                 table = fetch_odk_submissions(base_url, aut, projectId, formId)
-                # Update the figures
-                update_attachments_from_form(table, figures_path, base_url, aut, projectId, formId)
+                # Update the figures:                update_attachments_from_form(table, figures_path, base_url, aut, projectId, formId)
 
                 # fetch_odk_csv(base_url, aut, projectId, formId, table='Submissions', sort_column = '__id')
                 # fetch_odk_csv(base_url, aut, projectId, formId, table='Submissions.machines.machine', sort_column = '__Submissions-id')
                 # todo: find out if it is possible to get the submissions based on ids, and append them to the existing csv
             # Update form_config file
+                form_details[form_index]['lastNumberRecordsMachines'] = len(table)
             form_details[form_index]['lastNumberRecordsMills'] = new_submission_count
             form_details[form_index]['lastChecked'] = time.localtime(time.time())
             update_form_config_file(form_details)
@@ -151,7 +151,7 @@ def update_form_config_file(form_details):
             writer.writerow(row)
 
 
-def fetch_odk_submissions(base_url: str, aut: object, projectId: int, formId: str):
+def fetch_odk_submissions(form_index, base_url: str, aut: object, projectId: str, formId: str):
     """
     Get all the data from the ODK server, merge them together and save them as a csv file
     """
@@ -229,6 +229,7 @@ def fetch_odk_submissions(base_url: str, aut: object, projectId: int, formId: st
     # Update the config file
     new_submission_count = number_submissions(base_url, aut, projectId, formId)
     form_details[form_index]['lastNumberRecordsMills'] = new_submission_count
+    form_details[form_index]['lastNumberRecordsMachines'] = len(all_tables)
     form_details[form_index]['lastChecked'] = time.localtime(time.time())
     update_form_config_file(form_details)
     return all_tables

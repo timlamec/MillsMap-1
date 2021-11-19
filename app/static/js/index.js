@@ -357,6 +357,8 @@ function drawMarkers(data) {
          dc.filterAll(groupname);
          dc.redrawAll(groupname);
     });
+
+    fetch('/download_attachments')
 }
 
 

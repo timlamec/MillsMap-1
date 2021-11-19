@@ -39,7 +39,7 @@ r.json()[0]['name']
 
 """
 
-import sys, os, io
+import sys, os, io, time
 import requests
 import json
 import zlib
@@ -63,19 +63,27 @@ def all_attachments_from_form(base_url, aut, projectId, formId, outdir):
     submission_values = submissions(base_url, aut, projectId, formId)
     for submission in submission_values.json():
         sub_id = submission['instanceId']
+        start_atachment_time = time.perf_counter()
         attachments = attachment_list(base_url, aut, projectId, formId, sub_id)
+        print(f'Received the attachments for subid {sub_id} in {time.perf_counter()-start_atachment_time}')
         for attachment in attachments.json():
+            start_atachment_time = time.perf_counter()
             fn = attachment['name']
             outfilepath = os.path.join(outdir, fn)
             if os.path.isfile(outfilepath):
                 print(f'Apparently {fn} has already been downloaded')
             else:
-                attresp = get_attachment(base_url, aut, projectId, formId, sub_id, fn)
-                im = Image.open(io.BytesIO(attresp.content))
-                #resize the image
-                percentage = 0.4
-                resized_im = im.resize((round(im.size[0]*percentage), round(im.size[1]*percentage)))
-                resized_im.save(outfilepath)
+                try:
+                    attresp = get_attachment(base_url, aut, projectId, formId, sub_id, fn)
+                    im = Image.open(io.BytesIO(attresp.content))
+                    # resize the image
+                    percentage = 0.3
+                    resized_im = im.resize((round(im.size[0] * percentage), round(im.size[1] * percentage)))
+                    resized_im.save(outfilepath)
+                except:
+                    print(f'Submission request for the attachment {sub_id} with filename {fn} failed')
+            print(f'Saved the attachement for subid {sub_id} for the form {formId} in {time.perf_counter() - start_atachment_time}')
+
 
 def update_attachments_from_form(submission_table, attachment_folder, base_url, aut, projectId, formId):
     """Update the attachments that do not exist yet from a given form"""
@@ -97,7 +105,7 @@ def update_attachments_from_form(submission_table, attachment_folder, base_url, 
                 attresp = get_attachment(base_url, aut, projectId, formId, sub_id, fn)
                 im = Image.open(io.BytesIO(attresp.content))
                 #resize the image
-                percentage = 0.4
+                percentage = 0.3
                 resized_im = im.resize((round(im.size[0]*percentage), round(im.size[1]*percentage)))
                 resized_im.save(outfilepath)
 
