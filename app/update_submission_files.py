@@ -30,7 +30,7 @@ def read_local_tables_together(folder):
                 for column in array_columns:
                     row[column] = [item.capitalize().replace('_', ' ') for item in row[column]]
                 for column in single_columns:
-                    row[column] = row[column].capitalize().replace('_', ' ')
+                        row[column] = row[column].capitalize().replace('_', ' ')
                 try:
                     # transform the coordinates from a string to a list
                     row['Location_mill_gps_coordinates'] = row['Location_mill_gps_coordinates'][1:-1].split(',')
