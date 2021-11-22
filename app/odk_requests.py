@@ -103,11 +103,14 @@ def update_attachments_from_form(submission_table, attachment_folder, base_url, 
                 print(f'Apparently {fn} has already been downloaded')
             else:
                 attresp = get_attachment(base_url, aut, projectId, formId, sub_id, fn)
-                im = Image.open(io.BytesIO(attresp.content))
-                #resize the image
-                percentage = 0.3
-                resized_im = im.resize((round(im.size[0]*percentage), round(im.size[1]*percentage)))
-                resized_im.save(outfilepath)
+                try:
+                    im = Image.open(io.BytesIO(attresp.content))
+                    #resize the image
+                    percentage = 0.3
+                    resized_im = im.resize((round(im.size[0]*percentage), round(im.size[1]*percentage)))
+                    resized_im.save(outfilepath)
+                except:
+                    print(f'The image {fn} with sub_id {sub_id} in form {formId} could not be processed')
 
 def odata_submissions_table(base_url, auth, projectId, formId, table):
     """
