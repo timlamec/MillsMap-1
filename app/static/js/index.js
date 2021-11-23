@@ -260,6 +260,7 @@ function drawMarkers(data) {
         totalMillsND.render();
     };
 
+
 //  Graphs
     var Packaging_flour_fortified = cross_data.dimension(function(d) { return d.Packaging_flour_fortified; });
     var Packaging_flour_fortifiedGroup = Packaging_flour_fortified.group().reduceCount();
@@ -318,10 +319,11 @@ function drawMarkers(data) {
         .x(d3.scaleBand())
         .xUnits(dc.units.ordinal)
         .brushOn(false)
-        .yAxisLabel('Number of machines')
+//        .yAxisLabel('Number of machines')
         .dimension(commodity_milled)
-        .barPadding(0.1)
-        .outerPadding(0.05)
+        .elasticY(true)
+        .width(450)
+        .yAxisPadding(100)
         .group(commodity_milledGroup);
 
     var energy_source = cross_data.dimension(function(d) { return d.energy_source; }, true);
@@ -331,10 +333,12 @@ function drawMarkers(data) {
           .x(d3.scaleBand())
           .xUnits(dc.units.ordinal)
           .brushOn(false)
-          .yAxisLabel('Number of machines')
+//          .yAxisLabel('Number of machines')
           .dimension(energy_source)
           .barPadding(0.1)
           .outerPadding(0.05)
+          .elasticY(true)
+          .width(450)
           .group(energy_sourceGroup);
 
     var non_operational = cross_data.dimension(function(d){ return d.non_operational;}, true);
@@ -346,9 +350,86 @@ function drawMarkers(data) {
         .x(d3.scaleBand())
         .xUnits(dc.units.ordinal)
         .brushOn(false)
-        .yAxisLabel('Number of machines')
+//        .yAxisLabel('Number of machines')
         .barPadding(0.1)
+        .elasticY(true)
         .outerPadding(0.05)
+        .width(450)
+
+//     Select menus
+    var mill_owner2 = cross_data.dimension(function(d) { return d.interviewee_mill_owner; });
+    var selectOwner = new dc.SelectMenu('#selectOwner',groupname);
+    selectOwner
+        .dimension(mill_owner2)
+        .group(mill_owner2.group())
+        .controlsUseVisibility(true);
+    selectOwner.title(function (subs){
+        return subs.key;
+    })
+    var commodity_milled2 = cross_data.dimension(function(d) { return d.commodity_milled; });
+    var selectGrain = new dc.SelectMenu('#selectGrain',groupname);
+    selectGrain
+        .dimension(commodity_milled2)
+        .group(commodity_milled2.group())
+        .controlsUseVisibility(true);
+    selectGrain.title(function (subs){
+        return subs.key;
+    })
+    var mill_type2 = cross_data.dimension(function(d) { return d.mill_type; });
+    var selectMillType = new dc.SelectMenu('#selectMillType',groupname);
+    selectMillType
+        .dimension(mill_type2)
+        .group(mill_type2.group())
+        .controlsUseVisibility(true);
+    selectMillType.title(function (subs){
+        return subs.key;
+    })
+    var operational_mill2 = cross_data.dimension(function(d) { return d.operational_mill; });
+    var selectOperational = new dc.SelectMenu('#selectOperational',groupname);
+    selectOperational
+        .dimension(operational_mill2)
+        .group(operational_mill2.group())
+        .controlsUseVisibility(true);
+    selectOperational.title(function (subs){
+        return subs.key;
+    })
+    var Packaging_flour_fortified2 = cross_data.dimension(function(d) { return d.Packaging_flour_fortified; });
+    var selectFortify = new dc.SelectMenu('#selectFortify',groupname);
+    selectFortify
+        .dimension(Packaging_flour_fortified2)
+        .group(Packaging_flour_fortified2.group())
+        .controlsUseVisibility(true);
+    selectFortify.title(function (subs){
+        return subs.key;
+    })
+    var Packaging_flour_fortified_standard2 = cross_data.dimension(function(d) { return d.Packaging_flour_fortified_standard; });
+    var selectFortifyStandard = new dc.SelectMenu('#selectFortifyStandard',groupname);
+    selectFortifyStandard
+        .dimension(Packaging_flour_fortified_standard2)
+        .group(Packaging_flour_fortified_standard2.group())
+        .controlsUseVisibility(true);
+    selectFortifyStandard.title(function (subs){
+        return subs.key;
+    })
+    var energy_source2 = cross_data.dimension(function(d) { return d.energy_source; });
+    var selectEnergySource = new dc.SelectMenu('#selectEnergySource',groupname);
+    selectEnergySource
+        .dimension(energy_source2)
+        .group(energy_source2.group())
+        .controlsUseVisibility(true);
+    selectEnergySource.title(function (subs){
+        return subs.key;
+    })
+    var non_operational2 = cross_data.dimension(function(d) { return d.non_operational; });
+    var selectNonOperationReason = new dc.SelectMenu('#selectNonOperationReason',groupname);
+    selectNonOperationReason
+        .dimension(non_operational2)
+        .group(non_operational2.group())
+        .controlsUseVisibility(true);
+    selectNonOperationReason.title(function (subs){
+        return subs.key;
+    })
+
 
     dc.renderAll(groupname);
 

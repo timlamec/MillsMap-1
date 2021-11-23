@@ -28,20 +28,20 @@ def get_submission_ids(mills_table):
     submission_ids = [row['__id'] for row in mills_table]
     return submission_ids
 
-def download_attachments(base_url, aut, projectId, formId, mills_table):
-    submission_ids = get_submission_ids(mills_table)
-    for instanceId in submission_ids:
-        odata_attachments(base_url, aut, projectId, formId, instanceId)
-
-def get_attachment_names(base_url, aut, projectId, formId):
-    attachments = list_attachments(base_url, aut, projectId, formId).json()
-    attachment_names = [row['name'] for row in attachments]
-    return attachment_names
-#attachment_names = get_attachment_names(base_url, aut, projectId, formId)
-
-def download_attachments(base_url, aut, projectId, formId, submission_ids):
-    for instanceId in submission_ids:
-        odata_attachments(base_url, aut, projectId, formId, instanceId)
+# def download_attachments(base_url, aut, projectId, formId, mills_table):
+#     submission_ids = get_submission_ids(mills_table)
+#     for instanceId in submission_ids:
+#         odata_attachments(base_url, aut, projectId, formId, instanceId)
+#
+# def get_attachment_names(base_url, aut, projectId, formId):
+#     attachments = list_attachments(base_url, aut, projectId, formId).json()
+#     attachment_names = [row['name'] for row in attachments]
+#     return attachment_names
+# #attachment_names = get_attachment_names(base_url, aut, projectId, formId)
+#
+# def download_attachments(base_url, aut, projectId, formId, submission_ids):
+#     for instanceId in submission_ids:
+#         odata_attachments(base_url, aut, projectId, formId, instanceId)
 
 
 # Check if the files folder exist, if not, create one and fetch the data from odk to fill it

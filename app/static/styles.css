@@ -75,10 +75,9 @@ object-fit: cover;
 /*Figures*/
 .dc-chart{
     text-align:center;
+    margin:30px;
 }
-.dc-chart.infographics{
-    width:345px;
-}
+
 #nonOperational g.axis.x text {
     text-anchor: end !important;
     transform: rotate(-20deg)!important;
