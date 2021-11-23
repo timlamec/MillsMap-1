@@ -366,7 +366,7 @@ function drawMarkers(data) {
     selectOwner.title(function (subs){
         return subs.key;
     })
-    var commodity_milled2 = cross_data.dimension(function(d) { return d.commodity_milled; });
+    var commodity_milled2 = cross_data.dimension(function(d) { return d.commodity_milled;}, true);
     var selectGrain = new dc.SelectMenu('#selectGrain',groupname);
     selectGrain
         .dimension(commodity_milled2)
@@ -402,7 +402,7 @@ function drawMarkers(data) {
     selectFortify.title(function (subs){
         return subs.key;
     })
-    var Packaging_flour_fortified_standard2 = cross_data.dimension(function(d) { return d.Packaging_flour_fortified_standard; });
+    var Packaging_flour_fortified_standard2 = cross_data.dimension(function(d) { return d.Packaging_flour_fortified_standard; }, true);
     var selectFortifyStandard = new dc.SelectMenu('#selectFortifyStandard',groupname);
     selectFortifyStandard
         .dimension(Packaging_flour_fortified_standard2)
@@ -411,7 +411,7 @@ function drawMarkers(data) {
     selectFortifyStandard.title(function (subs){
         return subs.key;
     })
-    var energy_source2 = cross_data.dimension(function(d) { return d.energy_source; });
+    var energy_source2 = cross_data.dimension(function(d) { return d.energy_source; }, true);
     var selectEnergySource = new dc.SelectMenu('#selectEnergySource',groupname);
     selectEnergySource
         .dimension(energy_source2)
