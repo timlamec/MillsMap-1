@@ -471,9 +471,9 @@ function drawMarkers(data) {
         return subs.key;
     })
 
-
     dc.renderAll(groupname);
 
+//  Reset the filters
     d3.select('#resetFilters')
        .on('click', function() {
        console.log('reseted filters')
@@ -481,6 +481,17 @@ function drawMarkers(data) {
          dc.redrawAll(groupname);
     });
 
+//    Download
+    d3.select('#download')
+    .on('click', function() {
+        if(d3.select('#download-type input:checked').node().value==='table') {
+            var selectedData = non_operational2.top(Infinity);
+        }else{
+        var selectedData = data
+        }
+        var blob = new Blob([d3.csvFormat(selectedData)], {type: "text/csv;charset=utf-8"});
+        saveAs(blob, 'OMDTZ_mills.csv');
+    });
     fetch('/download_attachments')
 }
 
