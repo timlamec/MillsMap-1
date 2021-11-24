@@ -2,9 +2,20 @@
 {% block content %}
 <html>
 <body>
-    <div class="container-fluid">
+<nav class="nav nav-tabs bg-light  text-info">
+  <li class=" text-info">
+    <a class="nav-link active text-info" id="sidebarToggle">Info</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" id="filterToggle">Filters and infographics</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" id="howtoToggle">How to use this page</a>
+  </li>
+</nav>
+<div class="container-fluid">
         <div class="row">
-            <div class="col-3" id="sidebar">
+            <div class="col-4 side-column" id="sidebar">
                 <div class="row">
                     <div class="col-11 " >
                         <div class="wrapper p-4">
@@ -19,7 +30,7 @@
                                 </div>
                                 <hr>
                                 <div class="row">
-                                    <h1>Nationwide Mills Census in Tanzania</h1>
+                                    <h2>Nationwide Mills Census in Tanzania</h2>
                                          <p>OpenMap Development Tanzania (OMDTZ), supported by WFP Tanzania, is conducting a national-wide mills census from August through November 2021. The project aims at mapping approximately 13,000 mills and additional mills found in the field by collecting Geographical Positioning System (GPS) coordinates, operation, production capacity, type of mills, commodity milled, flour fortification, and other relevant information. Community mapping methodology employed for the mapping and data set will be available openly through here and  Openstreetmaps 
                                         </p>
                                     </div>
@@ -32,66 +43,93 @@
                                             <a  class="social-media-icon m-3" href="https://twitter.com/OMDTZ"><img alt="twitter" src="static/static_figures/social_media_icons/social-1_round-twitter.svg"></a>
                                             <a  class="social-media-icon m-3" href="https://www.instagram.com/omdtz/?hl=en"><img alt="instagram" src="static/static_figures/social_media_icons/social-1_round-instagram.svg"></a>
                                         </p>
-
+                                    </div>
+                                    <br>
+                                <br>
+                                    <hr>
+                                    <div>
+                                        <h4>The current number of mill sites:</h4>
+                                        <h4 id="millNumber"></h4>
+                                        <h4>The current number of machines:</h4>
+                                        <h4 id="machineNumber"></h4>
                                     </div>
                             </nav>
                         </div>
-                    </div>                   
-                    <div class="col-1">
-                        <button type="button" id="sidebarCollapse" class="btn btn-info">
-                            <span id="left-arrow">&#10096;&#10096;</span>
-                        </button>
                     </div>
                 </div>
             </div>
-            <div class="col-1 hide" id="right-arrow">
-                <button type="button" id="sidebarOpen" class="btn btn-info">
-                    <span>&#10095;&#10095;</span>
-                </button>
+
+
+                    <div class="col-2 mt-4 margin-left-4 hide side-column" id="selects">
+                        <h4>Filters</h4>
+                        <strong class="select-title m-2">Owner type</strong>
+                        <div class="select" id="selectOwner">
+                        </div>
+                        <strong class="select-title m-2">Grain milled</strong>
+                        <div class="select" id="selectGrain">
+                        </div>
+                        <strong class="select-title m-2">Mill type</strong>
+                        <div class="select" id="selectMillType">
+                        </div>
+                        <strong class="select-title m-2">Operational</strong>
+                        <div class="select" id="selectOperational">
+                        </div>
+                        <strong class="select-title m-2">Fortified</strong>
+                        <div class="select" id="selectFortify">
+                        </div>
+                        <strong class="select-title m-2">Fortifying standard</strong>
+                        <div class="select" id="selectFortifyStandard">
+                        </div>
+                        <strong class="select-title m-2">Energy source</strong>
+                        <div class="select" id="selectEnergySource">
+                        </div>
+                        <strong class="select-title m-2">Non-operational reason</strong>
+                        <div class="select" id="selectNonOperationReason">
+                        </div>
+                        <button class="bg-warning p-3 m-2" id="resetFilters">Reset filters</button>
+
+                    </div>
+                    <div id="infographics" class="hide col-4 figures side-column">
+                        <div class="p-3">
+                            <h4  class="card-title text-center">Functional mills</h4>
+                            <div id="functionalMills" class="infographics"></div>
+                        </div>
+                        <div class="p-3">
+                            <h4  class="card-title text-center">Mill types</h4>
+                            <div id="millTypes" class="infographics"></div>
+                        </div>
+                        <div class="p-3">
+                            <h4  class="card-title text-center">Flour is fortified</h4>
+                            <div id="fortifiedFlour" class="infographics"></div>
+                        </div>
+                        <div class="p-3">
+                            <h4  class="card-title text-center">Milled grain</h4>
+                            <div id="grainType" class="infographics"></div>
+                            <small>*Each machine can have multiple grain types</small>
+                        </div>
+
+                     </div>
+            <div class="col hide side-column" id="howto">
+                This is the section for how to use the website.
             </div>
-
-            <div class="col-6 mt-5" id="mapbar">
-                <span class="ouro" id="spin">
-                    <span class="left"><span class="anim"></span></span>
-                    <span class="right"><span class="anim"></span></span>
-                </span>
-                <div id="mapid">
-                </div>
-                <p id="download-info" class="hide">Testing</p>
-
-
-            </div>
-            <div class="col-3">
-                <h3>The number of mill sites</h3>
-                <h4 id="millNumber"></h4>
-                <h3>The number of machines</h3>
-                <h4 id="machineNumber"></h4>
-                <button id="resetFilters">Reset filters</button>
-
-                <div class="selectmenus">
-                    <div id="selectOwner">Owner type
-                   </div>
-                    <div id="selectGrain">Grain milled
-                   </div>
-                    <div id="selectMillType">Mill type
-                   </div>
-                    <div id="selectOperational">Operational
-                   </div>
-                    <div id="selectFortify">Fortified
-                   </div>
-                    <div id="selectFortifyStandard">Fortifying standard
-                   </div>
-                    <div id="selectEnergySource">Energy source
-                   </div>
-                    <div id="selectNonOperationReason">Non-operational reason
-                   </div>
-                </div>
-
-
+            <div class="col hide side-column">
                 <h4>Machine details</h4>
                 <p id="machine_details"></p>
                 <div id="details_container"></div>
             </div>
+
+        <div class="col-8 mt-3" id="mapbar">
+            <span class="ouro" id="spin">
+                <span class="left"><span class="anim"></span></span>
+                <span class="right"><span class="anim"></span></span>
+            </span>
+            <div id="mapid">
+            </div>
+            <p id="download-info" class="hide">Testing</p>
+
+</div>
+        </div>
+
 <!--            <div class="col-3 form-inline mb-3" id="filterbar">-->
 <!--                <h1>Filters</h1>-->
 <!--                <h3 id="menutitle">Mill owner</h3>-->
@@ -125,67 +163,67 @@
 <!--            </div>-->
         </div>
 
-        </div>
-
     </div>
-    <div class="figures">
-        <div class="row">
-            <div class="col">
-                <div class="p-3 mb-5 bg-white rounded">
-                    <h3  class="card-title text-center">Functional mills</h3>
-                    <div id="functionalMills" class="infographics"></div>
-                </div>
-            </div>
 
-            <div class="col">
-                <div class="p-3 mb-5 bg-white rounded">
-                    <h3  class="card-title text-center">Mill types</h3>
-                    <div id="millTypes" class="infographics"></div>
-                </div>
-            </div>
+</div>
+<!--    <div class="figures">-->
+<!--        <div class="row">-->
+<!--            <div class="col">-->
+<!--                <div class="p-3 mb-5 bg-white rounded">-->
+<!--                    <h3  class="card-title text-center">Functional mills</h3>-->
+<!--                    <div id="functionalMills" class="infographics"></div>-->
+<!--                </div>-->
+<!--            </div>-->
 
-            <div class="col">
-                <div class="p-3 mb-5 bg-white rounded">
-                    <h3  class="card-title text-center">Energy source</h3>
-                    <div id="energySource" class="infographics"></div>
-                    <small>*Each machine can have multiple energy sources</small>
-                </div>
-            </div>
+<!--            <div class="col">-->
+<!--                <div class="p-3 mb-5 bg-white rounded">-->
+<!--                    <h3  class="card-title text-center">Mill types</h3>-->
+<!--                    <div id="millTypes" class="infographics"></div>-->
+<!--                </div>-->
+<!--            </div>-->
 
-            <div class="col">
-                <div class="p-3 mb-5 bg-white rounded">
-                    <h3  class="card-title text-center">Flour is fortified</h3>
-                    <div id="fortifiedFlour" class="infographics"></div>
-                </div>
-            </div>
-            <div class="col">
-                <div class="p-3 mb-5 bg-white rounded">
-                    <h3  class="card-title text-center">Mill owner</h3>
-                    <div id="millOwner" class="infographics"></div>
-                </div>
-            </div>
-            <div class="col">
-                <div class="p-3 mb-5 bg-white rounded">
-                    <h3  class="card-title text-center">Fortification standard</h3>
-                    <div id="fortifiedStandard" class="infographics"></div>
-                </div>
-            </div>
-             <div class="col">
-                <div class="p-3 mb-5 bg-white rounded">
-                    <h3  class="card-title text-center">Non operational reason</h3>
-                    <div id="nonOperational" class="infographics mb-5"></div>
-                    <small>*Each machine can have multiple reasons</small>
-                </div>
-            </div>
-            <div class="col">
-                <div class="p-3 mb-5 bg-white rounded">
-                    <h3  class="card-title text-center">Milled grain</h3>
-                    <div id="grainType" class="infographics"></div>
-                    <small>*Each machine can have multiple grain types</small>
-                </div>
-            </div>
-        </div>
-    </div>
+<!--            <div class="col">-->
+<!--                <div class="p-3 mb-5 bg-white rounded">-->
+<!--                    <h3  class="card-title text-center">Energy source</h3>-->
+<!--                    <div id="energySource" class="infographics"></div>-->
+<!--                    <small>*Each machine can have multiple energy sources</small>-->
+<!--                </div>-->
+<!--            </div>-->
+
+<!--            <div class="col">-->
+<!--                <div class="p-3 mb-5 bg-white rounded">-->
+<!--                    <h3  class="card-title text-center">Flour is fortified</h3>-->
+<!--                    <div id="fortifiedFlour" class="infographics"></div>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--            <div class="col">-->
+<!--                <div class="p-3 mb-5 bg-white rounded">-->
+<!--                    <h3  class="card-title text-center">Mill owner</h3>-->
+<!--                    <div id="millOwner" class="infographics"></div>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--            <div class="col">-->
+<!--                <div class="p-3 mb-5 bg-white rounded">-->
+<!--                    <h3  class="card-title text-center">Fortification standard</h3>-->
+<!--                    <div id="fortifiedStandard" class="infographics"></div>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--             <div class="col">-->
+<!--                <div class="p-3 mb-5 bg-white rounded">-->
+<!--                    <h3  class="card-title text-center">Non operational reason</h3>-->
+<!--                    <div id="nonOperational" class="infographics mb-5"></div>-->
+<!--                    <small>*Each machine can have multiple reasons</small>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--            <div class="col">-->
+<!--                <div class="p-3 mb-5 bg-white rounded">-->
+<!--                    <h3  class="card-title text-center">Milled grain</h3>-->
+<!--                    <div id="grainType" class="infographics"></div>-->
+<!--                    <small>*Each machine can have multiple grain types</small>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
+</div>
 
 
     	<!--	Local javascript-->

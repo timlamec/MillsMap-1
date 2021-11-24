@@ -1,21 +1,38 @@
 // toggle the left-side navbar
 $(document).ready(function () {
-    $('#sidebarCollapse').on('click', function () {
+    $('#sidebarToggle').on('click', function () {
+        $('.side-column').addClass('hide')
+        $('.nav-link').removeClass('active')
+        $('#mapbar').addClass('col-8')
+        $('#mapbar').removeClass('col-6')
         $('#sidebar').toggleClass('hide');
-        $('#mapbar').toggleClass('col-8');
-        $('#left-arrow').toggleClass('hide');
-        $('#right-arrow').toggleClass('hide');
+        $('#sidebarToggle').toggleClass('active');
     });
 });
 
 $(document).ready(function () {
-    $('#sidebarOpen').on('click', function () {
-        $('#sidebar').toggleClass('hide');
-        $('#mapbar').toggleClass('col-8');
-        $('#left-arrow').toggleClass('hide');
-        $('#right-arrow').toggleClass('hide');
+    $('#filterToggle').on('click', function () {
+        $('.side-column').addClass('hide')
+        $('.nav-link').removeClass('active')
+        $('#mapbar').addClass('col-6')
+        $('#mapbar').removeClass('col-8')
+        $('#selects').toggleClass('hide');
+        $('#infographics').toggleClass('hide');
+        $('#filterToggle').toggleClass('active');
     });
 });
+
+$(document).ready(function () {
+    $('#howtoToggle').on('click', function () {
+        $('.side-column').addClass('hide')
+        $('.nav-link').removeClass('active')
+        $('#mapbar').addClass('col-8')
+        $('#mapbar').removeClass('col-6')
+        $('#howto').toggleClass('hide');
+        $('#howtoToggle').toggleClass('active');
+    });
+});
+
 
 // center of the map
 var center = [-6.23, 34.9];
@@ -214,9 +231,33 @@ function drawMarkers(data) {
         .locationAccessor(function(kv) {
             return kv.value.geo;
         })
+//        var toolTip = "<dt>Number of milling machines:" + sub['machines_machine_count'] + "</dt>"
+//            counter = 0
+//            for (machine_index in sub['machines']){
+//                counter += 1
+//                toolTip += "<dt> Machine: " + counter + "</dt>";
+//                toolTip += "<div> ID: " + sub['machines'][machine_index]['__id'] + "</div>";
+//                toolTip += "<div> Type of mill: ";
+//                toolTip += sub['machines'][machine_index]['mill_type'] + "</div>";
+//                toolTip += "<div> Operational: ";
+//                toolTip += sub['machines'][machine_index]['operational_mill'] + "</div>";
+//                toolTip += "<div> Energy source: ";
+//                toolTip += sub['machines'][machine_index]['energy_source'] + "</div>";
+//            }
+//            marker.bindTooltip(toolTip);
         .popup(function(kv) {
+            var tooltip = "<dt>Number of mills: " + kv.value.count + "</dt>" +
+            "<dt>Types of mills: " + kv.value.mill_type  + "</dt>" +
+            "<dt> id: " + kv.key + "</dt>";
+            for(i in kv.value.image_fns){
+                var fn = kv.value.image_fns[i],
+                path = 'static/figures/' + fn
+                tooltip = tooltip.concat("<img src = '" + path + "'>")
+            }
+
 //            console.log(kv)
-            return 'Number of mills: ' + kv.value.count + ' Type of mills: ' + kv.value.mill_type + ' id: ' + kv.key;
+
+            return tooltip
         })
         .filterByArea(true)
       .marker(function(kv) {
@@ -354,7 +395,7 @@ function drawMarkers(data) {
         .barPadding(0.1)
         .elasticY(true)
         .outerPadding(0.05)
-        .width(450)
+        .width(250)
 
 //     Select menus
     var mill_owner2 = cross_data.dimension(function(d) { return d.interviewee_mill_owner; });
@@ -402,7 +443,7 @@ function drawMarkers(data) {
     selectFortify.title(function (subs){
         return subs.key;
     })
-    var Packaging_flour_fortified_standard2 = cross_data.dimension(function(d) { return d.Packaging_flour_fortified_standard; }, true);
+    var Packaging_flour_fortified_standard2 = cross_data.dimension(function(d) { return d.Packaging_flour_fortified_standard; });
     var selectFortifyStandard = new dc.SelectMenu('#selectFortifyStandard',groupname);
     selectFortifyStandard
         .dimension(Packaging_flour_fortified_standard2)
@@ -420,7 +461,7 @@ function drawMarkers(data) {
     selectEnergySource.title(function (subs){
         return subs.key;
     })
-    var non_operational2 = cross_data.dimension(function(d) { return d.non_operational; });
+    var non_operational2 = cross_data.dimension(function(d) { return d.non_operational;}, true);
     var selectNonOperationReason = new dc.SelectMenu('#selectNonOperationReason',groupname);
     selectNonOperationReason
         .dimension(non_operational2)
@@ -435,6 +476,7 @@ function drawMarkers(data) {
 
     d3.select('#resetFilters')
        .on('click', function() {
+       console.log('reseted filters')
          dc.filterAll(groupname);
          dc.redrawAll(groupname);
     });
