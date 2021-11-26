@@ -19,6 +19,14 @@ object-fit: cover;
 .btn-block{
     display: -webkit-inline-box!important;
 }
+/* Legend */
+.dc-legend-item.selected{
+    outline: solid 2px #508EC3;
+}
+.dc-legend g.dc-legend-item.selected{
+    fill: #09497a!important;
+}
+
 /* Select */
 .dc-chart select {
   width: 150px;
@@ -44,14 +52,18 @@ select{
     display: flex;
     width: 100%;
 }
-
+#machineNumber{
+    text-align:center;
+}
 #sidebar {
     background: #31b0d5;
     color: #fff;
     transition: all 0.3s;
     z-index:-1;
 }
-
+#howto{
+    margin:40px;
+}
 .wrapper {
     display: flex;
     align-items: stretch;
