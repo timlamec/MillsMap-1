@@ -387,15 +387,6 @@ function drawMarkers(data) {
 
     dc.renderAll(groupname);
 
-//   Get the selected items on the legend
-    var selectedLegendItems = document.getElementsByClassName('test')
-//    selectedLegendItems.innerHTML = 'jee'
-    for(var i = 0; i < selectedLegendItems.length; i++){
-		selectedLegendItems[i].innerHTML = "white";
-	}
-//    var selectedLegendItems = document.getElementById('test')
-//    selectedLegendItems.innerHTML = 'jee'
-
 //  Reset the filters
     d3.select('#resetFilters')
        .on('click', function() {
