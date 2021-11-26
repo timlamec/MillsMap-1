@@ -96,89 +96,12 @@ mills_promise = $.get('/read_submissions')
 //machines_promise = $.get('/machines')
 //filter_options_promise = $.get('/get_filter_options')
 
-<!--$.ajax({-->
-<!--    type: "POST",-->
-<!--    url: '/file_names',-->
-<!--    contentType: 'application/json;charset:UTF-8',-->
-<!--    success: function (form_names) {-->
-<!--        console.log(form_names);-->
-<!--        $('#download-info').toggleClass('hide');-->
-<!--        var download_info = document.getElementById('download-info')-->
-<!--        download_info.innerHTML = form_names-->
-<!--        }-->
-<!--    });-->
-
-<!--var chart = new dc.BarChart("#peopleBar");-->
-<!--d3.csv("{{url_for('static', filename='people.csv')}}").then(function(people) {-->
-<!--    var mycrossfilter = crossfilter(people);-->
-<!--    var ageDimension = mycrossfilter.dimension(function(data) {-->
-<!--       return ~~((Date.now() - new Date(data.DOB)) / (31557600000))-->
-<!--    });-->
-<!--    var ageGroup = ageDimension.group().reduceCount();-->
-<!--    chart-->
-<!--       .width(800)-->
-<!--       .height(300)-->
-<!--       .brushOn(false)-->
-<!--       .yAxisLabel("Count")-->
-<!--       .xAxisLabel("Age")-->
-<!--       .x(d3.scaleLinear().domain([15,70]))-->
-<!--       .dimension(ageDimension)-->
-<!--       .group(ageGroup)-->
-<!--       .yAxisLabel("This is the Y Axis!")-->
-<!--       .on('renderlet', function(chart) {-->
-<!--          chart.selectAll('rect').on('click', function(d) {-->
-<!--             console.log('click!', d);-->
-<!--          });-->
-<!--       });-->
-<!--    chart.render();-->
-<!-- });-->
-
-<!--var pieChart = new dc.PieChart("#peoplePie");-->
-<!--d3.csv("{{url_for('static', filename='people.csv')}}").then(function(people) {-->
-<!--    var mycrossfilter = crossfilter(people);-->
-<!--    var ageDimension = mycrossfilter.dimension(function(data) {-->
-<!--       return ~~((Date.now() - new Date(data.DOB)) / (31557600000))-->
-<!--    });-->
-<!--    var ageGroup = ageDimension.group().reduceCount();-->
-<!--    pieChart-->
-<!--    .width(768)-->
-<!--    .height(480)-->
-<!--    .slicesCap(4)-->
-<!--    .innerRadius(100)-->
-<!--    .dimension(ageDimension)-->
-<!--    .group(ageGroup)-->
-<!--    .legend(dc.legend().highlightSelected(true))-->
-<!--    // workaround for #703: not enough data is accessible through .label() to display percentages-->
-<!--    .on('pretransition', function(chart) {-->
-<!--        chart.selectAll('text.pie-slice').text(function(d) {-->
-<!--            return d.data.key + ' ' + dc.utils.printSingleValue((d.endAngle - d.startAngle) / (2*Math.PI) * 100) + '%';-->
-<!--        })-->
-<!--    });-->
-<!--    pieChart.render();-->
-<!-- });-->
-
-//var clusterMap = L.map('cluster-map', {
-//		center: [42.69,25.42],
-//		zoom: 7
-//	});
-//L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-//            attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-//        }).addTo(clusterMap);
-//
-// var facilitiesGroup = false;
-// var returnObject = false;
-
 // Now the promise chain that uses the mills and machines
-
-function onClick(e) {
-    alert(this.getLatLng());
-}
 customMarker = L.Marker.extend({
     options: {
         Id: 'Custom data!'
     }
 });
-
 mills_promise.then(function(data) {
     data = JSON.parse(data)
     var element = document.getElementById("spin");
@@ -196,6 +119,7 @@ function drawMarkers(data) {
             p.Location_mill_gps_coordinates = v.Location_mill_gps_coordinates;
             p.mill_type.push(v.mill_type);
             p.image_fns.push(v.img_machines);
+            p.energy_source.push(v.energy_source);
             p.operational_mill = v.operational_mill;
             p.non_operational = v.non_operational;
             p.geo = v.geo;
@@ -212,10 +136,14 @@ function drawMarkers(data) {
             if (index > -1) {
               p.mill_type.splice(index, 1);
             }
+            var index = p.mill_type.indexOf(v.energy_source);
+            if (index > -1) {
+              p.energy_source.splice(index, 1);
+            }
             return p;
         },
         function() { // init
-            return {count: 0, mill_type: new Array(), image_fns: new Array()};
+            return {count: 0, mill_type: new Array(), image_fns: new Array(), energy_source: new Array()};
         }
     );
 
@@ -231,32 +159,18 @@ function drawMarkers(data) {
         .locationAccessor(function(kv) {
             return kv.value.geo;
         })
-//        var toolTip = "<dt>Number of milling machines:" + sub['machines_machine_count'] + "</dt>"
-//            counter = 0
-//            for (machine_index in sub['machines']){
-//                counter += 1
-//                toolTip += "<dt> Machine: " + counter + "</dt>";
-//                toolTip += "<div> ID: " + sub['machines'][machine_index]['__id'] + "</div>";
-//                toolTip += "<div> Type of mill: ";
-//                toolTip += sub['machines'][machine_index]['mill_type'] + "</div>";
-//                toolTip += "<div> Operational: ";
-//                toolTip += sub['machines'][machine_index]['operational_mill'] + "</div>";
-//                toolTip += "<div> Energy source: ";
-//                toolTip += sub['machines'][machine_index]['energy_source'] + "</div>";
-//            }
-//            marker.bindTooltip(toolTip);
+
         .popup(function(kv) {
-            var tooltip = "<dt>Number of mills: " + kv.value.count + "</dt>" +
-            "<dt>Types of mills: " + kv.value.mill_type  + "</dt>" +
-            "<dt> id: " + kv.key + "</dt>";
+            var tooltip = "<dt>Number of machines: " + kv.value.count + "</dt>" +
+            "<dt>The mill is operational: " + kv.value.operational_mill  + "</dt>" +
+            "<dt>Types of machines: " + kv.value.mill_type  + "</dt>" +
+            "<dt>Energy sources of the machines: " + kv.value.energy_source  + "</dt>" +
+            "<dt>Mill id: " + kv.key + "</dt>";
             for(i in kv.value.image_fns){
                 var fn = kv.value.image_fns[i],
                 path = 'static/figures/' + fn
-                tooltip = tooltip.concat("<img src = '" + path + "'>")
+                tooltip = tooltip.concat("<img class='popupImage' src = '" + path + "'>")
             }
-
-//            console.log(kv)
-
             return tooltip
         })
         .filterByArea(true)

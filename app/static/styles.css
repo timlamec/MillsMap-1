@@ -45,7 +45,17 @@ select{
 #download{
     min-width:150px;
 }
+/* Popup */
+.popupImage{
+    max-height:20em;
+    object-fit:contain;
+}
 
+
+/* TopNav */
+.nav-link strong{
+    color: #508EC3;
+}
 
 /* SideNav */
 .wrapper {
