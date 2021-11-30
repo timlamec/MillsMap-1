@@ -97,6 +97,11 @@ def download_attachments():
                 data_file.close()
                 update_attachments_from_form(file, figures_path, base_url, aut, projectId, formId)
 
+sched2 = BackgroundScheduler(daemon=True)
+sched2.add_job(download_attachments, 'interval', seconds=600)
+sched2.start()
+atexit.register(lambda: sched2.shutdown())
+
 @app.route('/file_names', methods=['POST'])
 def get_main_tables():
     folder = 'mills'

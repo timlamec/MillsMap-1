@@ -109,6 +109,7 @@ def update_attachments_from_form(submission_table, attachment_folder, base_url, 
                     percentage = 0.3
                     resized_im = im.resize((round(im.size[0]*percentage), round(im.size[1]*percentage)))
                     resized_im.save(outfilepath)
+                    print(f'Downloaded the image {fn} with sub_id {sub_id} in form {formId}')
                 except:
                     print(f'The image {fn} with sub_id {sub_id} in form {formId} could not be processed')
 

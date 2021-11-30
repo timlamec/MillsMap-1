@@ -406,8 +406,8 @@ function drawMarkers(data) {
         var blob = new Blob([d3.csvFormat(selectedData)], {type: "text/csv;charset=utf-8"});
         saveAs(blob, 'OMDTZ_mills.csv');
     });
-    fetch('/download_attachments')
 }
+//fetch('/download_attachments')
 
 
 
