@@ -4,7 +4,7 @@
 # Tested on a $10/month Digital Ocean droplet with Ubuntu 20.04
 # installed.
 
-# Assumes a non-root sudo user called reetta.
+# Assumes a non-root sudo user called millsmap.
 
 echo please enter the domain name of your server
 read domain_name
@@ -18,7 +18,6 @@ sudo apt -y upgrade
 
 echo setting up a few random Python dependencies
 sudo apt install -y build-essential libssl-dev libffi-dev python3-setuptools
-
 echo setting up virtualenv and Flask infrastructure
 sudo apt install -y python3-venv
 sudo apt install -y python3-dev
@@ -26,6 +25,10 @@ python3 -m venv venv
 source venv/bin/activate
 pip install wheel
 pip install flask
+pip install flask-wtf
+pip install requests
+pip install pandas
+pip install matplotlib
 pip install uwsgi
 
 echo installing nginx
@@ -43,7 +46,7 @@ server {
 
     location / {
         include uwsgi_params;
-        uwsgi_pass unix:/millsmap/millsmap.soc
+        uwsgi_pass unix:/home/millsmap/MillsMap/millsmap.sock;
     }
 }
 EOF
@@ -73,11 +76,11 @@ Description=uWSGI instance to serve millsmap
 After=network.target
 
 [Service]
-User=reetta
+User=millsmap
 Group=www-data
-WorkingDirectory=/home/millsmap
-Environment="PATH=/home/millsmap/venv/bin"
-ExecStart=/home/millsmap/venv/bin/uwsgi --ini millsmap.ini
+WorkingDirectory=/home/millsmap/MillsMap
+Environment="PATH=/home/millsmap/MillsMap/venv/bin"
+ExecStart=/home/millsmap/MillsMap/venv/bin/uwsgi --ini millsmap.ini
 
 [Install]
 WantedBy=multi-user.target
@@ -88,8 +91,3 @@ sudo mv millsmap.service /etc/systemd/system/
 echo starting and enabling the MillsMap service with Systemd
 sudo systemctl start millsmap.service
 sudo systemctl enable millsmap.service
-
-echo
-echo ##################################################
-echo NOW YOU NEED TO PROVIDE A URL_formats.txt FILE!!!!
-echo ##################################################

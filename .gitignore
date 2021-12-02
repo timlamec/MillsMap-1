@@ -1,16 +1,25 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
+*.pyc
 
 # The files folder
-files
 *.zip
 figures
+submission_files
 
 # Secrets
 secret_tokens.json
 
 # Environments
 venv
+.idea
 
-# CSV files
-*.csv
+# bloody osx
+*.DS_Store
+*.DS_Store?
+ehthumbs.db
+Icon?
+Thumbs.db
+
+Emacs backup files
+*~
