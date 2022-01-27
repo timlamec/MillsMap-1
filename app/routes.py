@@ -170,7 +170,12 @@ def mill_points():
                                               right_on='__Submissions-id')
     tables_to_flat_complete_time = time.perf_counter()
 
-    mill_filter_list = ['mill_owner', 'flour_fortified', 'flour_fortified_standard']
+    # List the columns from the submissions that will be retained
+    # by the filter to send to the webmap client
+    mill_filter_list = ['mill_owner', 'flour_fortified',
+                        'flour_fortified_standard',
+                        'Location-addr_region',
+                        'Location-addr_district']
     machine_filter_list = ['commodity_milled',
                            'mill_type', 'operational_mill',
                            'non_operational', 'energy_source']
