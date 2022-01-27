@@ -167,6 +167,8 @@ def fetch_odk_submissions(form_index, base_url: str, aut: object, projectId: str
         flatsubs = [flatten_dict(sub) for sub in submissions]
         print(f'Fetched table {table} for the form {formId} in {mill_fetch_time - start_time}s')
         # select only the wanted columns
+        # WARNING columns is a dict imported from
+        # config.py via star import!!! Dont do this
         wanted_columns = columns[table]
         form_data = [{key: row[key] for key in wanted_columns} for row in flatsubs]
         flatsubs = form_data

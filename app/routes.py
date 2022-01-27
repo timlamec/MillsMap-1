@@ -174,8 +174,8 @@ def mill_points():
     # by the filter to send to the webmap client
     mill_filter_list = ['mill_owner', 'flour_fortified',
                         'flour_fortified_standard',
-                        'Location-addr_region',
-                        'Location-addr_district']
+                        'Location_addr_region',
+                        'Location_addr_district']
     machine_filter_list = ['commodity_milled',
                            'mill_type', 'operational_mill',
                            'non_operational', 'energy_source']
