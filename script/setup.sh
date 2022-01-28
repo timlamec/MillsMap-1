@@ -30,6 +30,7 @@ pip install requests
 pip install pandas
 pip install matplotlib
 pip install uwsgi
+pip install apscheduler
 
 echo installing nginx
 if ! type "nginx"; then

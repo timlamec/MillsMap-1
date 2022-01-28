@@ -28,22 +28,6 @@ def get_submission_ids(mills_table):
     submission_ids = [row['__id'] for row in mills_table]
     return submission_ids
 
-# def download_attachments(base_url, aut, projectId, formId, mills_table):
-#     submission_ids = get_submission_ids(mills_table)
-#     for instanceId in submission_ids:
-#         odata_attachments(base_url, aut, projectId, formId, instanceId)
-#
-# def get_attachment_names(base_url, aut, projectId, formId):
-#     attachments = list_attachments(base_url, aut, projectId, formId).json()
-#     attachment_names = [row['name'] for row in attachments]
-#     return attachment_names
-# #attachment_names = get_attachment_names(base_url, aut, projectId, formId)
-#
-# def download_attachments(base_url, aut, projectId, formId, submission_ids):
-#     for instanceId in submission_ids:
-#         odata_attachments(base_url, aut, projectId, formId, instanceId)
-
-
 # Check if the files folder exist, if not, create one and fetch the data from odk to fill it
 path = 'app/submission_files'
 if not os.path.exists('app/submission_files'):
@@ -148,36 +132,6 @@ def get_merged_dictionaries():
     merging_time = time.perf_counter()
     print(f'Merged tables together in {merging_time - start_time}s')
     return json.dumps(mills)
-    #
-    # start_time = time.perf_counter()
-    # machines_response = \
-    #     odata_submissions(base_url,
-    #                       aut,
-    #                       projectId,
-    #                       formId,
-    #                       table='Submissions.machines.machine')
-    # machine_fetch_time = time.perf_counter()
-    # machines = machines_response.json()['value']
-    # flatmachines = [flatten_dict(mach) for mach in machines]
-    # print(f'Fetched machines in {machine_fetch_time - start_time}s')
-    #
-    # # open a file for writing
-    # data_file = open('app/submission_files/machines.csv', 'w')
-    # # create the csv writer object
-    # csv_writer = csv.writer(data_file)
-    # # Counter variable used for writing
-    # # headers to the CSV file
-    # count = 0
-    # for emp in flatmachines:
-    #     if count == 0:
-    #         # Writing headers of CSV file
-    #         header = emp.keys()
-    #         csv_writer.writerow(header)
-    #         count += 1
-    #     # Writing data of CSV file
-    #     csv_writer.writerow(emp.values())
-    # data_file.close()
-    # return json.dumps(flatmachines)
 
 @app.route('/get_filter_options')
 def get_filter_options():
@@ -216,7 +170,12 @@ def mill_points():
                                               right_on='__Submissions-id')
     tables_to_flat_complete_time = time.perf_counter()
 
-    mill_filter_list = ['mill_owner', 'flour_fortified', 'flour_fortified_standard']
+    # List the columns from the submissions that will be retained
+    # by the filter to send to the webmap client
+    mill_filter_list = ['mill_owner', 'flour_fortified',
+                        'flour_fortified_standard',
+                        'Location_addr_region',
+                        'Location_addr_district']
     machine_filter_list = ['commodity_milled',
                            'mill_type', 'operational_mill',
                            'non_operational', 'energy_source']
