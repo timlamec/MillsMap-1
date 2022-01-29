@@ -6,3 +6,4 @@ projectId,formId,activityStatus,featureType,lastChecked,lastNumberRecordsMills,l
 2,Tanzania_Mills_Mapping_Census_V_0.06,0,point,"time.struct_time(tm_year=2021, tm_mon=11, tm_mday=21, tm_hour=14, tm_min=41, tm_sec=37, tm_wday=6, tm_yday=325, tm_isdst=0)",11691,20926
 2,Tanzania_Mills_Mapping_Census_V_0.07,1,point,"time.struct_time(tm_year=2021, tm_mon=11, tm_mday=30, tm_hour=13, tm_min=34, tm_sec=11, tm_wday=1, tm_yday=334, tm_isdst=0)",5265,9393
 2,Tanzania_Mills_Mapping_Census_V_0.08,1,point,"time.struct_time(tm_year=2021, tm_mon=11, tm_mday=30, tm_hour=13, tm_min=34, tm_sec=12, tm_wday=1, tm_yday=334, tm_isdst=0)",368,737
+2,Tanzania_Mills_Mapping_Census_V_0.08,1,point,"time.struct_time(tm_year=2021, tm_mon=11, tm_mday=30, tm_hour=13, tm_min=34, tm_sec=12, tm_wday=1, tm_yday=334, tm_isdst=0)",368,737
