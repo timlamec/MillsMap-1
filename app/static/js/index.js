@@ -120,6 +120,8 @@ function drawMarkers(data) {
             p.mill_type.push(v.mill_type);
             p.image_fns.push(v.img_machines);
             p.energy_source.push(v.energy_source);
+	    p.Location_addr_region.push(v.Location_addr_region);
+	    p.Location_addr_district.push(v.Location_addr_district);
             p.operational_mill = v.operational_mill;
             p.non_operational = v.non_operational;
             p.geo = v.geo;
@@ -140,10 +142,18 @@ function drawMarkers(data) {
             if (index > -1) {
               p.energy_source.splice(index, 1);
             }
+	    var index = p.Location_addr_region.indexOf(v.Location_addr_region);
+	    if (index > -1) {
+		p.Location_addr_region.splice(index, 1);
+	    }
+	    var index = p.Location_addr_district.indexOf(v.Location_addr_district);
+	    if (index > -1) {
+		p.Location_addr_district.splice(index, 1);
+	    }
             return p;
         },
         function() { // init
-            return {count: 0, mill_type: new Array(), image_fns: new Array(), energy_source: new Array()};
+            return {count: 0, mill_type: new Array(), image_fns: new Array(), energy_source: new Array(), Location_addr_region: new Array(), Location_addr_district: new Array()};
         }
     );
 
@@ -164,7 +174,9 @@ function drawMarkers(data) {
             var tooltip = "<dt>Number of machines: " + kv.value.count + "</dt>" +
             "<dt>The mill is operational: " + kv.value.operational_mill  + "</dt>" +
             "<dt>Types of machines: " + kv.value.mill_type  + "</dt>" +
-            "<dt>Energy sources of the machines: " + kv.value.energy_source  + "</dt>" +
+	    "<dt>Energy sources of the machines: " + kv.value.energy_source  + "</dt>" +
+	    "<dt>Region: " + kv.value.Location_addr_region + "</dt>" +
+            "<dt>District: " + kv.value.Location_addr_district + "</dt>" +
             "<dt>Mill id: " + kv.key + "</dt>";
             for(i in kv.value.image_fns){
                 var fn = kv.value.image_fns[i],
