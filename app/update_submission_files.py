@@ -28,7 +28,7 @@ def read_local_tables_together(folder):
                 row['energy_source'] = row['energy_source'].split(' ')
                 row['commodity_milled'] = row['commodity_milled'].split(' ')
                 row['Location_addr_region'] = row['Location_addr_region']
-                row['Location_addr_district' = row['Location_addr_district']
+                row['Location_addr_district'] = row['Location_addr_district']
                 for column in array_columns:
                     row[column] = [item.capitalize().replace('_', ' ') for item in row[column]]
                 for column in single_columns:
