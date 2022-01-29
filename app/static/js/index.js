@@ -333,6 +333,24 @@ function drawMarkers(data) {
     selectOwner.title(function (subs){
         return subs.key;
     })
+    var Location_addr_region2 = cross_data.dimension(function(d) { return d.Location_addr_region; });
+    var selectRegion = new dc.SelectMenu('#selectRegion',groupname);
+    selectRegion
+        .dimension(Location_addr_region2)
+        .group(Location_addr_region2.group())
+        .controlsUseVisibility(true);
+    selectRegion.title(function (subs){
+        return subs.key;
+    })
+    var Location_addr_district2 = cross_data.dimension(function(d) { return d.Location_addr_district;});
+    var selectDistrict = new dc.SelectMenu('#selectDistrict',groupname);
+    selectDistrict
+        .dimension(Location_addr_district2)
+        .group(Location_addr_district2.group())
+        .controlsUseVisibility(true);
+    selectDistrict.title(function (subs){
+        return subs.key;
+    })
     var commodity_milled2 = cross_data.dimension(function(d) { return d.commodity_milled;}, true);
     var selectGrain = new dc.SelectMenu('#selectGrain',groupname);
     selectGrain
