@@ -437,6 +437,23 @@ function drawMarkers(data) {
         saveAs(blob, 'OMDTZ_mills.csv');
     });
 }
+// Legend
+var legend = L.control({ position: "bottomright" });
+
+legend.onAdd = function(map) {
+  var div = L.DomUtil.create("div", "legend");
+  div.innerHTML += "<h4>Number of Mills</h4>";
+  div.innerHTML += '<i style="background: #7cc247"></i><span>Less than 10</span><br>';
+  div.innerHTML += '<i style="background: #f7eb65"></i><span>10 to 100</span><br>';
+  div.innerHTML += '<i style="background: #ff7438"></i><span>More than 100</span><br>';
+  div.innerHTML += '<i style="background: style="background-image: url(https://d30y9cdsu7xlg0.cloudfront.net/png/194515-200.png);background-repeat: no-repeat;"></i><span></span><br>';
+  
+  
+
+  return div;
+};
+
+legend.addTo(map);
 
 let supermarketItems = crossfilter([
   {name: "banana", category:"fruit", country:"Malta", outOfDateQuantity:3, quantity: 12},
