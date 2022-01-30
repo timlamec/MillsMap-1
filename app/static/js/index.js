@@ -442,7 +442,7 @@ var legend = L.control({ position: "bottomright" });
 
 legend.onAdd = function(map) {
   var div = L.DomUtil.create("div", "legend");
-  div.innerHTML += "<h4>Legend</h4>";
+  div.innerHTML += "<h4>Number of Mills</h4>";
   div.innerHTML += '<i style="background: #7cc247"></i><span>Less than 10</span><br>';
   div.innerHTML += '<i style="background: #f7eb65"></i><span>10 to 100</span><br>';
   div.innerHTML += '<i style="background: #ff7438"></i><span>More than 100</span><br>';
