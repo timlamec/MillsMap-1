@@ -3,10 +3,9 @@
 This repo queries odk central server and updates a webmap automatically. Currently specific to a project in Tanzania funded by The World Food Programme (WFP) and conducted by OpenMap Development Tanzania (OMDTZ).
 
 ## Data colection infrastructure 
-- Set up Server for Data Collection 
-ODK central used and was deployed in Digital ocean by following procedures in this link https://docs.getodk.org/central-install-digital-ocean/ 
-- Creating digital questionnaire for data collection.
-This done by guidance from this link; https://xlsform.org/en/
+- Set up Server, 
+ODK central used and was deployed in Digital ocean by using the following procedures in this link https://docs.getodk.org/central-install-digital-ocean/ 
+- Creating digital questionnaire, this was done by guidance from this link; https://xlsform.org/en/
 
 ## Web Map installation
 
@@ -53,8 +52,7 @@ Note: It's convenient to develop from a local server. However, it can be decepti
 Make sure you're using the server linked with webmap during the webmap installation stage 
 - Create the digital questionnaire
 - Open ODK-Central server and upload the questionare. Supportive information https://docs.getodk.org/central-forms/
-- Install ODK; Go to play store on your android phone download  and install opendata Kit Application
-Open ODK, click on configure with QR code then scan the provided from
+- In Mobile phone, install ODK from playstore then click configure with QR code then scan the provided QR Code from your server
 - Set your identity; Open ODK >setting> user and device  identity>form metadata> type your user name, phone number and email address 
 - Open Your ODK application and you will find 5 options
   - Fill blank form 
