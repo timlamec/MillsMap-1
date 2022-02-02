@@ -1,10 +1,15 @@
-# MillsMapping
+# Tanzania Nationwide Mills Census - Webmap
 
-This repo queries odk central server and updates a webmap automatically. Currently specific to a project in Tanzania mapping mills. Could be generalized in the future, but that's out of scope for the current project!
+This repo queries odk central server and updates a webmap automatically. Currently specific to a project in Tanzania funded by The World Food Programme (WFP) and conducted by OpenMap Development Tanzania (OMDTZ).
+##Data colection infrastructure 
+- Set up Server for Data Collection 
+ODK central used and was deployed in Digital ocean by following procedures in this link https://docs.getodk.org/central-install-digital-ocean/ 
+- Creating digital questionnaire for data collection.
+This done by guidance from this link; https://xlsform.org/en/
 
-# Install instructions
+## Web Map installation
 
-## Cloud deployment
+### Cloud deployment
 - Create a Digital Ocean droplet (or other server on whatever infrastructure you prefer), and associate a domain name with it. Either disable the UFW firewall or poke the appropriate holes in it for nginx and ssh.
 - Create a user called ```millsmap``` with sudo privileges.
 - From the ```millsmap``` user account, clone this repo. Step into it with ```cd MillsMap```.
@@ -13,7 +18,7 @@ This repo queries odk central server and updates a webmap automatically. Current
 - Run the installation script with ```script/setup.sh```.
   - Follow instructions. It needs the domain name, and your email so that LetsEncrypt can inform you when your certificate is expiring.
 
-## Local dev setup
+### Local dev setup
 For now, these instructions are specific to GNU/Linux. If you are working on Windows they definitely won't work, and on Mac they will require some tweaking.
 
 - First install some Python infrastructure using your package manager. On Debian-derived distros such as Ubuntu, it'll look like this (if you're on another distro family, replace ```apt``` with the relevant package manager):
@@ -43,3 +48,21 @@ __(Soon we'll [set this up with a requirements file so that Pip can manage this 
 Another way to get a solid test webserver running to look for errors is with ```uwsgi --socket 0.0.0.0:5000 --protocol=http -w wsgi:app --enable-threads``` (with venv activated).
 
 Note: It's convenient to develop from a local server. However, it can be deceptive; because there is almost no bandwidth constraint or delay between your server and client (both the Flask app and the browser are on the same computer), you will not notice problems that come from depending on fast communication between server and client. You may get a nasty surprise when you deploy to the cloud and find that things are unacceptably slow, perhaps even to the point of requests timing out so nothing works at all. There are lots of reasons to have a cloud instance that you can use to test while developing; this is only one of them!
+
+##How to update the Map  - Using ODK
+Make sure you're using the server linked with webmap during the webmap installation stage 
+- Create the digital questionnaire
+- Open ODK-Central server and upload the questionare. Supportive information https://docs.getodk.org/central-forms/
+- Install ODK; Go to play store on your android phone download  and install opendata Kit Application
+Open ODK, click on configure with QR code then scan the provided from
+- Set your identity; Open ODK >setting> user and device  identity>form metadata> type your user name, phone number and email address 
+- Open Your ODK application and you will find 5 options
+  - Fill blank form 
+  - Edit saved form 
+  - Send finalized form 
+  - View sent form 
+  - Delete saved form
+- In “Fill blank form”, you will find the deployed form, select and fill the information. 
+- NB Please make sure you turn on location, to do so go to setting on your android then turn on LOCATION.After that fill information. 
+Then use the “Send finalized form” option, select all the forms and send them
+####For more detailed information, you can visit this site https://docs.getodk.org/getting-started/
