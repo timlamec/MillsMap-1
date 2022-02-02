@@ -40,7 +40,6 @@ pip install matplotlib
 pip install uwsgi
 ```
 
-__(Soon we'll [set this up with a requirements file so that Pip can manage this automatically](https://note.nkmk.me/en/python-pip-install-requirements/), but as of this writing we're still developing and it's not a priority)__
 
 - At this point you're still in the venv (to the left of your terminal prompt you'll see ```(venv)```). If you want to get out of it for some reason, type ```deactivate``` (presumably that's not what you want to do right now, you want to start developing). To launch the local dev server, type ```python wsgi.py```. That'll launch a local webserver serving the Millsmap application on port 5000. Open your browser and visit [localhost:5000](http://localhost:5000/), which should display the application.
 
