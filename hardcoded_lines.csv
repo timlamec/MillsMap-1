@@ -1,0 +1,2 @@
+Mill Columns 	__id	start	end	interviewee_mill_owner	mills_number_milling_machines	machines_machine_count	Packaging_flour_fortified	Packaging_flour_fortified_standard	Location_addr_region	Location_addr_district	Location_mill_gps_coordinates
+	string	date	date	string	number	number	string	string	string	string	string
