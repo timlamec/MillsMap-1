@@ -1,0 +1,25 @@
+mill_columns = ['__id', 'start', 'end',
+                'interviewee_mill_owner',
+                'mills_number_milling_machines',
+                'machines_machine_count',
+                'Packaging_flour_fortified',
+                'Packaging_flour_fortified_standard',
+                'Location_addr_region',
+                'Location_addr_district',
+                'Location_mill_gps_coordinates']
+machine_columns = ['__id', '__Submissions-id',
+                   'commodity_milled',
+                   'mill_type', 'operational_mill',
+                   'energy_source', 'img_machines',
+                   'non_operational']
+columns = {'Submissions': mill_columns, 'Submissions.machines.machine':machine_columns}
+
+
+
+Files containing hard coded columns: 
+1. config.py
+2. graphics.py
+3. routes.py
+4. update_submussion_files.py
+5. index.js
+
