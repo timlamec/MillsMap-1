@@ -45,7 +45,7 @@ def unique_key_counts(dictionary, key1, key2 = None, multiple_choice = False):
 	
 	return unique_values, value_counts
 
-
+#using hardcoded columns specific to form
 def charts(submissions_machine, submissions):
 	operational_count = count_items(submissions_machine, key1 = 'operational_mill', value = 'yes')
 	not_operational_count = count_items(submissions_machine, key1 = 'operational_mill', value = 'no')

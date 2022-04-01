@@ -6,6 +6,7 @@ password = secret_tokens['password']
 aut = (email, password)
 base_url = 'https://omdtz-data.org'
 
+#hardcoded columns from form
 mill_columns = ['__id', 'start', 'end',
                 'interviewee_mill_owner',
                 'mills_number_milling_machines',
@@ -21,6 +22,8 @@ machine_columns = ['__id', '__Submissions-id',
                    'energy_source', 'img_machines',
                    'non_operational']
 columns = {'Submissions': mill_columns, 'Submissions.machines.machine':machine_columns}
+#end of hardcoded columns
+
 
 submission_files_path = 'app/submission_files'
 figures_path = 'app/static/figures'
@@ -39,5 +42,8 @@ projectId = form_details[form_index]['projectId']
 formId = form_details[form_index]['formId']
 lastNumberRecordsMills = form_details[form_index]['lastNumberRecordsMills']
 
+#hardcoded from form
 array_columns = ['non_operational', 'commodity_milled', 'energy_source']
 single_columns = ['Packaging_flour_fortified', 'operational_mill', 'interviewee_mill_owner', 'Packaging_flour_fortified_standard', 'mill_type']
+#hardcoded from form
+

@@ -22,7 +22,7 @@ from app.update_submission_files import fetch_odk_submissions, update_form_confi
 from app.config import *
 # todo: set these values to another config file that is read in the beginning
 
-
+#uses hardcoded columns specific to form
 # Functions for downloading attachments
 def get_submission_ids(mills_table):
     submission_ids = [row['__id'] for row in mills_table]

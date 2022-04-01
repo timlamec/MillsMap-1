@@ -109,6 +109,8 @@ mills_promise.then(function(data) {
     drawMarkers(data);
 });
 
+//uses hardcoded columns
+
 function drawMarkers(data) {
     var cross_data = crossfilter(data);
     var groupname = "marker-select";
