@@ -22,7 +22,6 @@ from app.update_submission_files import fetch_odk_submissions, update_form_confi
 from app.config import *
 # todo: set these values to another config file that is read in the beginning
 
-#uses hardcoded columns specific to form
 # Functions for downloading attachments
 def get_submission_ids(mills_table):
     submission_ids = [row['__id'] for row in mills_table]
@@ -149,6 +148,7 @@ def sites():
 
 @app.route('/mill_points')
 def mill_points():
+    from app.form_specific_data import mill_filter_list, machine_filter_list
     start_time = time.perf_counter()
     submissions = odata_submissions(base_url, aut, projectId, formId, table='Submissions')
     submissions_machine = odata_submissions(base_url,
@@ -170,15 +170,7 @@ def mill_points():
                                               right_on='__Submissions-id')
     tables_to_flat_complete_time = time.perf_counter()
 
-    # List the columns from the submissions that will be retained
-    # by the filter to send to the webmap client
-    mill_filter_list = ['mill_owner', 'flour_fortified',
-                        'flour_fortified_standard',
-                        'Location_addr_region',
-                        'Location_addr_district']
-    machine_filter_list = ['commodity_milled',
-                           'mill_type', 'operational_mill',
-                           'non_operational', 'energy_source']
+
     mill_filter_selection = get_filters(mill_filter_list, submissions_all)
     machine_filter_selection = get_filters(machine_filter_list,
                                            submissions_all)
@@ -230,6 +222,7 @@ def index():
 
 @app.route('/filterform', methods=['GET', 'POST'])
 def filter_data():
+    from app.form_specific_data import machine_filter_list, mill_filter_list_short
     if request.method == 'POST':
         choices = request.form
         choices_dict = {}
@@ -260,12 +253,8 @@ def filter_data():
                 submissions_table.merge(submissions_machine_table,
                                         left_on='__id',
                                         right_on='__Submissions-id')
-            mill_filter_list = ['mill_owner', 'flour_fortified',
-                                'flour_fortified_standard']
-            machine_filter_list = ['commodity_milled', 'mill_type',
-                                   'operational_mill', 'non_operational',
-                                   'energy_source']
-            mill_filter_selection = get_filters(mill_filter_list,
+
+            mill_filter_selection = get_filters(mill_filter_list_short,
                                                 submissions_all)
             # Filtering based on the form for machines
             for dict_key, dict_values in zip(list(choices_dict.keys()),

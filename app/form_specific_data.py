@@ -20,6 +20,24 @@ columns = {'Submissions': mill_columns, 'Submissions.machines.machine':machine_c
 array_columns = ['non_operational', 'commodity_milled', 'energy_source']
 single_columns = ['Packaging_flour_fortified', 'operational_mill', 'interviewee_mill_owner', 'Packaging_flour_fortified_standard', 'mill_type']
 
+mill_filter_list = ['mill_owner',
+                    'flour_fortified',
+                    'flour_fortified_standard',
+                    'Location_addr_region',
+                    'Location_addr_district']
+
+machine_filter_list = ['commodity_milled',
+                       'mill_type',
+                       'operational_mill',
+                       'non_operational',
+                       'energy_source']
+
+mill_filter_list_short = ['mill_owner',
+                    'flour_fortified',
+                    'flour_fortified_standard']
+
+
+
 # TODO: define all of the inputs to create a set of
 # charts
 def charts(datalist):
