@@ -20,3 +20,25 @@ columns = {'Submissions': mill_columns, 'Submissions.machines.machine':machine_c
 array_columns = ['non_operational', 'commodity_milled', 'energy_source']
 single_columns = ['Packaging_flour_fortified', 'operational_mill', 'interviewee_mill_owner', 'Packaging_flour_fortified_standard', 'mill_type']
 
+# TODO: define all of the inputs to create a set of
+# charts
+def charts(datalist):
+    for item in figures:
+        makechart(item[chart_type], # pie, bar, other?
+                  item[datatochart], # list or dict of possible chart elements
+                  item[labels], # dict of labels
+                  item[colorkeys], # dict of colors
+                  item[sizes], # actual quantities
+                  item[explode], # floats, need research
+                  item[axisticks], # for bar charts
+                  item[grids], # for bar charts
+                  item[linestyle],
+                  item[linewidth],
+                  item[alpha],
+                  item[fontsize],
+                  item[fontweight])
+        
+
+
+                
+                  

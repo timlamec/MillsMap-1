@@ -47,8 +47,14 @@ def unique_key_counts(dictionary, key1, key2 = None, multiple_choice = False):
 
 #using hardcoded columns specific to form
 def charts(submissions_machine, submissions):
-	operational_count = count_items(submissions_machine, key1 = 'operational_mill', value = 'yes')
-	not_operational_count = count_items(submissions_machine, key1 = 'operational_mill', value = 'no')
+
+        # Operational or not chart
+	operational_count = count_items(submissions_machine,
+                                        key1 = 'operational_mill',
+                                        value = 'yes')
+	not_operational_count = count_items(submissions_machine,
+                                            key1 = 'operational_mill',
+                                            value = 'no')
 	labels = 'Operational', 'Not operational'
 	colors = ['#6495ED', '#EEDC82']
 	sizes = [operational_count, not_operational_count]
