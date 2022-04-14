@@ -1,29 +1,13 @@
 import json, csv
+from form_specific_data import mill_columns, machine_columns, columns, array_columns, single_columns, base_url
 
+# TODO: move this to someplace more ovbiously
+# related to the form-specific information
+# because it'll change with different projects
 secret_tokens = json.load(open('secret_tokens.json', 'r'))
 email = secret_tokens['email']
 password = secret_tokens['password']
 aut = (email, password)
-base_url = 'https://omdtz-data.org'
-
-#hardcoded columns from form
-mill_columns = ['__id', 'start', 'end',
-                'interviewee_mill_owner',
-                'mills_number_milling_machines',
-                'machines_machine_count',
-                'Packaging_flour_fortified',
-                'Packaging_flour_fortified_standard',
-                'Location_addr_region',
-                'Location_addr_district',
-                'Location_mill_gps_coordinates']
-machine_columns = ['__id', '__Submissions-id',
-                   'commodity_milled',
-                   'mill_type', 'operational_mill',
-                   'energy_source', 'img_machines',
-                   'non_operational']
-columns = {'Submissions': mill_columns, 'Submissions.machines.machine':machine_columns}
-#end of hardcoded columns
-
 
 submission_files_path = 'app/submission_files'
 figures_path = 'app/static/figures'
@@ -43,7 +27,6 @@ formId = form_details[form_index]['formId']
 lastNumberRecordsMills = form_details[form_index]['lastNumberRecordsMills']
 
 #hardcoded from form
-array_columns = ['non_operational', 'commodity_milled', 'energy_source']
-single_columns = ['Packaging_flour_fortified', 'operational_mill', 'interviewee_mill_owner', 'Packaging_flour_fortified_standard', 'mill_type']
+
 #hardcoded from form
 
