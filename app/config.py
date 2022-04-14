@@ -1,5 +1,5 @@
 import json, csv
-from form_specific_data import mill_columns, machine_columns, columns, array_columns, single_columns, base_url
+from app.form_specific_data import mill_columns, machine_columns, columns, array_columns, single_columns, base_url
 
 # TODO: move this to someplace more ovbiously
 # related to the form-specific information
