@@ -5,7 +5,7 @@ from app.odk_requests import number_submissions, odata_submissions, \
 from app.helper_functions import flatten_dict
 from app.config import *
 
-#uses hardcoded columns from form
+
 def read_local_tables_together(folder):
     """
     Read all the csv files in a folder and combine them together
@@ -23,6 +23,9 @@ def read_local_tables_together(folder):
         table_path = os.path.join(path, form)
         with open(table_path, newline='') as data_file:
             csv_file = csv.DictReader(data_file)
+
+            #uses hardcoded columns from form
+            
             for row in csv_file:
                 row['non_operational'] = row['non_operational'].split(' ')
                 row['energy_source'] = row['energy_source'].split(' ')
